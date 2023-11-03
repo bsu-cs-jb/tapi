@@ -1,6 +1,7 @@
 import { Cat } from './cat';
 import { urlid, withId } from './genid';
 import { assert } from './utils';
+import { genCats } from './generate';
 
 interface Database {
   cats: Cat[];
@@ -9,7 +10,6 @@ interface Database {
 const data:Database = {
   cats: [],
 }
-
 
 function initDb() {
   data.cats = [withId({
@@ -28,7 +28,8 @@ function initDb() {
     name: "Charles",
     age: 4,
     claws: true,
-  })
+  }),
+  ...genCats(10),
   ]
 }
 initDb();
@@ -41,6 +42,25 @@ export function getCat(id:string) : Cat|undefined {
   return data.cats.find((cat) => cat.id === id);
 }
 
+function replaceCat(newCat: Cat): void {
+  data.cats = data.cats.map((cat) => (
+    cat.id === newCat.id ? newCat : cat
+  ));
+}
+
+export function updateCat(updatedCat:Cat) : Cat|undefined {
+  const cat = getCat(updatedCat.id);
+  if (!cat) {
+    return;
+  }
+  const newCat = {
+    ...cat,
+    ...updatedCat,
+  };
+  replaceCat(newCat);
+  return newCat;
+}
+
 export function insertCat(cat:Cat):Cat {
   if (!cat.id) {
     cat.id = urlid();
@@ -51,3 +71,5 @@ export function insertCat(cat:Cat):Cat {
 
   return cat;
 }
+
+
