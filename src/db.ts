@@ -1,5 +1,5 @@
 import { Cat } from './cat';
-import { urlid } from './genid';
+import { urlid, withId } from './genid';
 import { assert } from './utils';
 
 interface Database {
@@ -10,18 +10,25 @@ const data:Database = {
   cats: [],
 }
 
+
 function initDb() {
-  data.cats = [{
-    id: "snm398Wmy",
+  data.cats = [withId({
+    id: "",
     name: "Oscar",
     age: 10,
     claws: true,
-  },{
-    id: urlid(),
+  }),withId({
+    id: "",
     name: "Charles",
     age: 4,
     claws: false,
-  }
+  }),
+  withId({
+    id: "",
+    name: "Charles",
+    age: 4,
+    claws: true,
+  })
   ]
 }
 initDb();

@@ -1,10 +1,23 @@
-import { range } from './utils';
+import { range, json } from './utils';
+import { createHmac } from 'crypto';
 
-const ALPHA = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const { HASH_SECRET } = process.env;
+
+const SECRET = HASH_SECRET || "294S@t>9w";
+
+const ALPHA_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const ALPHA_LOWER = "abcdefghijklmnopqrstuvwxyz";
+const ALPHA = ALPHA_UPPER + ALPHA_LOWER;
 const NUMBERS = "0123456789";
 const SYMBOLS = "~!@#$%^&*()[]{}<>/|,.+=-?:;_";
 const DICTIONARY = NUMBERS + ALPHA + SYMBOLS;
-const URL_SAFE_DICTIONARY = NUMBERS + ALPHA;
+const B64_URL_DICT = (
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  + "abcdefghijklmnopqrstuvwxyz"
+  + NUMBERS
+  + "-_"
+);
+const URL_SAFE_DICTIONARY = B64_URL_DICT;
 
 export function gennum(): number {
   const randInt = Math.random() * 10 ** 17;
@@ -21,7 +34,7 @@ export function divmod(x: number, y: number): [div: number, rem: number] {
 
 export function encodeNumber(n: number, length?: number, dictionary?: string): string {
   if (!dictionary) {
-    dictionary = URL_SAFE_DICTIONARY;
+    dictionary = DICTIONARY;
   }
   const DICT_LENGTH = dictionary.length;
   if (length === undefined) {
@@ -52,14 +65,29 @@ export function decodeId(id: string, dictionary?: string): number {
   return num;
 }
 
-export function genid(): string {
+export function genid(length: number = 9): string {
   const num = gennum();
-  const id = encodeNumber(num, 9);
+  const id = encodeNumber(num, length);
   return id;
 }
 
-export function urlid(): string {
+export function urlid(length: number = 9): string {
   const num = gennum();
-  const id = encodeNumber(num, 9, URL_SAFE_DICTIONARY);
+  const id = encodeNumber(num, length, URL_SAFE_DICTIONARY);
   return id;
+}
+
+export function hashId(data: Record<string,any>, length: number = 8): string {
+  const hash = createHmac('sha256', SECRET)
+    .update(json(data))
+    .digest('base64url');
+  return hash.substring(0, length);
+}
+
+
+export function withId<T extends Record<string,any>>(data: T): T & { id: string } {
+  return {
+    ...data,
+    id: hashId(data),
+  }
 }

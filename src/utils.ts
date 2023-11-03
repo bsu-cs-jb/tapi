@@ -1,8 +1,7 @@
-
-
 export function json(data: any): string {
   return JSON.stringify(data, undefined, 2);
 }
+
 export function jsonhtml(data: any): string {
   return `<pre>${json(data)}</pre>`;
 }
