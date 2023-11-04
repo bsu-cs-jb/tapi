@@ -18,10 +18,12 @@ router
   .get('/cats', (ctx, next) => {
     const cats = allCats();
     log(`Found ${cats.length} cats.`);
-    let body = `<p>${cats.length} Cats:<p>\n`
+    let body = `<!DOCTYPE html>\n<html><body>`;
+    body += `<p>${cats.length} Cats:<p>\n`
     for (const cat of allCats()) {
-      body += `<p><a href="/cats/${cat.id}">${cat.name} - ${cat.id}</a></p>`;
+      body += `<p><a href="/cats/${cat.id}">${cat.name} - ${cat.id}</a></p>\n`;
     }
+    body += '\n</body></html>';
     ctx.body = body;
   })
   .param('catId', (id, ctx, next) => {
