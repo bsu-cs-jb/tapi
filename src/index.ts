@@ -3,7 +3,7 @@ import Router from '@koa/router';
 import cors from '@koa/cors';
 import { bodyParser } from '@koa/bodyparser';
 
-import { APP_PORT } from './config';
+import { config } from './config';
 import { log, jsonhtml } from './utils';
 import { getCat, allCats } from './db';
 
@@ -49,6 +49,8 @@ app
   .use(router.routes())
   .use(router.allowedMethods());
 
-log(`Listening on port ${APP_PORT}`);
+log(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
+log(`LOG_LEVEL: ${config.LOG_LEVEL}`);
+log(`Listening on port ${config.APP_PORT}`);
 
-app.listen(APP_PORT);
+app.listen(config.APP_PORT);

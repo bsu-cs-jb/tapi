@@ -1,11 +1,17 @@
 
 yum update -y
 
-yum install -y tmux cronie
+# https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+type -p yum-config-manager >/dev/null || yum install yum-utils
+yum-config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+
+yum install -y tmux cronie git gh
 
 # Node
 
 yum install -y nodejs
+
+npm install --global yarn
 
 # React Native
 
