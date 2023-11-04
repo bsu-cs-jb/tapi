@@ -16,6 +16,8 @@ export function genCat():Cat {
 }
 
 export function genCats(length: number=10):Cat[] {
+  // TEMP: Maybe remove seed here
+  faker.seed(1138);
   const cats:Cat[] = range(length).map(() => genCat());
   return cats;
 }
