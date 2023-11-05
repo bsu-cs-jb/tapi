@@ -2,6 +2,7 @@ import Koa from 'koa';
 import Router from '@koa/router';
 import cors from '@koa/cors';
 import { bodyParser } from '@koa/bodyparser';
+import { graderRoutes } from './grader';
 
 import { config } from './config';
 import { log, jsonhtml } from './utils';
@@ -44,6 +45,8 @@ router
 
     ctx.body = body;
   });
+
+graderRoutes(router);
 
 app
   .use(cors())

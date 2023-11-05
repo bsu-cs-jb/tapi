@@ -3,6 +3,15 @@ import { urlid, withId } from './genid';
 import { assert } from './utils';
 import { genCats } from './generate';
 
+interface Assignment {
+}
+
+interface Student {
+  id: string;
+  name: string;
+
+}
+
 interface Database {
   cats: Cat[];
 }
