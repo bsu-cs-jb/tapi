@@ -1,64 +1,71 @@
-import { Cat } from './cat';
-import { urlid, withId } from './genid';
-import { assert } from './utils';
-import { genCats } from './generate';
-import { Rubric } from 'grading';
-
-interface Assignment {
-}
+import { Cat } from "./cat";
+import { urlid, withId } from "./genid";
+import { assert } from "./utils";
+import { genCats } from "./generate";
+import { Rubric, RubricScore } from "grading";
 
 interface Student {
   id: string;
   name: string;
+}
 
+interface Course {
+  students: Student[];
+  gradebook: StudentGrades[];
+  rubrics: Rubric[];
+}
+
+interface StudentGrades {
+  studentId: string;
+  assignments: RubricScore[];
 }
 
 interface Database {
   cats: Cat[];
 }
 
-const data:Database = {
+const data: Database = {
   cats: [],
-}
+};
 
 function initDb() {
-  data.cats = [withId({
-    id: "",
-    name: "Oscar",
-    age: 10,
-    claws: true,
-  }),withId({
-    id: "",
-    name: "Charles",
-    age: 4,
-    claws: false,
-  }),
-  withId({
-    id: "",
-    name: "Charles",
-    age: 4,
-    claws: true,
-  }),
-  ...genCats(10),
-  ]
+  data.cats = [
+    withId({
+      id: "",
+      name: "Oscar",
+      age: 10,
+      claws: true,
+    }),
+    withId({
+      id: "",
+      name: "Charles",
+      age: 4,
+      claws: false,
+    }),
+    withId({
+      id: "",
+      name: "Charles",
+      age: 4,
+      claws: true,
+    }),
+    ...genCats(10),
+  ];
 }
 initDb();
 
-export function allCats():Cat[] {
+export function allCats(): Cat[] {
   return data.cats;
 }
 
-export function getCat(id:string) : Cat|undefined {
+export function getCat(id: string): Cat | undefined {
   return data.cats.find((cat) => cat.id === id);
 }
 
 function replaceCat(newCat: Cat): void {
-  data.cats = data.cats.map((cat) => (
-    cat.id === newCat.id ? newCat : cat
-  ));
+  data.cats = data.cats.map((cat) => (cat.id === newCat.id ? newCat : cat));
 }
 
-export function updateCat(updatedCat:Cat) : Cat|undefined {
+export function updateCat(updatedCat: Cat): Cat | undefined {
   const cat = getCat(updatedCat.id);
   if (!cat) {
     return;
@@ -71,7 +78,7 @@ export function updateCat(updatedCat:Cat) : Cat|undefined {
   return newCat;
 }
 
-export function insertCat(cat:Cat):Cat {
+export function insertCat(cat: Cat): Cat {
   if (!cat.id) {
     cat.id = urlid();
   }
@@ -81,5 +88,3 @@ export function insertCat(cat:Cat):Cat {
 
   return cat;
 }
-
-

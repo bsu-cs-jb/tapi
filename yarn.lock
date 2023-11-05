@@ -1770,8 +1770,8 @@ graceful-fs@^4.2.9:
   integrity sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==
 
 grading@bsu-cs-jb/grading:
-  version "0.0.7"
-  resolved "https://codeload.github.com/bsu-cs-jb/grading/tar.gz/8f323abf9e1c927c3907906d296790f0d3b41832"
+  version "0.0.8"
+  resolved "https://codeload.github.com/bsu-cs-jb/grading/tar.gz/0844c2bd4e9756591594cf03c3eb97a225b2b32f"
   dependencies:
     dotenv "^16.3.1"
     uuid "^9.0.1"
