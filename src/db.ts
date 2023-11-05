@@ -2,6 +2,7 @@ import { Cat } from './cat';
 import { urlid, withId } from './genid';
 import { assert } from './utils';
 import { genCats } from './generate';
+import { Rubric } from 'grading';
 
 interface Assignment {
 }
