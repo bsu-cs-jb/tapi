@@ -1,9 +1,9 @@
-import { Cat } from './cat';
-import { urlid, withId } from './genid';
-import { range } from './utils';
-import { faker } from '@faker-js/faker';
+import { Cat } from "./cat";
+import { withId } from "./genid";
+import { range } from "./utils";
+import { faker } from "@faker-js/faker";
 
-export function genCat():Cat {
+export function genCat(): Cat {
   const sex = faker.person.sexType();
 
   return withId({
@@ -15,9 +15,9 @@ export function genCat():Cat {
   });
 }
 
-export function genCats(length: number=10):Cat[] {
+export function genCats(length: number = 10): Cat[] {
   // TEMP: Maybe remove seed here
   faker.seed(1138);
-  const cats:Cat[] = range(length).map(() => genCat());
+  const cats: Cat[] = range(length).map(() => genCat());
   return cats;
 }

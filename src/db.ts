@@ -4,22 +4,6 @@ import { assert } from "./utils";
 import { genCats } from "./generate";
 import { Rubric, RubricScore } from "grading";
 
-interface Student {
-  id: string;
-  name: string;
-}
-
-interface Course {
-  students: Student[];
-  gradebook: StudentGrades[];
-  rubrics: Rubric[];
-}
-
-interface StudentGrades {
-  studentId: string;
-  assignments: RubricScore[];
-}
-
 interface Database {
   cats: Cat[];
 }
