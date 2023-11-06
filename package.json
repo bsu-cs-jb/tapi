@@ -2,7 +2,6 @@
   "name": "cs-411-server",
   "version": "0.0.1",
   "license": "MIT",
-  "type": "esnext",
   "scripts": {
     "build": "tsc",
     "upgrade-grading": "yarn upgrade grading; cd node_modules/grading; yarn; yarn build",
