@@ -18,11 +18,13 @@ export const makeTestRubric = (): Rubric => {
       name: "Category 1",
       items: [
         makeRubricItem({
+          id: 'test-01-item-01',
           name: "Item 1",
           pointValue: 10,
           scoreType: "points",
         }),
         makeRubricItem({
+          id: 'test-01-item-02',
           name: "Item 2",
           pointValue: 4,
           scoreType: "full_half",

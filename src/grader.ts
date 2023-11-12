@@ -1,7 +1,7 @@
 import Router from '@koa/router';
 import { log, jsonhtml } from './utils.js';
 import { getCourse, allCourses } from './CourseDb.js';
-import { writeResource } from "./FileDb.js";
+import { writeResource, readResource } from "./FileDb.js";
 
 import { findRubric } from "grading";
 import { omit } from "lodash-es";
@@ -33,7 +33,8 @@ export function graderRoutes(router: Router) {
       await next();
     })
     .param('rubricId', async (id, ctx, next) => {
-      ctx.rubric = findRubric(ctx.course, id);
+      // ctx.rubric = findRubric(ctx.course, id);
+      ctx.rubric = await readResource('rubrics', id);
       if (!ctx.rubric) {
         ctx.status = 404;
         console.error(`Rubric '${id}' not found on Course '${ctx.course.id}'.`);
@@ -43,6 +44,7 @@ export function graderRoutes(router: Router) {
     })
     .get('course', `/courses/:courseId`, async (ctx, next) => {
       const { course, params: { courseId } } = ctx;
+      const filename = await writeResource('courses', course);
       let body = `<p>Course id: ${courseId}</p>`;
       body += "<p>";
       for (const student of course.students) {
@@ -67,6 +69,7 @@ export function graderRoutes(router: Router) {
     .get('rubric', `/courses/:courseId/rubrics/:rubricId`, async (ctx) => {
       const { course, rubric } = ctx;
       const filename = await writeResource('rubrics', rubric);
+      // const data = await readResource('rubrics', rubric.id);
       let body = '';
       body += `<p>Course: ${course.name}</p>`;
       body += `<p>Rubric: ${rubric.name}</p>`;
