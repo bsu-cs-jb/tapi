@@ -25,10 +25,20 @@ export function graderRoutes(router: Router) {
     })
     .param('courseId', async (id, ctx, next) => {
       ctx.course = getCourse(id);
+      if (!ctx.course) {
+        ctx.status = 404;
+        console.error(`Course id '${id}' not found.`);
+        return;
+      }
       await next();
     })
     .param('rubricId', async (id, ctx, next) => {
       ctx.rubric = findRubric(ctx.course, id);
+      if (!ctx.rubric) {
+        ctx.status = 404;
+        console.error(`Rubric '${id}' not found on Course '${ctx.course.id}'.`);
+        return;
+      }
       await next();
     })
     .get('course', `/courses/:courseId`, async (ctx, next) => {
@@ -47,7 +57,7 @@ export function graderRoutes(router: Router) {
       body += jsonhtml(omit(course, ['rubrics','gradebook']));
       ctx.body = body;
     })
-    .get('rubrics', `/courses/:courseId/rubrics`, (ctx, next) => {
+    .get('rubrics', `/courses/:courseId/rubrics`, async (ctx, next) => {
       const { course, params: { courseId } } = ctx;
       let body = `<p>Course id: ${courseId}</p>`;
       body += `<p>Course name: ${course.name}</p>`;
@@ -56,7 +66,6 @@ export function graderRoutes(router: Router) {
     })
     .get('rubric', `/courses/:courseId/rubrics/:rubricId`, async (ctx) => {
       const { course, rubric } = ctx;
-      // const filename = await writeDb(`rubrics/${rubric.id}`, rubric);
       const filename = await writeResource('rubrics', rubric);
       let body = '';
       body += `<p>Course: ${course.name}</p>`;
