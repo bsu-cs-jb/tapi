@@ -1,10 +1,10 @@
 import { urlid, withId } from "./genid.js";
 import { assert } from "./utils.js";
 import { makeCS411 } from "./CourseDef.js"
-import { Course, Rubric, RubricScore } from "grading";
+import { CourseDbObj, Rubric, RubricScore } from "grading";
 
 interface Database {
-  courses: Course[];
+  courses: CourseDbObj[];
 }
 
 const data: Database = {
@@ -12,23 +12,23 @@ const data: Database = {
 };
 
 function initDb() {
-  data.courses = [makeCS411()];
+  // data.courses = [makeCS411()];
 }
 initDb();
 
-export function allCourses(): Course[] {
+export function allCourses(): CourseDbObj[] {
   return data.courses;
 }
 
-export function getCourse(id: string): Course | undefined {
+export function getCourse(id: string): CourseDbObj | undefined {
   return data.courses.find((course) => course.id === id);
 }
 
-function replaceCourse(newCourse: Course): void {
+function replaceCourse(newCourse: CourseDbObj): void {
   data.courses = data.courses.map((course) => (course.id === newCourse.id ? newCourse : course));
 }
 
-export function updateCourse(updatedCourse: Course): Course | undefined {
+export function updateCourse(updatedCourse: CourseDbObj): CourseDbObj | undefined {
   const course = getCourse(updatedCourse.id);
   if (!course) {
     return;
@@ -41,7 +41,7 @@ export function updateCourse(updatedCourse: Course): Course | undefined {
   return newCourse;
 }
 
-export function insertCourse(course: Course): Course {
+export function insertCourse(course: CourseDbObj): CourseDbObj {
   if (!course.id) {
     course.id = urlid();
   }
