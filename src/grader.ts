@@ -1,29 +1,58 @@
 import Router from '@koa/router';
 import { urlid } from './genid.js';
 import { log, jsonhtml, assert } from './utils.js';
-import { getAll, getResourceIds, writeResource, readResource, resourceExists } from './FileDb.js';
+import {
+  getAll,
+  writeResource,
+  readResource,
+  ResourceDef,
+  resourceExists,
+} from './FileDb.js';
 import type { RestResource } from './FileDb.js';
 
 // import { omit } from 'lodash-es';
 
-function routerParam(router:Router, paramName:string, propName:string, resource:string):Router {
-  return router.param(paramName, async (id, ctx, next) => {
-    ctx[propName] = await readResource(resource, id);
-    if (!ctx[propName]) {
+function courseRef(id?:string):ResourceDef {
+  return {
+    id,
+    resource: 'courses',
+    singular: 'course',
+    paramName: 'courseId',
+  };
+}
+
+const COURSE = courseRef();
+const RUBRIC = {
+  resource: 'rubrics',
+  singular: 'rubric',
+  paramName: 'rubricId',
+  parents: [COURSE],
+};
+const STUDENT = {
+  resource: 'students',
+  singular: 'student',
+  paramName: 'studentId',
+  parents: [COURSE],
+};
+
+function routerParam(router:Router, resource: ResourceDef):Router {
+  return router.param(resource.paramName, async (id, ctx, next) => {
+    ctx[resource.singular] = await readResource(resource.resource, id);
+    if (!ctx[resource.singular]) {
       ctx.status = 404;
-      console.error(`${propName} id '${id}' not found.`);
+      console.error(`${resource.singular} id '${id}' not found.`);
       return;
     }
     await next();
   });
 }
 
-function linkList(router: Router, paramName:string, urlName:string, resources:RestResource[], urlParams:Record<string,string>={}):string {
-  console.log(`linkList(router, ${paramName}, ${urlName}, ${resources.length})`);
+function linkList(router: Router, resource:ResourceDef, resources:RestResource[], urlParams:Record<string,string>={}):string {
+  console.log(`linkList(router, ${resource.paramName}, ${resource.singular}, ${resources.length})`);
   let result = '';
   for (const r of resources) {
-    console.log(`<p><a href="${router.url(urlName, { [paramName]: r.id, ...urlParams })}">${r.name} - ${r.id}</a></p>`);
-    result += `<p><a href="${router.url(urlName, { [paramName]: r.id, ...urlParams })}">${r.name} - ${r.id}</a></p>\n`;
+    console.log(`<p><a href="${router.url(resource.singular, { [resource.paramName]: r.id, ...urlParams })}">${r.name} - ${r.id}</a></p>`);
+    result += `<p><a href="${router.url(resource.singular, { [resource.paramName]: r.id, ...urlParams })}">${r.name} - ${r.id}</a></p>\n`;
   }
   return result;
 }
@@ -34,9 +63,9 @@ export function graderRoutes(router: Router) {
     ctx.body = `<p>Nice to meet you, are you looking for my <a href="${router.url('courses')}">Courses</a>?</p>`;
   });
 
-  routerParam(router, 'courseId', 'course', 'courses');
-  routerParam(router, 'rubricId', 'rubric', 'rubrics');
-  routerParam(router, 'studentId', 'student', 'students');
+  routerParam(router, COURSE);
+  routerParam(router, RUBRIC);
+  routerParam(router, STUDENT);
 
   // router
   //   .param('courseId', async (id, ctx, next) => {
@@ -65,17 +94,11 @@ export function graderRoutes(router: Router) {
     .get('courses', '/courses', async (ctx) => {
       // const courses = allCourses();
       const courses = await getAll('courses');
-      const ids = await getResourceIds('courses');
       log(`Found ${courses?.length} courses.`);
       let body = '<!DOCTYPE html>\n<html><body>';
       body += `<p>${courses?.length} courses:<p>\n`;
       if (courses) {
-        body += linkList(router, 'courseId', 'course', courses);
-      }
-      if (ids) {
-        for (const id of ids) {
-          body += `<p>id: ${id}</p>`;
-        }
+        body += linkList(router, COURSE, courses);
       }
       body += '\n</body></html>';
       ctx.body = body;
@@ -120,9 +143,9 @@ export function graderRoutes(router: Router) {
       let body = '';
       body += `<p><a href="${router.url('courses')}">Courses</a></p>`;
       body += `<p>Course id: ${courseId}</p>`;
-      body += linkList(router, 'studentId', 'student', course.students, { courseId });
+      body += linkList(router, STUDENT, course.students, { courseId });
       body += '<p>';
-      body += linkList(router, 'rubricId', 'rubric', course.rubrics, { courseId });
+      body += linkList(router, RUBRIC, course.rubrics, { courseId });
       body += '</p>';
       // body += jsonhtml(omit(course, ['rubrics','gradebook']));
       body += jsonhtml(course);
@@ -134,7 +157,7 @@ export function graderRoutes(router: Router) {
       const { course, params: { courseId } } = ctx;
       let body = `<p>Course id: ${courseId}</p>`;
       body += `<p>Course: <a href="${router.url('course', { courseId: course.id })}">${course.name}</a></p>\n`;
-      body += linkList(router, 'rubricId', 'rubric', course.rubrics, { courseId });
+      body += linkList(router, RUBRIC, course.rubrics, { courseId });
       body += jsonhtml(course.rubrics);
       ctx.body = body;
     })
@@ -154,7 +177,7 @@ export function graderRoutes(router: Router) {
       let body = `<p>Course id: ${courseId}</p>`;
       body += `<p>Course: <a href="${router.url('course', { courseId: course.id })}">${course.name}</a></p>\n`;
       // body += linkList(router, 'studentId', 'student', course.students);
-      body += linkList(router, 'studentId', 'student', course.students, { courseId });
+      body += linkList(router, STUDENT, course.students, { courseId });
       body += jsonhtml(course.students);
       ctx.body = body;
     })

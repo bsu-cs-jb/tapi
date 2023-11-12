@@ -9,6 +9,14 @@ export interface RestResource {
   [key: string]: RestResource|RecVal|RecVal[]|RestResource[];
 }
 
+export interface ResourceDef {
+  id?: string;
+  resource: string;
+  singular: string;
+  paramName: string;
+  parents?: ResourceDef[];
+}
+
 const ROOT = './db';
 
 export function jsonToBuffer(data: RestResource): Uint8Array {
