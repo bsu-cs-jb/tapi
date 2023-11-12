@@ -1,6 +1,6 @@
-import "dotenv/config";
+import 'dotenv/config';
 
-import { BaseConfig, BaseConfigImpl, getConfig } from "grading";
+import { BaseConfig, BaseConfigImpl, getConfig } from 'grading';
 
 interface Config extends BaseConfig {
   APP_PORT: string;
@@ -8,7 +8,7 @@ interface Config extends BaseConfig {
 
 class ConfigImpl extends BaseConfigImpl {
   public get APP_PORT(): string {
-    return getConfig("APP_PORT", "3000");
+    return getConfig('APP_PORT', '3000');
   }
 }
 

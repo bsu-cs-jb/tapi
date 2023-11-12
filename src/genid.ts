@@ -3,19 +3,19 @@ import { createHmac } from 'crypto';
 
 const { HASH_SECRET } = process.env;
 
-const SECRET = HASH_SECRET || "294S@t>9w";
+const SECRET = HASH_SECRET || '294S@t>9w';
 
-const ALPHA_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const ALPHA_LOWER = "abcdefghijklmnopqrstuvwxyz";
+const ALPHA_UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const ALPHA_LOWER = 'abcdefghijklmnopqrstuvwxyz';
 const ALPHA = ALPHA_UPPER + ALPHA_LOWER;
-const NUMBERS = "0123456789";
-const SYMBOLS = "~!@#$%^&*()[]{}<>/|,.+=-?:;_";
+const NUMBERS = '0123456789';
+const SYMBOLS = '~!@#$%^&*()[]{}<>/|,.+=-?:;_';
 const DICTIONARY = NUMBERS + ALPHA + SYMBOLS;
 const B64_URL_DICT = (
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-  + "abcdefghijklmnopqrstuvwxyz"
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  + 'abcdefghijklmnopqrstuvwxyz'
   + NUMBERS
-  + "-_"
+  + '-_'
 );
 const URL_SAFE_DICTIONARY = B64_URL_DICT;
 
@@ -42,7 +42,7 @@ export function encodeNumber(n: number, length?: number, dictionary?: string): s
     console.log(`Calculated length: ${length}`);
   }
   let c = n;
-  let id = "";
+  let id = '';
   for (const _ of range(length)) {
     const [div, rem] = divmod(c, DICT_LENGTH);
     id = dictionary.at(rem) + id;
@@ -77,6 +77,7 @@ export function urlid(length: number = 9): string {
   return id;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function hashId(data: Record<string,any>, length: number = 8): string {
   const hash = createHmac('sha256', SECRET)
     .update(json(data))
@@ -85,9 +86,10 @@ export function hashId(data: Record<string,any>, length: number = 8): string {
 }
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withId<T extends Record<string,any>>(data: T): T & { id: string } {
   return {
     ...data,
     id: hashId(data),
-  }
+  };
 }

@@ -1,7 +1,7 @@
-import { Cat } from "./cat.js";
-import { withId } from "./genid.js";
-import { range } from "./utils.js";
-import { faker } from "@faker-js/faker";
+import { Cat } from './cat.js';
+import { withId } from './genid.js';
+import { range } from './utils.js';
+import { faker } from '@faker-js/faker';
 
 export function genCat(): Cat {
   const sex = faker.person.sexType();

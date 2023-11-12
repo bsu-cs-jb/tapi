@@ -1,7 +1,6 @@
-import { urlid, withId } from "./genid.js";
-import { assert } from "./utils.js";
-import { makeCS411 } from "./CourseDef.js"
-import { CourseDbObj, Rubric, RubricScore } from "grading";
+import { urlid } from './genid.js';
+import { assert } from './utils.js';
+import { CourseDbObj } from 'grading';
 
 interface Database {
   courses: CourseDbObj[];

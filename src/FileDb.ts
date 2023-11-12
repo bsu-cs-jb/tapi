@@ -3,9 +3,15 @@ import util from 'node:util';
 import { execFile } from 'node:child_process';
 const execFileP = util.promisify(execFile);
 
-const ROOT = "./db";
+type RecVal = string | boolean | null | number;
+interface RestResource {
+  id: string;
+  [key: string]: RestResource|RecVal|RecVal[]|RestResource[];
+}
 
-export function jsonToBuffer(data: any): Uint8Array {
+const ROOT = './db';
+
+export function jsonToBuffer(data: RestResource): Uint8Array {
   return new Uint8Array(Buffer.from(JSON.stringify(data, undefined, 2)));
 }
 
@@ -53,7 +59,7 @@ export async function resourceExists(resource: string, id: string):Promise<boole
   return fileExists(filename);
 }
 
-export async function readResource(resource: string, id: string):Promise<any|undefined> {
+export async function readResource(resource: string, id: string):Promise<RestResource|undefined> {
   const filename = resourceFilename(resource, id);
   if (!await fileExists(filename)) {
     return undefined;
@@ -66,25 +72,25 @@ export async function readResource(resource: string, id: string):Promise<any|und
   return data;
 }
 
-export async function writeResource(resource: string, data: any) {
+export async function writeResource(resource: string, data: RestResource) {
   await ensureResourceDir(resource);
   const buffer = jsonToBuffer(data);
   const filename = resourceFilename(resource, data.id);
   console.log(`writeResource(${resource}) to ${filename}.`);
-  const result = await writeFile(filename, buffer);
+  await writeFile(filename, buffer);
   console.log(`DONE writing to ${filename}.`);
   try {
-    await execFile('git', ['add', '-A', 'db/']);
-    await execFile('git', ['commit', '-m', 'Update db']);
-    console.log(`DONE committing to git.`);
+    await execFileP('git', ['add', '-A', 'db/']);
+    await execFileP('git', ['commit', '-m', 'Update db']);
+    console.log('DONE committing to git.');
   } catch (err) {
     console.error('Error using git', err);
   }
   return filename;
 }
 
-export async function writeDb(name: string, data: any) {
+export async function writeDb(name: string, data: RestResource) {
   await ensureRoot();
   const buffer = jsonToBuffer(data);
-  const result = await writeFile(`${ROOT}/${name}.json`, buffer);
+  await writeFile(`${ROOT}/${name}.json`, buffer);
 }
