@@ -1,10 +1,10 @@
-import { stat, constants, access, readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readdir, stat, constants, access, readFile, writeFile, mkdir } from 'node:fs/promises';
 import util from 'node:util';
 import { execFile } from 'node:child_process';
 const execFileP = util.promisify(execFile);
 
 type RecVal = string | boolean | null | number;
-interface RestResource {
+export interface RestResource {
   id: string;
   [key: string]: RestResource|RecVal|RecVal[]|RestResource[];
 }
@@ -50,13 +50,62 @@ async function ensureResourceDir(resource: string) {
   await ensureDir(`${ROOT}/${resource}`);
 }
 
+function resourceDir(resource: string): string {
+  return `${ROOT}/${resource}`;
+}
+
 function resourceFilename(resource: string, id: string): string {
-  return `${ROOT}/${resource}/${id}.json`;
+  return `${resourceDir(resource)}/${id}.json`;
 }
 
 export async function resourceExists(resource: string, id: string):Promise<boolean> {
   const filename = resourceFilename(resource, id);
   return fileExists(filename);
+}
+
+function defd<T>(v: T|undefined): v is T {
+  return v !== undefined;
+}
+
+export async function getAll(resource: string):Promise<RestResource[]|undefined> {
+  const dirpath = resourceDir(resource);
+  if (!await dirExists(dirpath)) {
+    console.log(`Directory ${dirpath} for ${resource} does not exist.`);
+    return undefined;
+  }
+  try {
+    const files = await readdir(dirpath);
+    const resources = await Promise.all(files.map((file) => readFileAsJson(`${dirpath}/${file}`)));
+    // console.log(`Found ${resources.length} ${resource} resources.`);
+    return resources.filter(defd);
+  } catch (err) {
+    console.error(`Error reading directory ${resource} resources.`, err);
+    return undefined;
+  }
+}
+
+export async function getResourceIds(resource: string):Promise<string[]|undefined> {
+  const dirpath = resourceDir(resource);
+  if (!await dirExists(dirpath)) {
+    return undefined;
+  }
+  try {
+    const files = await readdir(dirpath);
+    const ids = files
+      .filter((file) => file.endsWith('.json'))
+      .map((file) => file.slice(0, -5));
+    return ids;
+  } catch {
+    return undefined;
+  }
+}
+
+async function readFileAsJson(filename:string):Promise<RestResource|undefined> {
+  const buffer = await readFile(filename, 'utf8');
+  console.log(`DONE reading from ${filename}.`);
+  const data = JSON.parse(buffer);
+  // console.log(data);
+  return data;
 }
 
 export async function readResource(resource: string, id: string):Promise<RestResource|undefined> {
@@ -65,10 +114,7 @@ export async function readResource(resource: string, id: string):Promise<RestRes
     return undefined;
   }
   console.log(`readResource(${resource}) to ${filename}.`);
-  const buffer = await readFile(filename, 'utf8');
-  console.log(`DONE reading from ${filename}.`);
-  const data = JSON.parse(buffer);
-  console.log(data);
+  const data = readFileAsJson(filename);
   return data;
 }
 
