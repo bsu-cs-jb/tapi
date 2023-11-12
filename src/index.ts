@@ -46,13 +46,18 @@ router
     ctx.body = body;
   });
 
-graderRoutes(router);
+const graderRouter = new Router({
+  prefix: '/grader',
+});
+graderRoutes(graderRouter);
 
 app
   .use(cors())
   .use(bodyParser())
   .use(router.routes())
-  .use(router.allowedMethods());
+  .use(router.allowedMethods())
+  .use(graderRouter.routes())
+  .use(graderRouter.allowedMethods());
 
 log(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
 log(`LOG_LEVEL: ${config.LOG_LEVEL}`);

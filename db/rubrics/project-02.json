@@ -1,0 +1,149 @@
+{
+  "id": "project-02",
+  "name": "Project 2",
+  "categories": [
+    {
+      "id": "timer-sets",
+      "name": "Timer Sets",
+      "items": [
+        {
+          "id": "timer-sets-001",
+          "name": "Can add a timer set with name",
+          "scoreType": "boolean",
+          "scoreValue": "points",
+          "pointValue": 1
+        },
+        {
+          "id": "timer-sets-002",
+          "name": "Can add multiple timer sets",
+          "scoreType": "boolean",
+          "scoreValue": "points",
+          "pointValue": 2
+        },
+        {
+          "id": "timer-sets-003",
+          "name": "Can add one timer to set",
+          "scoreType": "boolean",
+          "scoreValue": "points",
+          "pointValue": 2
+        },
+        {
+          "id": "timer-sets-004",
+          "name": "Can add multiple timers to set",
+          "scoreType": "points",
+          "scoreValue": "points",
+          "pointValue": 2
+        },
+        {
+          "id": "timer-sets-005",
+          "name": "Timer sets bonus",
+          "scoreType": "points",
+          "scoreValue": "bonus",
+          "pointValue": 2
+        },
+        {
+          "id": "timer-sets-006",
+          "name": "When adding 10+ timers, scrolling works",
+          "scoreType": "points",
+          "scoreValue": "points",
+          "pointValue": 1
+        },
+        {
+          "id": "timer-sets-007",
+          "name": "Empty timer name not allowed",
+          "scoreType": "points",
+          "scoreValue": "bonus",
+          "pointValue": 1
+        },
+        {
+          "id": "timer-sets-008",
+          "name": "Disallows sets with same name or handles properly",
+          "scoreType": "points",
+          "scoreValue": "bonus",
+          "pointValue": 1
+        }
+      ]
+    },
+    {
+      "id": "single-timer",
+      "name": "Single Timer",
+      "items": [
+        {
+          "id": "single-timer-001",
+          "name": "Can create a new timer with name and duration",
+          "scoreType": "full_half",
+          "scoreValue": "points",
+          "pointValue": 2
+        },
+        {
+          "id": "single-timer-005",
+          "name": "Duration display is HH:MM:SS, MM:SS, or 5m 15s.",
+          "scoreType": "boolean",
+          "scoreValue": "points",
+          "pointValue": 1
+        },
+        {
+          "id": "single-timer-002",
+          "name": "Name cannot be empty",
+          "scoreType": "boolean",
+          "scoreValue": "bonus",
+          "pointValue": 1
+        },
+        {
+          "id": "single-timer-003",
+          "name": "Duration in range 0 to 59:59",
+          "scoreType": "boolean",
+          "scoreValue": "bonus",
+          "pointValue": 1
+        },
+        {
+          "id": "single-timer-004",
+          "name": "Duration handles NaNs",
+          "scoreType": "boolean",
+          "scoreValue": "bonus",
+          "pointValue": 1
+        }
+      ]
+    },
+    {
+      "id": "edit-timer",
+      "name": "Edit Timer",
+      "items": [
+        {
+          "id": "edit-timer-001",
+          "name": "Can edit a timer",
+          "scoreType": "boolean",
+          "scoreValue": "points",
+          "pointValue": 2
+        },
+        {
+          "id": "edit-timer-002",
+          "name": "Edit timer problems",
+          "scoreType": "boolean",
+          "scoreValue": "penalty",
+          "pointValue": -1
+        }
+      ]
+    },
+    {
+      "id": "multiple-timers",
+      "name": "Multipler Timers",
+      "items": [
+        {
+          "id": "multiple-timers-001",
+          "name": "Can add multiple timers to set",
+          "scoreType": "points",
+          "scoreValue": "points",
+          "pointValue": 4
+        },
+        {
+          "id": "multiple-timers-002",
+          "name": "Multiple timer problems",
+          "scoreType": "points",
+          "scoreValue": "penalty",
+          "pointValue": -1
+        }
+      ]
+    }
+  ]
+}
