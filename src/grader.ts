@@ -8,10 +8,8 @@ import { omit } from "lodash-es";
 
 export function graderRoutes(router: Router) {
 
-  const ROOT = "/grader";
-
   router
-    .get('/', (ctx, next) => {
+    .get('/', async (ctx, next) => {
       ctx.body = `<p>Nice to meet you, are you looking for my <a href="${router.url('courses')}">Courses</a>?</p>`;
     })
     .get('courses', `/courses`, (ctx, next) => {
@@ -25,15 +23,15 @@ export function graderRoutes(router: Router) {
       body += '\n</body></html>';
       ctx.body = body;
     })
-    .param('courseId', (id, ctx, next) => {
+    .param('courseId', async (id, ctx, next) => {
       ctx.course = getCourse(id);
-      next();
+      await next();
     })
-    .param('rubricId', (id, ctx, next) => {
+    .param('rubricId', async (id, ctx, next) => {
       ctx.rubric = findRubric(ctx.course, id);
-      next();
+      await next();
     })
-    .get('course', `/courses/:courseId`, (ctx, next) => {
+    .get('course', `/courses/:courseId`, async (ctx, next) => {
       const { course, params: { courseId } } = ctx;
       let body = `<p>Course id: ${courseId}</p>`;
       body += "<p>";
@@ -67,6 +65,7 @@ export function graderRoutes(router: Router) {
       body += jsonhtml(rubric);
       console.log(`GET /courses/:courseId/rubrics/:rubricId`);
       ctx.body = body;
+      return ctx;
     });
 
 }
