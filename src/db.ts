@@ -1,7 +1,7 @@
-import { Cat } from "./cat";
-import { urlid, withId } from "./genid";
-import { assert } from "./utils";
-import { genCats } from "./generate";
+import { Cat } from "./cat.js";
+import { urlid, withId } from "./genid.js";
+import { assert } from "./utils.js";
+import { genCats } from "./generate.js";
 import { Rubric, RubricScore } from "grading";
 
 interface Database {

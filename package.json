@@ -2,12 +2,15 @@
   "name": "cs-411-server",
   "version": "0.0.1",
   "license": "MIT",
+  "type": "module",
   "scripts": {
+    "clean": "rm -rf ./dist" ,
     "build": "tsc",
     "upgrade-grading": "yarn upgrade grading; cd node_modules/grading; yarn; yarn build",
     "preserve": "yarn build",
     "serve:watch": "tsc-watch --onSuccess 'node ./dist/index.js'",
-    "serve": "node dist/index.js"
+    "serve": "node dist/index.js",
+    "start": "npm run serve:watch"
   },
   "dependencies": {
     "@faker-js/faker": "^8.2.0",

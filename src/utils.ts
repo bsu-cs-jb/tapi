@@ -15,8 +15,8 @@ export function range(startOrEnd: number, end?: number): number[] {
   }
 }
 
-export function assert(...args: any[]) {
-  console.assert(...args);
+export function assert(assertion:boolean, msg?:any, ...args: any[]) {
+  console.assert(assertion, msg, ...args);
 }
 
 export function log(...data: any[]) {

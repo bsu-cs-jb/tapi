@@ -1,6 +1,6 @@
 import Router from '@koa/router';
-import { log, jsonhtml } from './utils';
-import { getCat, allCats } from './db';
+import { log, jsonhtml } from './utils.js';
+import { getCat, allCats } from './db.js';
 
 export function graderRoutes(router: Router) {
 

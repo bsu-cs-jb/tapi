@@ -2,11 +2,11 @@ import Koa from 'koa';
 import Router from '@koa/router';
 import cors from '@koa/cors';
 import { bodyParser } from '@koa/bodyparser';
-import { graderRoutes } from './grader';
+import { graderRoutes } from './grader.js';
 
-import { config } from './config';
-import { log, jsonhtml } from './utils';
-import { getCat, allCats } from './db';
+import { config } from './config.js';
+import { log, jsonhtml } from './utils.js';
+import { getCat, allCats } from './db.js';
 
 const app = new Koa();
 const router = new Router();
