@@ -45,7 +45,7 @@ export function encodeNumber(n: number, length?: number, dictionary?: string): s
   let id = "";
   for (const _ of range(length)) {
     const [div, rem] = divmod(c, DICT_LENGTH);
-    id = DICTIONARY.at(rem) + id;
+    id = dictionary.at(rem) + id;
     c = div;
   }
   return id;

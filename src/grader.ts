@@ -1,7 +1,8 @@
 import Router from '@koa/router';
+import { urlid } from './genid.js';
 import { log, jsonhtml } from './utils.js';
 import { getCourse, allCourses } from './CourseDb.js';
-import { writeResource, readResource } from "./FileDb.js";
+import { writeResource, readResource, resourceExists } from "./FileDb.js";
 
 import { findRubric } from "grading";
 import { omit } from "lodash-es";
@@ -33,18 +34,50 @@ export function graderRoutes(router: Router) {
       await next();
     })
     .param('rubricId', async (id, ctx, next) => {
-      // ctx.rubric = findRubric(ctx.course, id);
       ctx.rubric = await readResource('rubrics', id);
       if (!ctx.rubric) {
         ctx.status = 404;
         console.error(`Rubric '${id}' not found on Course '${ctx.course.id}'.`);
         return;
       }
+      // ctx.rubric = findRubric(ctx.course, id);
+      // Could check if rubric exists in course also
       await next();
+    })
+    .post('/courses', async (ctx, next) => {
+      // const { course, params: { courseId } } = ctx;
+      const data = ctx.request.body;
+      if (!data.id) {
+        data.id = urlid();
+      }
+      let body = `<p>PUT Course ${data.id}</p>\n`;
+      if (await resourceExists("courses", data.id)) {
+        body += `<p>Course with id '${data.id}' already exists. Failing</p>\n`;
+        ctx.body = body;
+        ctx.status = 400;
+        return await next();
+      }
+      console.log(`Course body:`, data);
+      const filename = await writeResource('courses', data);
+      body += `<p>Written to: ${filename}</p>\n`;
+      body += '<p>Body:</p>\n';
+      body += jsonhtml(data);
+      ctx.body = body;
+    })
+    .put('course', `/courses/:courseId`, async (ctx, next) => {
+      const { course, params: { courseId } } = ctx;
+      const data = ctx.request.body;
+      console.log(`Course body:`, data);
+      const filename = await writeResource('courses', data);
+      let body = `<p>PUT Course ${courseId}</p>\n`;
+      body += `<p>Written to: ${filename}</p>\n`;
+      body += '<p>Body:</p>\n';
+      body += jsonhtml(data);
+      ctx.body = body;
     })
     .get('course', `/courses/:courseId`, async (ctx, next) => {
       const { course, params: { courseId } } = ctx;
-      const filename = await writeResource('courses', course);
+      // const filename = await writeResource('courses', course);
       let body = `<p>Course id: ${courseId}</p>`;
       body += "<p>";
       for (const student of course.students) {
@@ -68,14 +101,14 @@ export function graderRoutes(router: Router) {
     })
     .get('rubric', `/courses/:courseId/rubrics/:rubricId`, async (ctx) => {
       const { course, rubric } = ctx;
-      const filename = await writeResource('rubrics', rubric);
+      // const filename = await writeResource('rubrics', rubric);
       // const data = await readResource('rubrics', rubric.id);
       let body = '';
       body += `<p>Course: ${course.name}</p>`;
       body += `<p>Rubric: ${rubric.name}</p>`;
-      body += `<p>Wrote to ${filename}</p>`;
+      // body += `<p>Wrote to ${filename}</p>`;
       body += jsonhtml(rubric);
-      console.log(`GET /courses/:courseId/rubrics/:rubricId`);
+      // console.log(`GET /courses/:courseId/rubrics/:rubricId`);
       ctx.body = body;
       return ctx;
     });
