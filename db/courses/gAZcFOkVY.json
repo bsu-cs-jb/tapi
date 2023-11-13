@@ -15,11 +15,6 @@
     }
   ],
   "gradebook": [],
-  "rubrics": [
-    {
-      "id": "test-01",
-      "name": "Test 1"
-    }
-  ],
-  "id": "test-course-id"
+  "rubrics": [],
+  "id": "gAZcFOkVY"
 }

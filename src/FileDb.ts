@@ -166,8 +166,8 @@ export async function writeResource(resource: ResourceDef, data: RestResource) {
   await writeFile(filename, buffer);
   console.log(`DONE writing to ${filename}.`);
   try {
-    await execFileP('git', ['add', '-A', 'db/']);
-    await execFileP('git', ['commit', '-m', 'Update db']);
+    // await execFileP('git', ['add', '-A', 'db/']);
+    // await execFileP('git', ['commit', '-m', 'Update db']);
     console.log('DONE committing to git.');
   } catch (err) {
     console.error('Error using git', err);

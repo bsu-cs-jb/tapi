@@ -29,14 +29,14 @@ const STUDENT:ResourceDef = {
   name: 'students',
   singular: 'student',
   paramName: 'studentId',
-  parents: [COURSE],
+  // parents: [COURSE],
 };
 
-const SCORE:ResourceDef = {
-  name: 'students',
-  singular: 'student',
-  paramName: 'studentId',
-  parents: [COURSE, STUDENT],
+const GRADE:ResourceDef = {
+  name: 'grades',
+  singular: 'grade',
+  paramName: 'gradeId',
+  // parents: [COURSE, STUDENT],
 };
 
 function refWithId(resource: ResourceDef, id: string):ResourceDef {
@@ -45,25 +45,25 @@ function refWithId(resource: ResourceDef, id: string):ResourceDef {
   return ref;
 }
 
-function courseRef(courseId: string):ResourceDef {
-  const ref = cloneDeep(COURSE);
-  ref.id = courseId;
-  return ref;
-}
-
-function rubricRef(courseId: string, rubricId:string):ResourceDef {
-  const ref = cloneDeep(RUBRIC);
-  ref.id = rubricId;
-  ref.parents = [courseRef(courseId)];
-  return ref;
-}
-
-function studentRef(courseId: string, studentId: string):ResourceDef {
-  const ref = cloneDeep(STUDENT);
-  ref.id = studentId;
-  ref.parents = [courseRef(courseId)];
-  return ref;
-}
+// function courseRef(courseId: string):ResourceDef {
+//   const ref = cloneDeep(COURSE);
+//   ref.id = courseId;
+//   return ref;
+// }
+//
+// function rubricRef(courseId: string, rubricId:string):ResourceDef {
+//   const ref = cloneDeep(RUBRIC);
+//   ref.id = rubricId;
+//   ref.parents = [courseRef(courseId)];
+//   return ref;
+// }
+//
+// function studentRef(courseId: string, studentId: string):ResourceDef {
+//   const ref = cloneDeep(STUDENT);
+//   ref.id = studentId;
+//   ref.parents = [courseRef(courseId)];
+//   return ref;
+// }
 
 function resourceFromContext(resource: ResourceDef, id?:string, ctx?:Record<string,string>):ResourceDef {
   const ref = cloneDeep(resource);
@@ -182,78 +182,45 @@ export function graderRoutes(router: Router) {
     return router;
   }
 
-  getCollection(router, COURSE);
-  getCollection(router, RUBRIC);
-  getResource(router, COURSE, [RUBRIC, STUDENT]);
-  getResource(router, RUBRIC);
-  postResource(router, COURSE);
-  postResource(router, RUBRIC);
-
-  router
-    .post('/courses', async (ctx, next) => {
-      // const { course, params: { courseId } } = ctx;
-      const data = ctx.request.body;
-      if (!data.id) {
-        data.id = urlid();
-      }
-      let body = `<p>POST Course ${data.id}</p>\n`;
-      if (await resourceExists(courseRef(data.id))) {
-        body += `<p>Course with id '${data.id}' already exists. Failing</p>\n`;
+  function putResource(router: Router, resource: ResourceDef): Router {
+    return router.put(
+      resource.singular,
+      `/${resource.name}/:${resource.paramName}`,
+      async (ctx) => {
+        const data = ctx.request.body;
+        const id = ctx.params[resource.paramName];
+        if (data.id) {
+          assert(data.id === id);
+        } else {
+          data.id = id;
+        }
+        let body = `<p>PUT ${resource.singular} ${data.id}</p>\n`;
+        const ref = refWithId(resource, data.id);
+        console.log(`${resource.singular} body:`, data);
+        const filename = await writeResource(ref, data);
+        body += `<p>Written to: ${filename}</p>\n`;
+        body += '<p>Body:</p>\n';
+        body += jsonhtml(data);
         ctx.body = body;
-        ctx.status = 400;
-        return await next();
-      }
-      console.log('Course body:', data);
-      const filename = await writeResource(courseRef(data.id), data);
-      body += `<p>Written to: ${filename}</p>\n`;
-      body += '<p>Body:</p>\n';
-      body += jsonhtml(data);
-      ctx.body = body;
-    })
-    .put('course', '/courses/:courseId', async (ctx) => {
-      const { params: { courseId } } = ctx;
-      const data = ctx.request.body;
-      console.log('Course body:', data);
-      assert(courseId === data.id);
-      const filename = await writeResource(courseRef(data.id), data);
-      let body = `<p>PUT Course ${courseId}</p>\n`;
-      body += `<p>Written to: ${filename}</p>\n`;
-      body += '<p>Body:</p>\n';
-      body += jsonhtml(data);
-      ctx.body = body;
-    });
-    // .get('course', '/courses/:courseId', async (ctx) => {
-    //   const { course, params: { courseId } } = ctx;
-    //   let body = '';
-    //   body += `<p><a href="${router.url('courses')}">Courses</a></p>`;
-    //   body += `<p>Course id: ${course.id}</p>`;
-    //   body += linkList(router, STUDENT, course.students, { courseId });
-    //   body += '<p>';
-    //   body += linkList(router, RUBRIC, course.rubrics, { courseId });
-    //   body += '</p>';
-    //   // body += jsonhtml(omit(course, ['rubrics','gradebook']));
-    //   body += jsonhtml(course);
-    //   ctx.body = body;
-    // });
+      });
+  }
 
-  // router
-  //   .get('rubrics', '/courses/:courseId/rubrics', async (ctx) => {
-  //     const { course, params: { courseId } } = ctx;
-  //     let body = `<p>Course id: ${courseId}</p>`;
-  //     body += `<p>Course: <a href="${router.url('course', { courseId: course.id })}">${course.name}</a></p>\n`;
-  //     body += linkList(router, RUBRIC, course.rubrics, { courseId });
-  //     body += jsonhtml(course.rubrics);
-  //     ctx.body = body;
-  //   })
-  //   .get('rubric', '/courses/:courseId/rubrics/:rubricId', async (ctx) => {
-  //     const { course, rubric } = ctx;
-  //     let body = '';
-  //     body += `<p>Course: <a href="${router.url('course', { courseId: course.id })}">${course.name}</a></p>\n`;
-  //     body += `<p>Rubric: ${rubric.name}</p>`;
-  //     body += jsonhtml(rubric);
-  //     ctx.body = body;
-  //     return ctx;
-  //   });
+  getCollection(router, COURSE);
+  getResource(router, COURSE, [RUBRIC, STUDENT]);
+  postResource(router, COURSE);
+  putResource(router, COURSE);
+
+  getCollection(router, STUDENT);
+  getResource(router, STUDENT, [GRADE]);
+  postResource(router, STUDENT);
+  putResource(router, STUDENT);
+
+  [RUBRIC, GRADE].forEach((resource) => {
+    getCollection(router, resource);
+    getResource(router, resource);
+    postResource(router, resource);
+    putResource(router, resource);
+  });
 
   router
     .get('students', '/courses/:courseId/students', async (ctx) => {
@@ -267,25 +234,6 @@ export function graderRoutes(router: Router) {
     })
     .get('student', '/courses/:courseId/students/:studentId', async (ctx) => {
       const { course, student } = ctx;
-      let body = '';
-      body += `<p>Course: <a href="${router.url('course', { courseId: course.id })}">${course.name}</a></p>\n`;
-      body += `<p>Student: <a href="${router.url('student', { courseId: course.id, studentId: student.id })}">${student.name}</a></p>\n`;
-      body += jsonhtml(student);
-      ctx.body = body;
-      return ctx;
-    });
-
-  router
-    .get('grades', '/courses/:courseId/students/:studentId/grades', async (ctx) => {
-      const { course } = ctx;
-      let body = `<p>Course id: ${course.id}</p>`;
-      body += `<p>Course: <a href="${router.url('course', { courseId: course.id })}">${course.name}</a></p>\n`;
-      body += linkList(router, STUDENT, course.students, { courseId: course.id });
-      body += jsonhtml(course.students);
-      ctx.body = body;
-    })
-    .get('grade', '/courses/:courseId/students/:studentId/grades/:scoreId', async (ctx) => {
-      const { course, student, rubricScore } = ctx;
       let body = '';
       body += `<p>Course: <a href="${router.url('course', { courseId: course.id })}">${course.name}</a></p>\n`;
       body += `<p>Student: <a href="${router.url('student', { courseId: course.id, studentId: student.id })}">${student.name}</a></p>\n`;

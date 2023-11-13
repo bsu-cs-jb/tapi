@@ -15,5 +15,8 @@
     }
   ],
   "gradebook": [],
-  "rubrics": []
+  "rubrics": [{
+    "id": "test-01",
+    "name": "Test 1"
+  }]
 }
