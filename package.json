@@ -11,7 +11,9 @@
     "preserve": "yarn build",
     "serve:watch": "tsc-watch --onSuccess 'node ./dist/index.js'",
     "serve": "node dist/index.js",
-    "start": "npm run serve:watch"
+    "lint": "eslint src",
+    "lint-fix": "eslint --fix src",
+    "start": "serve:watch"
   },
   "dependencies": {
     "@faker-js/faker": "^8.2.0",

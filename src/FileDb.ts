@@ -1,4 +1,13 @@
-import { readdir, stat, constants, access, readFile, writeFile, mkdir } from 'node:fs/promises';
+import type { Dirent } from 'node:fs';
+import {
+  readdir,
+  stat,
+  constants,
+  access,
+  readFile,
+  writeFile,
+  mkdir,
+} from 'node:fs/promises';
 import util from 'node:util';
 import { execFile } from 'node:child_process';
 const execFileP = util.promisify(execFile);
@@ -11,7 +20,7 @@ export interface RestResource {
 
 export interface ResourceDef {
   id?: string;
-  resource: string;
+  name: string;
   singular: string;
   paramName: string;
   parents?: ResourceDef[];
@@ -54,20 +63,29 @@ async function ensureRoot() {
   await ensureDir(ROOT);
 }
 
-async function ensureResourceDir(resource: string) {
+async function ensureResourceDir(resource: ResourceDef) {
   await ensureDir(`${ROOT}/${resource}`);
 }
 
-function resourceDir(resource: string): string {
-  return `${ROOT}/${resource}`;
+function resourceDir(resource: ResourceDef): string {
+  let path = ROOT;
+  if (resource.parents) {
+    for (const parent of resource.parents) {
+      if (parent.id) {
+        path += `/${parent.name}/${parent.id}`;
+      }
+    }
+  }
+  path += `/${resource.name}`;
+  return path;
 }
 
-function resourceFilename(resource: string, id: string): string {
-  return `${resourceDir(resource)}/${id}.json`;
+function resourceFilename(resource: ResourceDef): string {
+  return `${resourceDir(resource)}/${resource.id}.json`;
 }
 
-export async function resourceExists(resource: string, id: string):Promise<boolean> {
-  const filename = resourceFilename(resource, id);
+export async function resourceExists(resource: ResourceDef):Promise<boolean> {
+  const filename = resourceFilename(resource);
   return fileExists(filename);
 }
 
@@ -75,40 +93,53 @@ function defd<T>(v: T|undefined): v is T {
   return v !== undefined;
 }
 
-export async function getAll(resource: string):Promise<RestResource[]|undefined> {
+async function getFiles(dirpath: string, ext?:string): Promise<{ path:string, name:string }[]> {
+  const entries: Dirent[] = await readdir(dirpath, { withFileTypes: true });
+  return Promise.all(
+    entries
+      .filter((entry) => entry.isFile())
+      .filter((entry) => ext ? entry.name.endsWith(`.${ext}`) : true)
+      .map((entry) => (
+        {
+          path: entry.path,
+          name: entry.name,
+        }))
+  );
+}
+
+export async function getAll(resource: ResourceDef):Promise<RestResource[]|undefined> {
   const dirpath = resourceDir(resource);
   if (!await dirExists(dirpath)) {
     console.log(`Directory ${dirpath} for ${resource} does not exist.`);
     return undefined;
   }
   try {
-    const files = await readdir(dirpath);
-    const resources = await Promise.all(files.map((file) => readFileAsJson(`${dirpath}/${file}`)));
+    const files = await getFiles(dirpath, 'json');
+    const resources = await Promise.all(files.map((file) => readFileAsJson(`${file.path}/${file.name}`)));
     // console.log(`Found ${resources.length} ${resource} resources.`);
-    return resources.filter(defd);
+    // return resources.filter(defd);
+    return resources;
   } catch (err) {
-    console.error(`Error reading directory ${resource} resources.`, err);
+    console.error(`Error reading directory ${resource.name} resources from ${dirpath}.`, err);
     return undefined;
   }
 }
 
-export async function getResourceIds(resource: string):Promise<string[]|undefined> {
+export async function getResourceIds(resource: ResourceDef):Promise<string[]|undefined> {
   const dirpath = resourceDir(resource);
   if (!await dirExists(dirpath)) {
     return undefined;
   }
   try {
-    const files = await readdir(dirpath);
-    const ids = files
-      .filter((file) => file.endsWith('.json'))
-      .map((file) => file.slice(0, -5));
+    const files = await getFiles(dirpath, 'json');
+    const ids = files.map((file) => file.name.slice(0, -5));
     return ids;
   } catch {
     return undefined;
   }
 }
 
-async function readFileAsJson(filename:string):Promise<RestResource|undefined> {
+async function readFileAsJson(filename:string):Promise<RestResource> {
   const buffer = await readFile(filename, 'utf8');
   console.log(`DONE reading from ${filename}.`);
   const data = JSON.parse(buffer);
@@ -116,20 +147,21 @@ async function readFileAsJson(filename:string):Promise<RestResource|undefined> {
   return data;
 }
 
-export async function readResource(resource: string, id: string):Promise<RestResource|undefined> {
-  const filename = resourceFilename(resource, id);
+export async function readResource(resource: ResourceDef):Promise<RestResource|undefined> {
+  const filename = resourceFilename(resource);
   if (!await fileExists(filename)) {
+    console.log(`readResource(${resource}) ${filename} does not exist.`);
     return undefined;
   }
-  console.log(`readResource(${resource}) to ${filename}.`);
+  // console.log(`readResource(${resource}) to ${filename}.`);
   const data = readFileAsJson(filename);
   return data;
 }
 
-export async function writeResource(resource: string, data: RestResource) {
+export async function writeResource(resource: ResourceDef, data: RestResource) {
   await ensureResourceDir(resource);
   const buffer = jsonToBuffer(data);
-  const filename = resourceFilename(resource, data.id);
+  const filename = resourceFilename(resource);
   console.log(`writeResource(${resource}) to ${filename}.`);
   await writeFile(filename, buffer);
   console.log(`DONE writing to ${filename}.`);
