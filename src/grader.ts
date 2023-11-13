@@ -39,6 +39,12 @@ const SCORE:ResourceDef = {
   parents: [COURSE, STUDENT],
 };
 
+function refWithId(resource: ResourceDef, id: string):ResourceDef {
+  const ref = cloneDeep(resource);
+  ref.id = id;
+  return ref;
+}
+
 function courseRef(courseId: string):ResourceDef {
   const ref = cloneDeep(COURSE);
   ref.id = courseId;
@@ -152,10 +158,36 @@ export function graderRoutes(router: Router) {
       });
   }
 
+  function postResource(router: Router, resource: ResourceDef): Router {
+    router.post(`/${resource.name}`, async (ctx, next) => {
+      const data = ctx.request.body;
+      if (!data.id) {
+        data.id = urlid();
+      }
+      let body = `<p>POST ${resource.singular} ${data.id}</p>\n`;
+      const ref = refWithId(resource, data.id);
+      if (await resourceExists(ref)) {
+        body += `<p>${resource.name} with id '${data.id}' already exists. Failing</p>\n`;
+        ctx.body = body;
+        ctx.status = 400;
+        return await next();
+      }
+      console.log(`${resource.singular} body:`, data);
+      const filename = await writeResource(ref, data);
+      body += `<p>Written to: ${filename}</p>\n`;
+      body += '<p>Body:</p>\n';
+      body += jsonhtml(data);
+      ctx.body = body;
+    });
+    return router;
+  }
+
   getCollection(router, COURSE);
   getCollection(router, RUBRIC);
   getResource(router, COURSE, [RUBRIC, STUDENT]);
   getResource(router, RUBRIC);
+  postResource(router, COURSE);
+  postResource(router, RUBRIC);
 
   router
     .post('/courses', async (ctx, next) => {

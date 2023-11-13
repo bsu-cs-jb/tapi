@@ -64,7 +64,7 @@ async function ensureRoot() {
 }
 
 async function ensureResourceDir(resource: ResourceDef) {
-  await ensureDir(`${ROOT}/${resource}`);
+  await ensureDir(resourceDir(resource));
 }
 
 function resourceDir(resource: ResourceDef): string {
@@ -162,7 +162,7 @@ export async function writeResource(resource: ResourceDef, data: RestResource) {
   await ensureResourceDir(resource);
   const buffer = jsonToBuffer(data);
   const filename = resourceFilename(resource);
-  console.log(`writeResource(${resource}) to ${filename}.`);
+  console.log(`writeResource(${resource.singular} ${resource.id}) to ${filename}.`);
   await writeFile(filename, buffer);
   console.log(`DONE writing to ${filename}.`);
   try {
