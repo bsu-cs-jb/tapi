@@ -1,16 +1,16 @@
 import Router from '@koa/router';
-import { urlid } from './genid.js';
-import { log, jsonhtml, assert } from './utils.js';
+import { jsonhtml } from './utils.js';
 import {
-  getAll,
-  writeResource,
-  readResource,
   ResourceDef,
-  resourceExists,
 } from './FileDb.js';
-import type { RestResource } from './FileDb.js';
-
-import { cloneDeep } from 'lodash-es';
+import {
+  routerParam,
+  linkList,
+  getCollection,
+  getResource,
+  putResource,
+  postResource,
+} from './RestAPI.js';
 
 const COURSE:ResourceDef = {
   name: 'courses',
@@ -39,12 +39,6 @@ const GRADE:ResourceDef = {
   // parents: [COURSE, STUDENT],
 };
 
-function refWithId(resource: ResourceDef, id: string):ResourceDef {
-  const ref = cloneDeep(resource);
-  ref.id = id;
-  return ref;
-}
-
 // function courseRef(courseId: string):ResourceDef {
 //   const ref = cloneDeep(COURSE);
 //   ref.id = courseId;
@@ -65,50 +59,6 @@ function refWithId(resource: ResourceDef, id: string):ResourceDef {
 //   return ref;
 // }
 
-function resourceFromContext(resource: ResourceDef, id?:string, ctx?:Record<string,string>):ResourceDef {
-  const ref = cloneDeep(resource);
-  if (id) {
-    ref.id = id;
-  }
-  if (ctx && ref.parents) {
-    for (const parent of ref.parents) {
-      if (parent.paramName in ctx) {
-        parent.id = ctx[parent.paramName];
-      }
-    }
-  }
-  return ref;
-}
-
-function routerParam(router:Router, resource: ResourceDef):Router {
-  return router.param(resource.paramName, async (id, ctx, next) => {
-    const ref = resourceFromContext(resource, id, ctx.params);
-    ctx[resource.singular] = await readResource(ref);
-    if (!ctx[resource.singular]) {
-      ctx.status = 404;
-      console.error(`${resource.singular} id '${id}' not found.`);
-      return;
-    }
-    await next();
-  });
-}
-
-function linkList(
-  router: Router,
-  resource:ResourceDef,
-  resources:RestResource[],
-  urlParams:Record<string,string> = {}): string
-{
-  console.log(`linkList(router, ${resource.paramName}, ${resource.singular}, ${resources.length})`);
-  let result = '';
-  for (const r of resources) {
-    const href = router.url(resource.singular, { [resource.paramName]: r.id, ...urlParams });
-    console.log(`<p><a href="${href}">${r.name} - ${r.id}</a></p>`);
-    result += `<p><a href="${href}">${r.name} - ${r.id}</a></p>\n`;
-  }
-  return result;
-}
-
 export function graderRoutes(router: Router) {
 
   router.get('/', async (ctx) => {
@@ -118,92 +68,6 @@ export function graderRoutes(router: Router) {
   routerParam(router, COURSE);
   routerParam(router, RUBRIC);
   routerParam(router, STUDENT);
-
-  function getCollection(router: Router, resource:ResourceDef): Router {
-    return router.get(resource.name, `/${resource.name}`, async (ctx) => {
-      const collection = await getAll(resource);
-      log(`Found ${collection?.length} ${resource.name}.`);
-      let body = '<!DOCTYPE html>\n<html><body>';
-      body += `<p>${collection?.length || 0} ${resource.name}:<p>\n`;
-      if (collection) {
-        body += linkList(router, resource, collection);
-      }
-      body += '\n</body></html>';
-      ctx.body = body;
-    });
-  }
-
-  function getResource(
-    router: Router,
-    resource:ResourceDef,
-    subCollections?:ResourceDef[],
-  ): Router {
-    return router.get(
-      resource.singular,
-      `/${resource.name}/:${resource.paramName}`,
-      async (ctx) => {
-        // const { course, params: { courseId } } = ctx;
-        const item = ctx[resource.singular];
-        let body = '';
-        body += `<p><a href="${router.url(resource.name)}">${resource.name}</a></p>`;
-        body += `<p>${resource.singular} id: ${item.id}</p>`;
-        body += `<p>${resource.singular} name: ${item.name}</p>`;
-        if (subCollections) {
-          for (const sr of subCollections) {
-            body += linkList(router, sr, item[sr.name], { [resource.paramName]: item.id });
-          }
-        }
-        body += jsonhtml(item);
-        ctx.body = body;
-      });
-  }
-
-  function postResource(router: Router, resource: ResourceDef): Router {
-    router.post(`/${resource.name}`, async (ctx, next) => {
-      const data = ctx.request.body;
-      if (!data.id) {
-        data.id = urlid();
-      }
-      let body = `<p>POST ${resource.singular} ${data.id}</p>\n`;
-      const ref = refWithId(resource, data.id);
-      if (await resourceExists(ref)) {
-        body += `<p>${resource.name} with id '${data.id}' already exists. Failing</p>\n`;
-        ctx.body = body;
-        ctx.status = 400;
-        return await next();
-      }
-      console.log(`${resource.singular} body:`, data);
-      const filename = await writeResource(ref, data);
-      body += `<p>Written to: ${filename}</p>\n`;
-      body += '<p>Body:</p>\n';
-      body += jsonhtml(data);
-      ctx.body = body;
-    });
-    return router;
-  }
-
-  function putResource(router: Router, resource: ResourceDef): Router {
-    return router.put(
-      resource.singular,
-      `/${resource.name}/:${resource.paramName}`,
-      async (ctx) => {
-        const data = ctx.request.body;
-        const id = ctx.params[resource.paramName];
-        if (data.id) {
-          assert(data.id === id);
-        } else {
-          data.id = id;
-        }
-        let body = `<p>PUT ${resource.singular} ${data.id}</p>\n`;
-        const ref = refWithId(resource, data.id);
-        console.log(`${resource.singular} body:`, data);
-        const filename = await writeResource(ref, data);
-        body += `<p>Written to: ${filename}</p>\n`;
-        body += '<p>Body:</p>\n';
-        body += jsonhtml(data);
-        ctx.body = body;
-      });
-  }
 
   getCollection(router, COURSE);
   getResource(router, COURSE, [RUBRIC, STUDENT]);

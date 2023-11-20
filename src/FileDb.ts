@@ -9,6 +9,7 @@ import {
   mkdir,
 } from 'node:fs/promises';
 import util from 'node:util';
+import { cloneDeep } from 'lodash-es';
 import { execFile } from 'node:child_process';
 const execFileP = util.promisify(execFile);
 
@@ -180,3 +181,10 @@ export async function writeDb(name: string, data: RestResource) {
   const buffer = jsonToBuffer(data);
   await writeFile(`${ROOT}/${name}.json`, buffer);
 }
+
+export function refWithId(resource: ResourceDef, id: string):ResourceDef {
+  const ref = cloneDeep(resource);
+  ref.id = id;
+  return ref;
+}
+
