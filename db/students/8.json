@@ -9,9 +9,10 @@
       "name": "Test 1"
     },
     {
-      "id": "eQTNzu72G",
+      "id": "ZUtP!sbJm",
       "name": "Project 2",
-      "rubricId": "project-02"
+      "rubricId": "project-02",
+      "courseId": "CS411-2023-fall"
     }
   ]
 }

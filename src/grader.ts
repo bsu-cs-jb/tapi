@@ -20,6 +20,7 @@ import {
   Rubric,
   RubricScore,
   makeRubricScore,
+  scoreRubric,
   StudentGradeDbObj,
   CourseGradeDbObj,
 } from 'grading';
@@ -86,6 +87,7 @@ export async function getOrAddRubricScore(
   } else {
     // no grade for this rubric for this student
     const rubricScore = makeRubricScore(rubric);
+    scoreRubric(rubric, rubricScore);
     const gradeRef: CourseGradeDbObj = {
       id: rubricScore.id,
       name: rubric.name,
