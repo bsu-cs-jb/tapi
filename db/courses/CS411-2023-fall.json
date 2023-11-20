@@ -15,7 +15,22 @@
       "name": "Jack"
     }
   ],
-  "gradebook": [],
+  "grades": [
+    {
+      "id": "32",
+      "studentId": "8",
+      "studentName": "Leah",
+      "rubricId": "test-01",
+      "name": "Test 1"
+    },
+    {
+      "id": "eQTNzu72G",
+      "name": "Project 2",
+      "rubricId": "project-02",
+      "studentId": "8",
+      "studentName": "Leah"
+    }
+  ],
   "rubrics": [
     {
       "id": "project-02",

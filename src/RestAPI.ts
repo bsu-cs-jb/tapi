@@ -7,10 +7,12 @@ import {
   readResource,
   ResourceDef,
   resourceExists,
-  RestResource,
+  IdResource,
   refWithId,
 } from './FileDb.js';
 import { cloneDeep } from 'lodash-es';
+
+type IdName = { id: string; name: string; };
 
 export function resourceFromContext(resource: ResourceDef, id?:string, ctx?:Record<string,string>):ResourceDef {
   const ref = cloneDeep(resource);
@@ -27,10 +29,10 @@ export function resourceFromContext(resource: ResourceDef, id?:string, ctx?:Reco
   return ref;
 }
 
-export function routerParam(router:Router, resource: ResourceDef):Router {
+export function routerParam<T extends IdResource>(router:Router, resource: ResourceDef):Router {
   return router.param(resource.paramName, async (id, ctx, next) => {
     const ref = resourceFromContext(resource, id, ctx.params);
-    ctx[resource.singular] = await readResource(ref);
+    ctx[resource.singular] = await readResource<T>(ref);
     if (!ctx[resource.singular]) {
       ctx.status = 404;
       console.error(`${resource.singular} id '${id}' not found.`);
@@ -42,9 +44,9 @@ export function routerParam(router:Router, resource: ResourceDef):Router {
 
 export function linkList(
   router: Router,
-  resource:ResourceDef,
-  resources:RestResource[],
-  urlParams:Record<string,string> = {}): string
+  resource: ResourceDef,
+  resources: IdName[],
+  urlParams: Record<string,string> = {}): string
 {
   // console.log(`linkList(router, ${resource.paramName}, ${resource.singular}, ${resources.length})`);
   let result = '';
@@ -89,7 +91,7 @@ export function getResource(
         // const { course, params: { courseId } } = ctx;
         const item = ctx[resource.singular];
         let body = '';
-        body += `<p><a href="${router.url(resource.name)}">${resource.name}</a></p>`;
+        body += `<p><a href="${router.url(resource.name+'-html')}">${resource.name}</a></p>`;
         body += `<p>${resource.singular} id: ${item.id}</p>`;
         body += `<p>${resource.singular} name: ${item.name}</p>`;
         if (subCollections) {

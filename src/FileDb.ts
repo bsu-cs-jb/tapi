@@ -19,6 +19,11 @@ export interface RestResource {
   [key: string]: RestResource|RecVal|RecVal[]|RestResource[];
 }
 
+export interface IdResource {
+  id: string;
+  name: string;
+}
+
 export interface ResourceDef {
   id?: string;
   name: string;
@@ -29,7 +34,7 @@ export interface ResourceDef {
 
 const ROOT = './db';
 
-export function jsonToBuffer(data: RestResource): Uint8Array {
+export function jsonToBuffer(data: IdResource): Uint8Array {
   return new Uint8Array(Buffer.from(JSON.stringify(data, undefined, 2)));
 }
 
@@ -108,7 +113,7 @@ async function getFiles(dirpath: string, ext?:string): Promise<{ path:string, na
   );
 }
 
-export async function getAll(resource: ResourceDef):Promise<RestResource[]|undefined> {
+export async function getAll(resource: ResourceDef):Promise<IdResource[]|undefined> {
   const dirpath = resourceDir(resource);
   if (!await dirExists(dirpath)) {
     console.log(`Directory ${dirpath} for ${resource} does not exist.`);
@@ -140,7 +145,7 @@ export async function getResourceIds(resource: ResourceDef):Promise<string[]|und
   }
 }
 
-async function readFileAsJson(filename:string):Promise<RestResource> {
+async function readFileAsJson<T extends IdResource>(filename:string):Promise<T> {
   const buffer = await readFile(filename, 'utf8');
   console.log(`DONE reading from ${filename}.`);
   const data = JSON.parse(buffer);
@@ -148,18 +153,18 @@ async function readFileAsJson(filename:string):Promise<RestResource> {
   return data;
 }
 
-export async function readResource(resource: ResourceDef):Promise<RestResource|undefined> {
+export async function readResource<T extends IdResource>(resource: ResourceDef):Promise<T|undefined> {
   const filename = resourceFilename(resource);
   if (!await fileExists(filename)) {
     console.log(`readResource(${resource}) ${filename} does not exist.`);
     return undefined;
   }
   // console.log(`readResource(${resource}) to ${filename}.`);
-  const data = readFileAsJson(filename);
+  const data = readFileAsJson<T>(filename);
   return data;
 }
 
-export async function writeResource(resource: ResourceDef, data: RestResource) {
+export async function writeResource(resource: ResourceDef, data: IdResource) {
   await ensureResourceDir(resource);
   const buffer = jsonToBuffer(data);
   const filename = resourceFilename(resource);
@@ -176,7 +181,7 @@ export async function writeResource(resource: ResourceDef, data: RestResource) {
   return filename;
 }
 
-export async function writeDb(name: string, data: RestResource) {
+export async function writeDb(name: string, data: IdResource) {
   await ensureRoot();
   const buffer = jsonToBuffer(data);
   await writeFile(`${ROOT}/${name}.json`, buffer);

@@ -262,14 +262,17 @@ export const makeCS411 = (): Course => {
       {
         id: '8',
         name: 'Leah',
+        grades: [],
       },
       {
         id: '5',
         name: 'Brooke',
+        grades: [],
       },
       {
         id: '3',
         name: 'Jack',
+        grades: [],
       },
     ],
     gradebook: [],

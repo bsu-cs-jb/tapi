@@ -8,7 +8,7 @@
       "items": [
         {
           "id": "timer-sets-001",
-          "name": "Can add a timer set with name",
+          "name": "Can add a timer set with a name",
           "scoreType": "boolean",
           "scoreValue": "points",
           "pointValue": 1

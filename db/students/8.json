@@ -1,0 +1,17 @@
+{
+  "name": "Leah",
+  "id": "8",
+  "grades": [
+    {
+      "id": "32",
+      "courseId": "CS411-2023-fall",
+      "rubricId": "test-01",
+      "name": "Test 1"
+    },
+    {
+      "id": "eQTNzu72G",
+      "name": "Project 2",
+      "rubricId": "project-02"
+    }
+  ]
+}
