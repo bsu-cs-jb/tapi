@@ -2,14 +2,6 @@
   "name": "Course gAZc",
   "students": [
     {
-      "id": "8",
-      "name": "Leah"
-    },
-    {
-      "id": "5",
-      "name": "Brooke"
-    },
-    {
       "id": "3",
       "name": "Jack"
     }

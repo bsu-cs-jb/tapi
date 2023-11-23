@@ -115,22 +115,26 @@ export function getResource(
 export function postResource(router: Router, resource: ResourceDef): Router {
   router.post(`/${resource.name}`, async (ctx, next) => {
     const data = ctx.request.body;
-    if (!data.id) {
-      data.id = urlid();
+    let newResource = data;
+    if (resource.builder) {
+      newResource = resource.builder(data);
     }
-    const ref = refWithId(resource, data.id);
+    if (!newResource.id) {
+      newResource.id = urlid();
+    }
+    const ref = refWithId(resource, newResource.id);
     if (await resourceExists(ref)) {
-      ctx.body = `<p>${resource.name} with id '${data.id}' already exists. Failing</p>\n`;
+      ctx.body = `<p>${resource.name} with id '${newResource.id}' already exists. Failing</p>\n`;
       ctx.status = 400;
       return await next();
     }
-    const filename = await writeResource(ref, data);
-    console.log(`Written to ${filename} ${resource.singular} body:`, data);
+    const filename = await writeResource(ref, newResource);
+    console.log(`Written to ${filename} ${resource.singular} body:`, newResource);
     // let body = `<p>POST ${resource.singular} ${data.id}</p>\n`;
     // body += `<p>Written to: ${filename}</p>\n`;
     // body += '<p>Body:</p>\n';
     // body += jsonhtml(data);
-    ctx.body = data;
+    ctx.body = newResource;
   });
   return router;
 }

@@ -13,7 +13,7 @@
     "serve": "node dist/index.js",
     "lint": "eslint src",
     "lint-fix": "eslint --fix src",
-    "start": "serve:watch"
+    "start": "yarn serve:watch"
   },
   "dependencies": {
     "@faker-js/faker": "^8.2.0",

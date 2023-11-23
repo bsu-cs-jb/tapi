@@ -23,6 +23,7 @@ import {
   scoreRubric,
   StudentGradeDbObj,
   CourseGradeDbObj,
+  makeStudent,
 } from 'grading';
 
 const COURSE:ResourceDef = {
@@ -42,6 +43,7 @@ const STUDENT:ResourceDef = {
   name: 'students',
   singular: 'student',
   paramName: 'studentId',
+  builder: makeStudent,
   // parents: [COURSE],
 };
 

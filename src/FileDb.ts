@@ -24,11 +24,19 @@ export interface IdResource {
   name: string;
 }
 
+// Create a new type but make all of the properties optional
+type AllOptional<Type> = {
+  [Property in keyof Type]?: Type[Property];
+};
+
 export interface ResourceDef {
   id?: string;
   name: string;
   singular: string;
   paramName: string;
+  // Optional method to create a new object of this type,
+  // supplying default values for any missing properties
+  builder?: <T extends IdResource>(props?: AllOptional<T>) => IdResource;
   parents?: ResourceDef[];
 }
 

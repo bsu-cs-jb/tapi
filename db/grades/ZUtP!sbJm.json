@@ -11,25 +11,28 @@
           "id": "w~dfH66em",
           "itemId": "timer-sets-001",
           "computedScore": {
-            "score": 0,
+            "score": 1,
             "pointValue": 1
-          }
+          },
+          "score": 1
         },
         {
           "id": "krO6lIjRW",
           "itemId": "timer-sets-002",
           "computedScore": {
-            "score": 0,
+            "score": 2,
             "pointValue": 2
-          }
+          },
+          "score": 1
         },
         {
           "id": "k8rgebHny",
           "itemId": "timer-sets-003",
           "computedScore": {
-            "score": 0,
+            "score": 2,
             "pointValue": 2
-          }
+          },
+          "score": 1
         },
         {
           "id": "ehD9bQviG",
@@ -73,7 +76,7 @@
         }
       ],
       "computedScore": {
-        "score": 0,
+        "score": 5,
         "pointValue": 8
       }
     },
@@ -85,9 +88,10 @@
           "id": "HPiATMJ3O",
           "itemId": "single-timer-001",
           "computedScore": {
-            "score": 0,
+            "score": 2,
             "pointValue": 2
-          }
+          },
+          "score": 1
         },
         {
           "id": "t4usxcSFa",
@@ -101,9 +105,10 @@
           "id": "JCTLb7hfi",
           "itemId": "single-timer-002",
           "computedScore": {
-            "score": 0,
+            "score": 1,
             "pointValue": 0
-          }
+          },
+          "score": 1
         },
         {
           "id": "uIJbhbRNO",
@@ -123,7 +128,7 @@
         }
       ],
       "computedScore": {
-        "score": 0,
+        "score": 3,
         "pointValue": 3
       }
     },
@@ -181,7 +186,7 @@
     }
   ],
   "computedScore": {
-    "score": 0,
+    "score": 8,
     "pointValue": 17
   }
 }
