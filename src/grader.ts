@@ -24,6 +24,7 @@ import {
   StudentGradeDbObj,
   CourseGradeDbObj,
   makeStudent,
+  updateRubricScore,
 } from 'grading';
 
 const COURSE:ResourceDef = {
@@ -165,13 +166,20 @@ export function graderRoutes(router: Router) {
     })
     .get('course-student-grade', '/courses/:courseId/students/:studentId/grades/:rubricId', async (ctx) => {
       const { course, student, rubric } = ctx as unknown as { course: CourseDbObj; student: Student; rubric: Rubric };
-      const existingGrade = student.grades.find((grade) => grade.rubricId === rubric.id);
+      const existingGrade = student.grades.find((grade: CourseGradeDbObj) => grade.rubricId === rubric.id);
       console.log(`Existing student grade for ${course.name} ${student.name} ${rubric.id}`, existingGrade);
 
       const rubricScore = await (async () => {
         if (existingGrade) {
           // TODO: Update / validate score based on rubric
-          return await readResource<RubricScore>(refWithId(GRADE, existingGrade.id));
+          return await readResource<RubricScore>(refWithId(GRADE, existingGrade.id)).then((grade) => {
+            if (grade) {
+              console.log('Updating rubric score');
+              return updateRubricScore(grade, rubric);
+            } else {
+              return undefined;
+            }
+          });
         } else {
           console.log('Creating new rubric score.');
           return getOrAddRubricScore(course, student, rubric);
