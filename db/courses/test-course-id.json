@@ -1,16 +1,17 @@
 {
+  "id": "test-course-id",
   "name": "Test Course",
   "students": [
     {
-      "id": "8",
-      "name": "Leah"
+      "id": "brahbrah-test",
+      "name": "Brahbrah Test"
     },
     {
       "id": "3",
       "name": "Jack"
     },
     {
-      "id": "1EMn0BL2m",
+      "id": "byron-test",
       "name": "Byron"
     }
   ],
@@ -19,8 +20,8 @@
       "id": "T2YZ6Uv70",
       "name": "Rubric Test 1",
       "rubricId": "test-01",
-      "studentId": "8",
-      "studentName": "Leah"
+      "studentId": "brahbrah-test",
+      "studentName": "Brahbrah Test"
     }
   ],
   "rubrics": [
@@ -28,6 +29,5 @@
       "id": "test-01",
       "name": "Test 1"
     }
-  ],
-  "id": "test-course-id"
+  ]
 }

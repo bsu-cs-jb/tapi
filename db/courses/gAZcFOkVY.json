@@ -1,12 +1,12 @@
 {
+  "id": "gAZcFOkVY",
   "name": "Course gAZc",
   "students": [
     {
-      "id": "3",
-      "name": "Jack"
+      "id": "byron-test",
+      "name": "Byron Test"
     }
   ],
   "grades": [],
-  "rubrics": [],
-  "id": "gAZcFOkVY"
+  "rubrics": []
 }

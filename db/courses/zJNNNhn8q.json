@@ -1,12 +1,12 @@
 {
+  "id": "zJNNNhn8q",
   "name": "Course zJNNN",
   "students": [
     {
-      "id": "5",
-      "name": "Brooke"
+      "id": "brahbrah-test",
+      "name": "Brahbrah Test"
     }
   ],
   "grades": [],
-  "rubrics": [],
-  "id": "zJNNNhn8q"
+  "rubrics": []
 }

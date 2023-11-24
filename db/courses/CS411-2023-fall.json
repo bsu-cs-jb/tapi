@@ -3,27 +3,19 @@
   "name": "CS 411 Fall 2023",
   "students": [
     {
-      "id": "8",
-      "name": "Leah"
+      "id": "brahbrah-test",
+      "name": "Brahbrah Test"
     },
     {
-      "id": "5",
-      "name": "Brooke"
-    },
-    {
-      "id": "3",
-      "name": "Jack"
-    },
-    {
-      "id": "1EMn0BL2m",
-      "name": "Byron"
+      "id": "byron-test",
+      "name": "Byron Test"
     }
   ],
   "grades": [
     {
       "id": "32",
-      "studentId": "8",
-      "studentName": "Leah",
+      "studentId": "brahbrah-test",
+      "studentName": "Brahbrah Test",
       "rubricId": "test-01",
       "name": "Test 1"
     },
@@ -31,22 +23,22 @@
       "id": "ZUtP!sbJm",
       "name": "Project 2",
       "rubricId": "project-02",
-      "studentId": "8",
-      "studentName": "Leah"
+      "studentId": "brahbrah-test",
+      "studentName": "Brahbrah Test"
     },
     {
       "id": "iU3ilG2Sy",
       "name": "Rubric Test 1",
       "rubricId": "test-01",
-      "studentId": "1EMn0BL2m",
-      "studentName": "Byron"
+      "studentId": "byron-test",
+      "studentName": "Byron Test"
     },
     {
       "id": "hW6rmeoRU",
       "name": "Project 2",
       "rubricId": "project-02",
-      "studentId": "1EMn0BL2m",
-      "studentName": "Byron"
+      "studentId": "byron-test",
+      "studentName": "Byron Test"
     }
   ],
   "rubrics": [

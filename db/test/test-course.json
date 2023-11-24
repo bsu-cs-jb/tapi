@@ -2,19 +2,15 @@
   "name": "Test Course",
   "students": [
     {
-      "id": "8",
-      "name": "Leah"
+      "id": "brahbrah-test",
+      "name": "Brahbrah Test"
     },
     {
-      "id": "5",
-      "name": "Brooke"
-    },
-    {
-      "id": "3",
-      "name": "Jack"
+      "id": "byron-test",
+      "name": "Byron Test"
     }
   ],
-  "gradebook": [],
+  "grades": [],
   "rubrics": [{
     "id": "test-01",
     "name": "Test 1"
