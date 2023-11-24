@@ -49,13 +49,13 @@ export function linkList(
   urlParams: Record<string,string> = {}): string
 {
   // console.log(`linkList(router, ${resource.paramName}, ${resource.singular}, ${resources.length})`);
-  let result = '';
+  let result = `<div><p>${resource.name} collection</p><ul>`;
   for (const r of resources) {
     const href = router.url(`${resource.singular}-html`, { [resource.paramName]: r.id, ...urlParams });
     // console.log(`<p><a href="${href}">${r.name} - ${r.id}</a></p>`);
-    result += `<p><a href="${href}">${r.name} - ${r.id}</a></p>\n`;
+    result += `<li><a href="${href}">${r.name} - ${r.id}</a></li>\n`;
   }
-  return result;
+  return result + '</ul></div>';
 }
 
 export function getCollection(router: Router, resource:ResourceDef): Router {

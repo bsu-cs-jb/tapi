@@ -141,7 +141,7 @@ export function graderRoutes(router: Router) {
   });
 
   router
-    .get('students', '/courses/:courseId/students', async (ctx) => {
+    .get('course-students', '/courses/:courseId/students', async (ctx) => {
       const { course, params: { courseId } } = ctx;
       let body = `<p>Course id: ${courseId}</p>`;
       body += `<p>Course: <a href="${router.url('course-html', { courseId: course.id })}">${course.name}</a></p>\n`;
@@ -149,7 +149,7 @@ export function graderRoutes(router: Router) {
       body += jsonhtml(course.students);
       ctx.body = body;
     })
-    .get('student', '/courses/:courseId/students/:studentId', async (ctx) => {
+    .get('course-student', '/courses/:courseId/students/:studentId', async (ctx) => {
       const { course, student } = ctx;
       let body = '';
       body += `<p>Course: <a href="${router.url('course-html', { courseId: course.id })}">${course.name}</a></p>\n`;
@@ -158,7 +158,7 @@ export function graderRoutes(router: Router) {
       ctx.body = body;
       return ctx;
     })
-    .get('student-grade', '/courses/:courseId/students/:studentId/grades/:rubricId', async (ctx) => {
+    .get('course-student-grade', '/courses/:courseId/students/:studentId/grades/:rubricId', async (ctx) => {
       const { course, student, rubric } = ctx as unknown as { course: CourseDbObj; student: Student; rubric: Rubric };
       const existingGrade = student.grades.find((grade) => grade.rubricId === rubric.id);
       console.log(`Existing student grade for ${course.name} ${student.name} ${rubric.id}`, existingGrade);
