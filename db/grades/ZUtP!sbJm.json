@@ -11,11 +11,10 @@
           "id": "w~dfH66em",
           "itemId": "timer-sets-001",
           "computedScore": {
-            "score": 1,
+            "score": 0,
             "pointValue": 1
           },
-          "comments": "Couldn't give it a name.",
-          "score": 1
+          "comments": "Couldn't give it a name."
         },
         {
           "id": "krO6lIjRW",
@@ -24,7 +23,8 @@
             "score": 0,
             "pointValue": 2
           },
-          "comments": "Testing OK"
+          "comments": "Testing OK",
+          "score": 0
         },
         {
           "id": "k8rgebHny",
@@ -33,24 +33,25 @@
             "score": 0,
             "pointValue": 2
           },
-          "score": 0,
           "comments": "Couldn't add a timer to the set"
         },
         {
           "id": "ehD9bQviG",
           "itemId": "timer-sets-004",
           "computedScore": {
-            "score": 0,
+            "score": 1,
             "pointValue": 2
-          }
+          },
+          "score": 1
         },
         {
           "id": "9K!H07OJ0",
           "itemId": "timer-sets-005",
           "computedScore": {
-            "score": 0,
+            "score": 1,
             "pointValue": 0
-          }
+          },
+          "score": 1
         },
         {
           "id": "xnJQhsJcw",
@@ -59,30 +60,34 @@
             "score": 0,
             "pointValue": 1
           },
-          "score": 0
+          "score": 0,
+          "comments": "Scrolling failed."
         },
         {
           "id": "M7~uKxMEm",
           "itemId": "timer-sets-007",
           "computedScore": {
-            "score": 0,
+            "score": 1,
             "pointValue": 0
-          }
+          },
+          "score": 1,
+          "comments": "Great validation."
         },
         {
           "id": "hYsPqADxo",
           "itemId": "timer-sets-008",
           "computedScore": {
-            "score": 0,
+            "score": 1,
             "pointValue": 0
-          }
+          },
+          "score": 1
         }
       ],
       "computedScore": {
-        "score": 1,
+        "score": 4,
         "pointValue": 8
       },
-      "comments": "De-bouncing to help improve performance"
+      "comments": "BRAHBRA"
     },
     {
       "id": "lpQzD9Y80",
@@ -190,9 +195,9 @@
     }
   ],
   "computedScore": {
-    "score": 4,
+    "score": 7,
     "pointValue": 17
   },
   "createdAt": "2023-11-24T17:46:15.015Z",
-  "updatedAt": "2023-11-24T17:46:15.015Z"
+  "updatedAt": "2023-11-24T22:23:10.560Z"
 }

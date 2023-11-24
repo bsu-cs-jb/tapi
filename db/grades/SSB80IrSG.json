@@ -11,10 +11,10 @@
           "id": "lFmXveCYO",
           "itemId": "OSyiL!GkC",
           "computedScore": {
-            "score": 3,
+            "score": 6,
             "pointValue": 10
           },
-          "score": 3
+          "score": 6
         },
         {
           "id": "O0YSW82Ve",
@@ -62,16 +62,16 @@
         }
       ],
       "computedScore": {
-        "score": 6,
+        "score": 9,
         "pointValue": 15
       },
       "comments": "CS 411 BrahBrah Test rubric"
     }
   ],
   "computedScore": {
-    "score": 6,
+    "score": 9,
     "pointValue": 15
   },
-  "updatedAt": "2023-11-24T17:53:08.947Z",
+  "updatedAt": "2023-11-24T19:48:56.027Z",
   "createdAt": "2023-11-24T17:51:32.084Z"
 }
