@@ -114,6 +114,7 @@ export function getResource(
 
 export function postResource(router: Router, resource: ResourceDef): Router {
   router.post(`/${resource.name}`, async (ctx, next) => {
+    const requestTimestamp = new Date().toISOString();
     const data = ctx.request.body;
     let newResource = data;
     if (resource.builder) {
@@ -128,6 +129,8 @@ export function postResource(router: Router, resource: ResourceDef): Router {
       ctx.status = 400;
       return await next();
     }
+    newResource.createdAt = requestTimestamp;
+    newResource.updatedAt = requestTimestamp;
     const filename = await writeResource(ref, newResource);
     console.log(`Written to ${filename} ${resource.singular} body:`, newResource);
     // let body = `<p>POST ${resource.singular} ${data.id}</p>\n`;
@@ -144,6 +147,7 @@ export function putResource(router: Router, resource: ResourceDef): Router {
     resource.singular,
     `/${resource.name}/:${resource.paramName}`,
     async (ctx) => {
+      const requestTimestamp = new Date().toISOString();
       const data = ctx.request.body;
       const id = ctx.params[resource.paramName];
       if (data.id) {
@@ -152,6 +156,10 @@ export function putResource(router: Router, resource: ResourceDef): Router {
         data.id = id;
       }
       const ref = refWithId(resource, data.id);
+      data.updatedAt = requestTimestamp;
+      if (!data.createdAt) {
+        data.createdAt = requestTimestamp;
+      }
       const filename = await writeResource(ref, data);
       console.log(`PUT written to ${filename} ${resource.singular} body:`, data);
       // let body = `<p>PUT ${resource.singular} ${data.id}</p>\n`;

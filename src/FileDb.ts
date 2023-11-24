@@ -13,15 +13,17 @@ import { cloneDeep } from 'lodash-es';
 import { execFile } from 'node:child_process';
 const execFileP = util.promisify(execFile);
 
-type RecVal = string | boolean | null | number;
-export interface RestResource {
-  id: string;
-  [key: string]: RestResource|RecVal|RecVal[]|RestResource[];
-}
+// type RecVal = string | boolean | null | number;
+// export interface RestResource {
+//   id: string;
+//   [key: string]: RestResource|RecVal|RecVal[]|RestResource[];
+// }
 
 export interface IdResource {
   id: string;
   name: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Create a new type but make all of the properties optional
