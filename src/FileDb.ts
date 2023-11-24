@@ -67,7 +67,7 @@ async function fileExists(filename:string):Promise<boolean> {
 }
 
 async function ensureDir(dirpath:string) {
-  console.log(`ensureDir(${dirpath})`);
+  // console.log(`ensureDir(${dirpath})`);
   if (!await dirExists(dirpath)) {
     await mkdir(dirpath, { recursive: true });
   }
@@ -164,7 +164,7 @@ async function readFileAsJson<T extends IdResource>(filename:string):Promise<T> 
 export async function readResource<T extends IdResource>(resource: ResourceDef):Promise<T|undefined> {
   const filename = resourceFilename(resource);
   if (!await fileExists(filename)) {
-    console.log(`readResource(${resource}) ${filename} does not exist.`);
+    console.log(`readResource(${resource.name}, ${resource.id}) ${filename} does not exist.`);
     return undefined;
   }
   // console.log(`readResource(${resource}) to ${filename}.`);
@@ -178,11 +178,11 @@ export async function writeResource(resource: ResourceDef, data: IdResource) {
   const filename = resourceFilename(resource);
   console.log(`writeResource(${resource.singular} ${resource.id}) to ${filename}.`);
   await writeFile(filename, buffer);
-  console.log(`DONE writing to ${filename}.`);
+  // console.log(`DONE writing to ${filename}.`);
   try {
     // await execFileP('git', ['add', '-A', 'db/']);
     // await execFileP('git', ['commit', '-m', 'Update db']);
-    console.log('DONE committing to git.');
+    // console.log('DONE committing to git.');
   } catch (err) {
     console.error('Error using git', err);
   }

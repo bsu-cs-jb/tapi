@@ -165,6 +165,7 @@ export function graderRoutes(router: Router) {
 
       const rubricScore = await (async () => {
         if (existingGrade) {
+          // TODO: Update / validate score based on rubric
           return await readResource<RubricScore>(refWithId(GRADE, existingGrade.id));
         } else {
           console.log('Creating new rubric score.');
