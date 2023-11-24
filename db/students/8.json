@@ -3,16 +3,16 @@
   "id": "8",
   "grades": [
     {
-      "id": "32",
-      "courseId": "CS411-2023-fall",
-      "rubricId": "test-01",
-      "name": "Test 1"
-    },
-    {
       "id": "ZUtP!sbJm",
       "name": "Project 2",
       "rubricId": "project-02",
       "courseId": "CS411-2023-fall"
+    },
+    {
+      "id": "T2YZ6Uv70",
+      "name": "Rubric Test 1",
+      "rubricId": "test-01",
+      "courseId": "test-course-id"
     }
   ]
 }

@@ -1,0 +1,71 @@
+{
+  "id": "iU3ilG2Sy",
+  "rubricId": "test-01",
+  "name": "Rubric Test 1",
+  "categories": [
+    {
+      "id": "iStkahdiW",
+      "categoryId": "test-01",
+      "items": [
+        {
+          "id": "6cpbHdAeq",
+          "itemId": "OSyiL!GkC",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 10
+          }
+        },
+        {
+          "id": "9wHyRhhoG",
+          "itemId": "nested-item-001",
+          "subItems": [
+            {
+              "id": "uLyb44zf8",
+              "itemId": "sub-item-001",
+              "computedScore": {
+                "score": 0,
+                "pointValue": 1
+              }
+            },
+            {
+              "id": "IaBbXGvVW",
+              "itemId": "sub-item-002",
+              "computedScore": {
+                "score": 0,
+                "pointValue": 0
+              }
+            },
+            {
+              "id": "JSxKpF7KG",
+              "itemId": "sub-item-003",
+              "computedScore": {
+                "score": 0,
+                "pointValue": 0
+              }
+            }
+          ],
+          "computedScore": {
+            "score": 0,
+            "pointValue": 1
+          }
+        },
+        {
+          "id": "5g6RTb2c8",
+          "itemId": "BF!Kcg~30",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 4
+          }
+        }
+      ],
+      "computedScore": {
+        "score": 0,
+        "pointValue": 15
+      }
+    }
+  ],
+  "computedScore": {
+    "score": 0,
+    "pointValue": 15
+  }
+}

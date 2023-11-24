@@ -155,7 +155,7 @@ export async function getResourceIds(resource: ResourceDef):Promise<string[]|und
 
 async function readFileAsJson<T extends IdResource>(filename:string):Promise<T> {
   const buffer = await readFile(filename, 'utf8');
-  console.log(`DONE reading from ${filename}.`);
+  // console.log(`DONE reading from ${filename}.`);
   const data = JSON.parse(buffer);
   // console.log(data);
   return data;

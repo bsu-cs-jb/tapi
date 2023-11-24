@@ -1,5 +1,18 @@
 {
   "id": "1EMn0BL2m",
   "name": "Byron",
-  "grades": []
+  "grades": [
+    {
+      "id": "iU3ilG2Sy",
+      "name": "Rubric Test 1",
+      "rubricId": "test-01",
+      "courseId": "CS411-2023-fall"
+    },
+    {
+      "id": "hW6rmeoRU",
+      "name": "Project 2",
+      "rubricId": "project-02",
+      "courseId": "CS411-2023-fall"
+    }
+  ]
 }

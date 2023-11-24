@@ -1,0 +1,79 @@
+{
+  "id": "T2YZ6Uv70",
+  "rubricId": "test-01",
+  "name": "Rubric Test 1",
+  "categories": [
+    {
+      "id": "cQB04DvsW",
+      "categoryId": "test-01",
+      "items": [
+        {
+          "id": "u1wUaZPqm",
+          "itemId": "OSyiL!GkC",
+          "computedScore": {
+            "score": 5,
+            "pointValue": 10
+          },
+          "score": 5,
+          "comments": "Nice work!"
+        },
+        {
+          "id": "5d1m1hSSm",
+          "itemId": "nested-item-001",
+          "subItems": [
+            {
+              "id": "lYOEF2uz2",
+              "itemId": "sub-item-001",
+              "computedScore": {
+                "score": 1,
+                "pointValue": 1
+              },
+              "score": 1,
+              "comments": "GOOD"
+            },
+            {
+              "id": "L2KzE2JOO",
+              "itemId": "sub-item-002",
+              "computedScore": {
+                "score": 0,
+                "pointValue": 0
+              },
+              "score": 0
+            },
+            {
+              "id": "p502b~!sm",
+              "itemId": "sub-item-003",
+              "computedScore": {
+                "score": -2,
+                "pointValue": 0
+              },
+              "score": 2
+            }
+          ],
+          "computedScore": {
+            "score": -1,
+            "pointValue": 1
+          }
+        },
+        {
+          "id": "04FdTtpKm",
+          "itemId": "BF!Kcg~30",
+          "computedScore": {
+            "score": 4,
+            "pointValue": 4
+          },
+          "score": 1
+        }
+      ],
+      "computedScore": {
+        "score": 8,
+        "pointValue": 15
+      },
+      "comments": "Cat 1 FAIL"
+    }
+  ],
+  "computedScore": {
+    "score": 8,
+    "pointValue": 15
+  }
+}

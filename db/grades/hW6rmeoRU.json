@@ -1,43 +1,38 @@
 {
-  "id": "ZUtP!sbJm",
+  "id": "hW6rmeoRU",
   "rubricId": "project-02",
   "name": "Project 2",
   "categories": [
     {
-      "id": "YW!qzLC9G",
+      "id": "RBQ063QC0",
       "categoryId": "timer-sets",
       "items": [
         {
-          "id": "w~dfH66em",
+          "id": "pwhgENWh8",
           "itemId": "timer-sets-001",
           "computedScore": {
-            "score": 1,
+            "score": 0,
             "pointValue": 1
-          },
-          "comments": "Couldn't give it a name.",
-          "score": 1
+          }
         },
         {
-          "id": "krO6lIjRW",
+          "id": "eUKi6F0Qu",
           "itemId": "timer-sets-002",
           "computedScore": {
             "score": 0,
             "pointValue": 2
-          },
-          "comments": "Testing OK"
+          }
         },
         {
-          "id": "k8rgebHny",
+          "id": "ytXHtBTXW",
           "itemId": "timer-sets-003",
           "computedScore": {
             "score": 0,
             "pointValue": 2
-          },
-          "score": 0,
-          "comments": "Couldn't add a timer to the set"
+          }
         },
         {
-          "id": "ehD9bQviG",
+          "id": "qCPjkXQsm",
           "itemId": "timer-sets-004",
           "computedScore": {
             "score": 0,
@@ -45,7 +40,7 @@
           }
         },
         {
-          "id": "9K!H07OJ0",
+          "id": "pDtPyLYMO",
           "itemId": "timer-sets-005",
           "computedScore": {
             "score": 0,
@@ -53,16 +48,15 @@
           }
         },
         {
-          "id": "xnJQhsJcw",
+          "id": "RgOE5kElG",
           "itemId": "timer-sets-006",
           "computedScore": {
             "score": 0,
             "pointValue": 1
-          },
-          "score": 0
+          }
         },
         {
-          "id": "M7~uKxMEm",
+          "id": "WYQk1!Wy4",
           "itemId": "timer-sets-007",
           "computedScore": {
             "score": 0,
@@ -70,7 +64,7 @@
           }
         },
         {
-          "id": "hYsPqADxo",
+          "id": "Q0qmZ3eyO",
           "itemId": "timer-sets-008",
           "computedScore": {
             "score": 0,
@@ -79,26 +73,24 @@
         }
       ],
       "computedScore": {
-        "score": 1,
+        "score": 0,
         "pointValue": 8
-      },
-      "comments": "De-bouncing to help improve performance."
+      }
     },
     {
-      "id": "lpQzD9Y80",
+      "id": "uPvI6uoJ8",
       "categoryId": "single-timer",
       "items": [
         {
-          "id": "HPiATMJ3O",
+          "id": "0obtku24G",
           "itemId": "single-timer-001",
           "computedScore": {
-            "score": 2,
+            "score": 0,
             "pointValue": 2
-          },
-          "score": 1
+          }
         },
         {
-          "id": "t4usxcSFa",
+          "id": "MKUSmgLbC",
           "itemId": "single-timer-005",
           "computedScore": {
             "score": 0,
@@ -106,16 +98,15 @@
           }
         },
         {
-          "id": "JCTLb7hfi",
+          "id": "YnIOw4ixW",
           "itemId": "single-timer-002",
           "computedScore": {
-            "score": 1,
+            "score": 0,
             "pointValue": 0
-          },
-          "score": 1
+          }
         },
         {
-          "id": "uIJbhbRNO",
+          "id": "Z0ifGe~Um",
           "itemId": "single-timer-003",
           "computedScore": {
             "score": 0,
@@ -123,7 +114,7 @@
           }
         },
         {
-          "id": "okGytR0L0",
+          "id": "WdFOXwV46",
           "itemId": "single-timer-004",
           "computedScore": {
             "score": 0,
@@ -132,16 +123,16 @@
         }
       ],
       "computedScore": {
-        "score": 3,
+        "score": 0,
         "pointValue": 3
       }
     },
     {
-      "id": "mNu0WC8B0",
+      "id": "aAJHsLeIW",
       "categoryId": "edit-timer",
       "items": [
         {
-          "id": "Jk8DMiNYW",
+          "id": "0xfeJPvLm",
           "itemId": "edit-timer-001",
           "computedScore": {
             "score": 0,
@@ -149,7 +140,7 @@
           }
         },
         {
-          "id": "Ai6C5pj6O",
+          "id": "gBU7zAWnm",
           "itemId": "edit-timer-002",
           "computedScore": {
             "score": 0,
@@ -163,11 +154,11 @@
       }
     },
     {
-      "id": "4bUqpNLXm",
+      "id": "xX!qhwUhG",
       "categoryId": "multiple-timers",
       "items": [
         {
-          "id": "QzdViQSg8",
+          "id": "NRlf4YuD0",
           "itemId": "multiple-timers-001",
           "computedScore": {
             "score": 0,
@@ -175,7 +166,7 @@
           }
         },
         {
-          "id": "LqubmMaey",
+          "id": "5cOIaLLYW",
           "itemId": "multiple-timers-002",
           "computedScore": {
             "score": 0,
@@ -190,7 +181,7 @@
     }
   ],
   "computedScore": {
-    "score": 4,
+    "score": 0,
     "pointValue": 17
   }
 }

@@ -36,7 +36,7 @@
               "name": "Sub Item 3",
               "scoreType": "points",
               "scoreValue": "penalty",
-              "pointValue": 1
+              "pointValue": -1
             }
           ]
         },

@@ -14,7 +14,15 @@
       "name": "Byron"
     }
   ],
-  "grades": [],
+  "grades": [
+    {
+      "id": "T2YZ6Uv70",
+      "name": "Rubric Test 1",
+      "rubricId": "test-01",
+      "studentId": "8",
+      "studentName": "Leah"
+    }
+  ],
   "rubrics": [
     {
       "id": "test-01",
