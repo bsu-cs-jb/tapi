@@ -9,9 +9,15 @@
       "courseId": "CS411-2023-fall"
     },
     {
-      "id": "T2YZ6Uv70",
+      "id": "SSB80IrSG",
       "name": "Rubric Test 1",
       "rubricId": "test-01",
+      "courseId": "CS411-2023-fall"
+    },
+    {
+      "id": "50RDr9U0O",
+      "name": "Rubric Test 1 - Test Course",
+      "rubricId": "test-course-test-01",
       "courseId": "test-course-id"
     }
   ]

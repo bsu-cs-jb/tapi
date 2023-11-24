@@ -82,7 +82,7 @@
         "score": 1,
         "pointValue": 8
       },
-      "comments": "De-bouncing to help improve performance."
+      "comments": "De-bouncing to help improve performance"
     },
     {
       "id": "lpQzD9Y80",
@@ -192,5 +192,7 @@
   "computedScore": {
     "score": 4,
     "pointValue": 17
-  }
+  },
+  "createdAt": "2023-11-24T17:46:15.015Z",
+  "updatedAt": "2023-11-24T17:46:15.015Z"
 }

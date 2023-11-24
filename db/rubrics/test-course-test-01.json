@@ -1,0 +1,53 @@
+{
+  "id": "test-course-test-01",
+  "name": "Rubric Test 1 - Test Course",
+  "categories": [
+    {
+      "id": "test-01",
+      "name": "Category 1",
+      "items": [
+        {
+          "id": "OSyiL!GkC",
+          "name": "Item 1",
+          "scoreType": "points",
+          "scoreValue": "points",
+          "pointValue": 10
+        },
+        {
+          "id": "nested-item-001",
+          "name": "Nested Item",
+          "subItems": [
+            {
+              "id": "sub-item-001",
+              "name": "Sub Item 1",
+              "scoreType": "boolean",
+              "scoreValue": "points",
+              "pointValue": 1
+            },
+            {
+              "id": "sub-item-002",
+              "name": "Sub Item 2",
+              "scoreType": "full_half",
+              "scoreValue": "bonus",
+              "pointValue": 2
+            },
+            {
+              "id": "sub-item-003",
+              "name": "Sub Item 3",
+              "scoreType": "points",
+              "scoreValue": "penalty",
+              "pointValue": -1
+            }
+          ]
+        },
+        {
+          "id": "BF!Kcg~30",
+          "name": "Item 2",
+          "scoreType": "full_half",
+          "scoreValue": "points",
+          "pointValue": 4
+        }
+      ]
+    }
+  ]
+}

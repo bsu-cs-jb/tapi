@@ -32,6 +32,13 @@
       "rubricId": "project-02",
       "studentId": "byron-test",
       "studentName": "Byron Test"
+    },
+    {
+      "id": "SSB80IrSG",
+      "name": "Rubric Test 1",
+      "rubricId": "test-01",
+      "studentId": "brahbrah-test",
+      "studentName": "Brahbrah Test"
     }
   ],
   "rubrics": [

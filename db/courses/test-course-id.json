@@ -7,26 +7,29 @@
       "name": "Brahbrah Test"
     },
     {
-      "id": "3",
-      "name": "Jack"
-    },
-    {
       "id": "byron-test",
-      "name": "Byron"
+      "name": "Byron Test"
     }
   ],
   "grades": [
     {
-      "id": "T2YZ6Uv70",
-      "name": "Rubric Test 1",
-      "rubricId": "test-01",
+      "id": "50RDr9U0O",
+      "name": "Rubric Test 1 - Test Course",
+      "rubricId": "test-course-test-01",
       "studentId": "brahbrah-test",
       "studentName": "Brahbrah Test"
+    },
+    {
+      "id": "6DQvakXWG",
+      "name": "Rubric Test 1 - Test Course",
+      "rubricId": "test-course-test-01",
+      "studentId": "byron-test",
+      "studentName": "Byron Test"
     }
   ],
   "rubrics": [
     {
-      "id": "test-01",
+      "id": "test-course-test-01",
       "name": "Test 1"
     }
   ]

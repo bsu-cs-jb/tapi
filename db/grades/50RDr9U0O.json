@@ -1,27 +1,26 @@
 {
-  "id": "iU3ilG2Sy",
-  "rubricId": "test-01",
-  "name": "Rubric Test 1",
+  "id": "50RDr9U0O",
+  "rubricId": "test-course-test-01",
+  "name": "Rubric Test 1 - Test Course",
   "categories": [
     {
-      "id": "iStkahdiW",
+      "id": "u258gYGRA",
       "categoryId": "test-01",
       "items": [
         {
-          "id": "6cpbHdAeq",
+          "id": "FsTDsjx5e",
           "itemId": "OSyiL!GkC",
           "computedScore": {
             "score": 0,
             "pointValue": 10
-          },
-          "score": 0
+          }
         },
         {
-          "id": "9wHyRhhoG",
+          "id": "29VER5ON0",
           "itemId": "nested-item-001",
           "subItems": [
             {
-              "id": "uLyb44zf8",
+              "id": "RjmE38BN0",
               "itemId": "sub-item-001",
               "computedScore": {
                 "score": 0,
@@ -29,7 +28,7 @@
               }
             },
             {
-              "id": "IaBbXGvVW",
+              "id": "cmHipBMk0",
               "itemId": "sub-item-002",
               "computedScore": {
                 "score": 0,
@@ -37,7 +36,7 @@
               }
             },
             {
-              "id": "JSxKpF7KG",
+              "id": "qx1j7DI8q",
               "itemId": "sub-item-003",
               "computedScore": {
                 "score": 0,
@@ -51,7 +50,7 @@
           }
         },
         {
-          "id": "5g6RTb2c8",
+          "id": "6kQdE~z5O",
           "itemId": "BF!Kcg~30",
           "computedScore": {
             "score": 0,
@@ -63,13 +62,13 @@
         "score": 0,
         "pointValue": 15
       },
-      "comments": "Byron CS 411 Test Rubric"
+      "comments": "Test course BrahBrah"
     }
   ],
   "computedScore": {
     "score": 0,
     "pointValue": 15
   },
-  "updatedAt": "2023-11-24T17:54:11.749Z",
-  "createdAt": "2023-11-24T17:49:07.151Z"
+  "updatedAt": "2023-11-24T17:52:46.699Z",
+  "createdAt": "2023-11-24T17:52:46.699Z"
 }

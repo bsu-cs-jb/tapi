@@ -13,6 +13,12 @@
       "name": "Project 2",
       "rubricId": "project-02",
       "courseId": "CS411-2023-fall"
+    },
+    {
+      "id": "6DQvakXWG",
+      "name": "Rubric Test 1 - Test Course",
+      "rubricId": "test-course-test-01",
+      "courseId": "test-course-id"
     }
   ]
 }

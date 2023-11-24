@@ -1,43 +1,45 @@
 {
-  "id": "iU3ilG2Sy",
+  "id": "SSB80IrSG",
   "rubricId": "test-01",
   "name": "Rubric Test 1",
   "categories": [
     {
-      "id": "iStkahdiW",
+      "id": "3LPSPHeMG",
       "categoryId": "test-01",
       "items": [
         {
-          "id": "6cpbHdAeq",
+          "id": "lFmXveCYO",
           "itemId": "OSyiL!GkC",
           "computedScore": {
-            "score": 0,
+            "score": 3,
             "pointValue": 10
           },
-          "score": 0
+          "score": 3
         },
         {
-          "id": "9wHyRhhoG",
+          "id": "O0YSW82Ve",
           "itemId": "nested-item-001",
           "subItems": [
             {
-              "id": "uLyb44zf8",
+              "id": "qvXXCju1G",
               "itemId": "sub-item-001",
               "computedScore": {
-                "score": 0,
+                "score": 1,
                 "pointValue": 1
-              }
+              },
+              "score": 1
             },
             {
-              "id": "IaBbXGvVW",
+              "id": "HJ1EQ7ub0",
               "itemId": "sub-item-002",
               "computedScore": {
-                "score": 0,
+                "score": 2,
                 "pointValue": 0
-              }
+              },
+              "score": 1
             },
             {
-              "id": "JSxKpF7KG",
+              "id": "mtyxrGdgG",
               "itemId": "sub-item-003",
               "computedScore": {
                 "score": 0,
@@ -46,12 +48,12 @@
             }
           ],
           "computedScore": {
-            "score": 0,
+            "score": 3,
             "pointValue": 1
           }
         },
         {
-          "id": "5g6RTb2c8",
+          "id": "oZsqgp6te",
           "itemId": "BF!Kcg~30",
           "computedScore": {
             "score": 0,
@@ -60,16 +62,16 @@
         }
       ],
       "computedScore": {
-        "score": 0,
+        "score": 6,
         "pointValue": 15
       },
-      "comments": "Byron CS 411 Test Rubric"
+      "comments": "CS 411 BrahBrah Test rubric"
     }
   ],
   "computedScore": {
-    "score": 0,
+    "score": 6,
     "pointValue": 15
   },
-  "updatedAt": "2023-11-24T17:54:11.749Z",
-  "createdAt": "2023-11-24T17:49:07.151Z"
+  "updatedAt": "2023-11-24T17:53:08.947Z",
+  "createdAt": "2023-11-24T17:51:32.084Z"
 }
