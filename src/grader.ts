@@ -115,7 +115,12 @@ export async function getOrAddRubricScore(
 export function graderRoutes(router: Router) {
 
   router.get('/', async (ctx) => {
-    ctx.body = `<p>Nice to meet you, are you looking for my <a href="${router.url('courses')}">Courses</a>?</p>`;
+    let body = '<div><p>Grader collections</p><ul>';
+    [COURSE, STUDENT, RUBRIC, GRADE].forEach((resource) => {
+      body += `<li>${resource.name}: <a href="${router.url(resource.name+'-html')}">html</a> <a href="${router.url(resource.name)}">json</a></li>`;
+    });
+    body += '</ul></div>';
+    ctx.body = body;
   });
 
   routerParam(router, COURSE);

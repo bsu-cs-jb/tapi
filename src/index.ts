@@ -13,8 +13,7 @@ const router = new Router();
 
 router
   .get('/', (ctx) => {
-    // ctx.router
-    ctx.body = '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a>?</p>';
+    ctx.body = '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
   })
   .get('/cats', (ctx) => {
     const cats = allCats();
