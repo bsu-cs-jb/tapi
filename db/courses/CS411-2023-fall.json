@@ -13,13 +13,6 @@
   ],
   "grades": [
     {
-      "id": "32",
-      "studentId": "brahbrah-test",
-      "studentName": "Brahbrah Test",
-      "rubricId": "test-01",
-      "name": "Test 1"
-    },
-    {
       "id": "ZUtP!sbJm",
       "name": "Project 2",
       "rubricId": "project-02",
