@@ -1,0 +1,189 @@
+{
+  "id": "SwD!m9fsm",
+  "rubricId": "project-02",
+  "name": "Project 2",
+  "categories": [
+    {
+      "id": "VEvcqiFJC",
+      "categoryId": "timer-sets",
+      "items": [
+        {
+          "id": "7PPJ4V3Au",
+          "itemId": "timer-sets-001",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 1
+          }
+        },
+        {
+          "id": "P6Gorp4TL",
+          "itemId": "timer-sets-002",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 2
+          }
+        },
+        {
+          "id": "tA6g0UysO",
+          "itemId": "timer-sets-003",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 2
+          }
+        },
+        {
+          "id": "0glnZ0Jum",
+          "itemId": "timer-sets-004",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 2
+          }
+        },
+        {
+          "id": "P3sd0bPMW",
+          "itemId": "timer-sets-005",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0
+          }
+        },
+        {
+          "id": "FxOs8raJe",
+          "itemId": "timer-sets-006",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 1
+          }
+        },
+        {
+          "id": "e8SUlX98G",
+          "itemId": "timer-sets-007",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0
+          }
+        },
+        {
+          "id": "hj7vMMTkO",
+          "itemId": "timer-sets-008",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0
+          }
+        }
+      ],
+      "computedScore": {
+        "score": 0,
+        "pointValue": 8
+      }
+    },
+    {
+      "id": "oLLaDYpMO",
+      "categoryId": "single-timer",
+      "items": [
+        {
+          "id": "xRqMxP0o4",
+          "itemId": "single-timer-001",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 2
+          }
+        },
+        {
+          "id": "sfb~xBZQa",
+          "itemId": "single-timer-005",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 1
+          }
+        },
+        {
+          "id": "je9lCqvvW",
+          "itemId": "single-timer-002",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0
+          }
+        },
+        {
+          "id": "hJnDlVOw0",
+          "itemId": "single-timer-003",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0
+          }
+        },
+        {
+          "id": "gQAyJIc~m",
+          "itemId": "single-timer-004",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0
+          }
+        }
+      ],
+      "computedScore": {
+        "score": 0,
+        "pointValue": 3
+      }
+    },
+    {
+      "id": "qDMZQ3v4W",
+      "categoryId": "edit-timer",
+      "items": [
+        {
+          "id": "qzq!RqQ0O",
+          "itemId": "edit-timer-001",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 2
+          }
+        },
+        {
+          "id": "I42rIbyr8",
+          "itemId": "edit-timer-002",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0
+          }
+        }
+      ],
+      "computedScore": {
+        "score": 0,
+        "pointValue": 2
+      }
+    },
+    {
+      "id": "CXxT0BUs0",
+      "categoryId": "multiple-timers",
+      "items": [
+        {
+          "id": "qSdhadcaW",
+          "itemId": "multiple-timers-001",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 4
+          }
+        },
+        {
+          "id": "LCsLshX8G",
+          "itemId": "multiple-timers-002",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0
+          }
+        }
+      ],
+      "computedScore": {
+        "score": 0,
+        "pointValue": 4
+      }
+    }
+  ],
+  "computedScore": {
+    "score": 0,
+    "pointValue": 17
+  },
+  "updatedAt": "2023-11-24T22:38:11.913Z",
+  "createdAt": "2023-11-24T22:37:15.689Z"
+}
