@@ -1,0 +1,3 @@
+[submodule "cs411-db"]
+	path = cs411-db
+	url = git@github.com:bsu-cs-jb/cs411-db.git
