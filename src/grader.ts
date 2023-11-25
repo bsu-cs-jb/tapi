@@ -85,11 +85,25 @@ export async function getOrAddRubricScore(
   );
   if (foundGrade) {
     // look this up and return it
-    console.log(`Found grade for ${student.name} ${rubric.name}`, foundGrade);
-    return await readResource<RubricScore>(refWithId(GRADE, foundGrade.id));
+    console.log(`Found grade for ${course.name} ${student.name} ${rubric.name}`, foundGrade);
+    const rubricScore = await readResource<RubricScore>(refWithId(GRADE, foundGrade.id));
+    // Update this since it wasn't originally saved
+    if (rubricScore) {
+      rubricScore.studentId = student.id;
+      rubricScore.studentName = student.name;
+      rubricScore.courseId = course.id;
+      rubricScore.courseName = course.name;
+      console.log('Updating rubric score');
+      return updateRubricScore(rubricScore, rubric);
+    }
+    return rubricScore;
   } else {
     // no grade for this rubric for this student
     const rubricScore = makeRubricScore(rubric);
+    rubricScore.studentId = student.id;
+    rubricScore.studentName = student.name;
+    rubricScore.courseId = course.id;
+    rubricScore.courseName = course.name;
     scoreRubric(rubric, rubricScore);
     const gradeRef: CourseGradeDbObj = {
       id: rubricScore.id,
@@ -166,25 +180,26 @@ export function graderRoutes(router: Router) {
     })
     .get('course-student-grade', '/courses/:courseId/students/:studentId/grades/:rubricId', async (ctx) => {
       const { course, student, rubric } = ctx as unknown as { course: CourseDbObj; student: Student; rubric: Rubric };
-      const existingGrade = student.grades.find((grade: CourseGradeDbObj) => grade.rubricId === rubric.id);
-      console.log(`Existing student grade for ${course.name} ${student.name} ${rubric.id}`, existingGrade);
+      // const existingGrade = student.grades.find((grade: CourseGradeDbObj) => grade.rubricId === rubric.id);
+      // console.log(`Existing student grade for ${course.name} ${student.name} ${rubric.id}`, existingGrade);
 
-      const rubricScore = await (async () => {
-        if (existingGrade) {
-          // TODO: Update / validate score based on rubric
-          return await readResource<RubricScore>(refWithId(GRADE, existingGrade.id)).then((grade) => {
-            if (grade) {
-              console.log('Updating rubric score');
-              return updateRubricScore(grade, rubric);
-            } else {
-              return undefined;
-            }
-          });
-        } else {
-          console.log('Creating new rubric score.');
-          return getOrAddRubricScore(course, student, rubric);
-        }
-      })();
+      // const rubricScore = await (async () => {
+      //   if (existingGrade) {
+      //     // TODO: Update / validate score based on rubric
+      //     return await readResource<RubricScore>(refWithId(GRADE, existingGrade.id)).then((grade) => {
+      //       if (grade) {
+      //         console.log('Updating rubric score');
+      //         return updateRubricScore(grade, rubric);
+      //       } else {
+      //         return undefined;
+      //       }
+      //     });
+      //   } else {
+      //     console.log('Creating new rubric score.');
+      //     return getOrAddRubricScore(course, student, rubric);
+      //   }
+      // })();
+      const rubricScore = await getOrAddRubricScore(course, student, rubric);
       ctx.body = rubricScore;
     })
     .put('student-grade', '/students/:studentId/grades/:gradeId', async (ctx) => {

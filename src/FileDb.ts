@@ -9,7 +9,7 @@ import {
   mkdir,
 } from 'node:fs/promises';
 import util from 'node:util';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, throttle } from 'lodash-es';
 import { execFile } from 'node:child_process';
 const execFileP = util.promisify(execFile);
 
@@ -42,7 +42,8 @@ export interface ResourceDef {
   parents?: ResourceDef[];
 }
 
-const ROOT = './db';
+// const ROOT = './db';
+const ROOT = './cs411-db/grading-db';
 
 export function jsonToBuffer(data: IdResource): Uint8Array {
   return new Uint8Array(Buffer.from(JSON.stringify(data, undefined, 2)));
@@ -174,6 +175,24 @@ export async function readResource<T extends IdResource>(resource: ResourceDef):
   return data;
 }
 
+async function gitCommit() {
+  try {
+    const { stdout, stderr } = await execFileP('./push-db.sh');
+    console.log(`execFile stdout:\n${stdout}`);
+    console.log(`execFile stderr:\n${stderr}`);
+    // await execFileP('git', ['add', '-A', 'db/']);
+    // await execFileP('git', ['commit', '-m', 'Update db']);
+    // console.log('DONE committing to git.');
+  } catch (err) {
+    console.error('Error using git', err);
+  }
+}
+
+const throttleGitCommit = throttle(gitCommit, 30*1000, {
+  leading: false, trailing: true
+});
+
+
 export async function writeResource(resource: ResourceDef, data: IdResource) {
   await ensureResourceDir(resource);
   const buffer = jsonToBuffer(data);
@@ -181,13 +200,7 @@ export async function writeResource(resource: ResourceDef, data: IdResource) {
   console.log(`writeResource(${resource.singular} ${resource.id}) to ${filename}.`);
   await writeFile(filename, buffer);
   // console.log(`DONE writing to ${filename}.`);
-  try {
-    // await execFileP('git', ['add', '-A', 'db/']);
-    // await execFileP('git', ['commit', '-m', 'Update db']);
-    // console.log('DONE committing to git.');
-  } catch (err) {
-    console.error('Error using git', err);
-  }
+  throttleGitCommit();
   return filename;
 }
 

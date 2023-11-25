@@ -1,6 +1,6 @@
 import Router from '@koa/router';
 import { urlid } from './genid.js';
-import { log, jsonhtml, assert } from './utils.js';
+import { log, jsonhtml, shallowJson, assert } from './utils.js';
 import {
   getAll,
   writeResource,
@@ -161,11 +161,8 @@ export function putResource(router: Router, resource: ResourceDef): Router {
         data.createdAt = requestTimestamp;
       }
       const filename = await writeResource(ref, data);
-      console.log(`PUT written to ${filename} ${resource.singular} body:`, data);
-      // let body = `<p>PUT ${resource.singular} ${data.id}</p>\n`;
-      // body += `<p>Written to: ${filename}</p>\n`;
-      // body += '<p>Body:</p>\n';
-      // body += jsonhtml(data);
+      // console.log(`PUT written to ${filename} ${resource.singular} body:`, data);
+      console.log(`PUT written to ${filename} ${resource.singular} body:`, shallowJson(data));
       ctx.body = data;
     });
 }
