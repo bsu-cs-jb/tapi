@@ -29,10 +29,14 @@ export function resourceFromContext(resource: ResourceDef, id?:string, ctx?:Reco
   return ref;
 }
 
-export function routerParam<T extends IdResource>(router:Router, resource: ResourceDef):Router {
+export function routerParam<T extends IdResource>(router:Router, resource: ResourceDef, processFn?: (obj:T) => T|undefined):Router {
   return router.param(resource.paramName, async (id, ctx, next) => {
     const ref = resourceFromContext(resource, id, ctx.params);
-    ctx[resource.singular] = await readResource<T>(ref);
+    let obj = await readResource<T>(ref);
+    if (processFn && obj) {
+      obj = processFn(obj);
+    }
+    ctx[resource.singular] = obj;
     if (!ctx[resource.singular]) {
       ctx.status = 404;
       console.error(`${resource.singular} id '${id}' not found.`);

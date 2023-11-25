@@ -1,5 +1,5 @@
 import Router from '@koa/router';
-import { jsonhtml } from './utils.js';
+import { jsonhtml, log } from './utils.js';
 import {
   ResourceDef,
   readResource,
@@ -25,6 +25,7 @@ import {
   CourseGradeDbObj,
   makeStudent,
   updateRubricScore,
+  validateRubric,
 } from 'grading';
 
 const COURSE:ResourceDef = {
@@ -85,7 +86,7 @@ export async function getOrAddRubricScore(
   );
   if (foundGrade) {
     // look this up and return it
-    console.log(`Found grade for ${course.name} ${student.name} ${rubric.name}`, foundGrade);
+    log(`Found grade for ${course.name} ${student.name} ${rubric.name}`, foundGrade);
     const rubricScore = await readResource<RubricScore>(refWithId(GRADE, foundGrade.id));
     // Update this since it wasn't originally saved
     if (rubricScore) {
@@ -93,7 +94,7 @@ export async function getOrAddRubricScore(
       rubricScore.studentName = student.name;
       rubricScore.courseId = course.id;
       rubricScore.courseName = course.name;
-      console.log('Updating rubric score');
+      log('Updating rubric score');
       return updateRubricScore(rubricScore, rubric);
     }
     return rubricScore;
@@ -127,6 +128,17 @@ export async function getOrAddRubricScore(
   }
 }
 
+function processRubric(rubric: Rubric): Rubric|undefined {
+  const result = validateRubric(rubric);
+  if (!result.valid) {
+    log(`Rubric ${rubric.name} failed validation. Duplicate ids:`, result);
+    return undefined;
+  } else {
+    log(`validated rubric ${rubric.name}.`);
+    return rubric;
+  }
+}
+
 export function graderRoutes(router: Router) {
 
   router.get('/', async (ctx) => {
@@ -139,7 +151,7 @@ export function graderRoutes(router: Router) {
   });
 
   routerParam(router, COURSE);
-  routerParam(router, RUBRIC);
+  routerParam(router, RUBRIC, processRubric);
   routerParam(router, STUDENT);
   routerParam(router, GRADE);
 
@@ -181,21 +193,21 @@ export function graderRoutes(router: Router) {
     .get('course-student-grade', '/courses/:courseId/students/:studentId/grades/:rubricId', async (ctx) => {
       const { course, student, rubric } = ctx as unknown as { course: CourseDbObj; student: Student; rubric: Rubric };
       // const existingGrade = student.grades.find((grade: CourseGradeDbObj) => grade.rubricId === rubric.id);
-      // console.log(`Existing student grade for ${course.name} ${student.name} ${rubric.id}`, existingGrade);
+      // log(`Existing student grade for ${course.name} ${student.name} ${rubric.id}`, existingGrade);
 
       // const rubricScore = await (async () => {
       //   if (existingGrade) {
       //     // TODO: Update / validate score based on rubric
       //     return await readResource<RubricScore>(refWithId(GRADE, existingGrade.id)).then((grade) => {
       //       if (grade) {
-      //         console.log('Updating rubric score');
+      //         log('Updating rubric score');
       //         return updateRubricScore(grade, rubric);
       //       } else {
       //         return undefined;
       //       }
       //     });
       //   } else {
-      //     console.log('Creating new rubric score.');
+      //     log('Creating new rubric score.');
       //     return getOrAddRubricScore(course, student, rubric);
       //   }
       // })();
