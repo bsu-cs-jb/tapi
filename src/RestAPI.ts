@@ -132,11 +132,7 @@ export function postResource(router: Router, resource: ResourceDef): Router {
     newResource.createdAt = requestTimestamp;
     newResource.updatedAt = requestTimestamp;
     const filename = await writeResource(ref, newResource);
-    console.log(`Written to ${filename} ${resource.singular} body:`, newResource);
-    // let body = `<p>POST ${resource.singular} ${data.id}</p>\n`;
-    // body += `<p>Written to: ${filename}</p>\n`;
-    // body += '<p>Body:</p>\n';
-    // body += jsonhtml(data);
+    console.log(`POST written to ${filename} ${resource.singular}:`, newResource);
     ctx.body = newResource;
   });
   return router;
@@ -162,7 +158,7 @@ export function putResource(router: Router, resource: ResourceDef): Router {
       }
       const filename = await writeResource(ref, data);
       // console.log(`PUT written to ${filename} ${resource.singular} body:`, data);
-      console.log(`PUT written to ${filename} ${resource.singular} body:`, shallowJson(data));
+      console.log(`PUT written to ${filename} ${resource.singular}:`, shallowJson(data));
       ctx.body = data;
     });
 }
