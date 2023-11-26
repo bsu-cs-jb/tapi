@@ -94,6 +94,7 @@ export async function getOrAddRubricScore(
       rubricScore.studentName = student.name;
       rubricScore.courseId = course.id;
       rubricScore.courseName = course.name;
+      rubricScore.name = `${rubric.name} for ${student.name} in ${course.name}`;
       log('Updating rubric score');
       return updateRubricScore(rubricScore, rubric);
     }
@@ -105,6 +106,7 @@ export async function getOrAddRubricScore(
     rubricScore.studentName = student.name;
     rubricScore.courseId = course.id;
     rubricScore.courseName = course.name;
+    rubricScore.name = `${rubric.name} for ${student.name} in ${course.name}`;
     scoreRubric(rubric, rubricScore);
     const gradeRef: CourseGradeDbObj = {
       id: rubricScore.id,
