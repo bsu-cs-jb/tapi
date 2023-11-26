@@ -59,7 +59,7 @@ export function decodeId(id: string, dictionary?: string): number {
   let num = 0;
   let pwr = 1;
   for (let i = id.length - 1; i >= 0; i--) {
-    num += DICTIONARY.indexOf(id[i]) * pwr;
+    num += dictionary.indexOf(id[i]) * pwr;
     pwr *= DICT_LENGTH;
   }
   return num;
@@ -71,7 +71,7 @@ export function genid(length: number = 9): string {
   return id;
 }
 
-export function urlid(length: number = 9): string {
+export function urlid(length: number = 10): string {
   const num = gennum();
   const id = encodeNumber(num, length, URL_SAFE_DICTIONARY);
   return id;
