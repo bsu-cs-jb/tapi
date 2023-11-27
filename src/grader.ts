@@ -249,12 +249,18 @@ export function graderRoutes(router: Router) {
       body += '<table><thead><tr>\n';
       body += '<th>Student</th>\n';
       body += '<th>Score</th>\n';
+      body += '<th>Point Value</th>\n';
+      body += '<th>Percent</th>\n';
       body += '<th>Unscored</th>\n';
       body += '</tr></thead><tbody>\n';
       for (const rubricScore of grades) {
+        const score = rubricScore.computedScore?.score || 0;
+        const pointValue = rubricScore.computedScore?.pointValue || 0;
         body += '<tr>';
         body += `<td><a href="${router.url('grade-html', { gradeId: rubricScore.id })}">${rubricScore.studentName}</a></td>`;
         body += `<td style="text-align: right">${rubricScore.computedScore?.score}</td>`;
+        body += `<td style="text-align: right">${rubricScore.computedScore?.pointValue}</td>`;
+        body += `<td style="text-align: right">${(score/pointValue*100).toFixed(0)}%</td>`;
         body += `<td style="text-align: right">${rubricScore.computedScore?.unscoredItems}</td>`;
         body += '</tr>\n';
       }
@@ -263,6 +269,7 @@ export function graderRoutes(router: Router) {
       body += '<table><thead><tr>\n';
       body += '<th>Student</th>\n';
       body += '<th>Score</th>\n';
+      body += '<th>Percent</th>\n';
       body += '<th>Unscored</th>\n';
       for (const category of rubric.categories) {
         body += `<th>${category.name}</th>\n`;
@@ -270,13 +277,12 @@ export function graderRoutes(router: Router) {
       body += '</tr></thead><tbody>\n';
       for (const rubricScore of grades) {
         body += '<tr>';
+        const score = rubricScore.computedScore?.score || 0;
+        const pointValue = rubricScore.computedScore?.pointValue || 0;
         body += `<td><a href="${router.url('grade-html', { gradeId: rubricScore.id })}">${rubricScore.studentName}</a></td>`;
         body += `<td style="text-align: right">${rubricScore.computedScore?.score}</td>`;
+        body += `<td style="text-align: right">${(score/pointValue*100).toFixed(0)}%</td>`;
         body += `<td style="text-align: right">${rubricScore.computedScore?.unscoredItems}</td>`;
-        // For category in categories
-        // show category score
-        // for item in items
-        // show item score
         for (const category of rubricScore.categories) {
           body += `<td style="text-align: right">${category.computedScore?.score}`;
           body += ` / ${category.computedScore?.pointValue}`;
@@ -329,10 +335,15 @@ export function graderRoutes(router: Router) {
             return itemScore?.computedScore?.score;
           });
 
+          const scoreValueList = grades.map((score) => {
+            const itemScore = findInRubric<RubricItemScore>(score, { itemId: item.id });
+            return itemScore?.score;
+          });
+
           body += `<td>${mean(scoreList)}</td>\n`;
           body += `<td>${min(scoreList)}</td>\n`;
           body += `<td>${max(scoreList)}</td>\n`;
-          body += `<td>${scoreList.filter((s) => s === undefined).length}</td>\n`;
+          body += `<td>${scoreValueList.filter((s) => s === undefined).length}</td>\n`;
 
           body += '</tr>\n';
         }
