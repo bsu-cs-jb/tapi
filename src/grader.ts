@@ -343,8 +343,14 @@ export function graderRoutes(router: Router) {
         for (const item of category.items) {
           body += '<tr>';
 
+          let decoration = '';
+          if (item.scoreValue === 'bonus') {
+            decoration = ' <span style="color: green">[bonus]</span>';
+          } else if (item.scoreValue === 'penalty') {
+            decoration = ' <span style="color: red">[penalty]</span>';
+          }
           body += `<td>${category.name}</td>\n`;
-          body += `<td>${item.name}</td>\n`;
+          body += `<td>${item.name}${decoration}</td>\n`;
           body += `<td>${item.pointValue}</td>\n`;
 
           const scoreList = grades.map((score) => {
