@@ -1,5 +1,5 @@
 import Router from '@koa/router';
-import { memoize, mean, max, min } from 'lodash-es';
+import * as _ from 'lodash-es';
 
 import { jsonhtml, log } from './utils.js';
 import {
@@ -72,7 +72,7 @@ async function fetchRubricScore(id:string): Promise<RubricScore|undefined> {
 }
 
 async function fetchGrades(course: CourseDbObj, rubric: Rubric, skipTestStudents = true): Promise<RubricScore[]> {
-  const cachedFetchStudent = memoize(fetchStudent);
+  const cachedFetchStudent = _.memoize(fetchStudent);
 
   const gradeRefs = course.grades.filter((grade) => grade.rubricId === rubric.id);
   const grades = await Promise.all((await Promise.all(
@@ -246,6 +246,25 @@ export function graderRoutes(router: Router) {
 
       const grades = await fetchGrades(course, rubric);
 
+      function statsRows(scoreList: number[], scoreValueList: (number|undefined)[]): string {
+        let rows = '';
+        rows += `<td>${_.mean(scoreList).toFixed(2)}</td>\n`;
+        rows += `<td>${_.min(scoreList)}</td>\n`;
+        rows += `<td>${_.max(scoreList)}</td>\n`;
+
+        const distr = Object.entries(_.countBy(scoreList));
+        const sortedDistr = _.sortBy(distr, [(i:[string,number]) => Number.parseFloat(i[0])]);
+        let distrValue = `${sortedDistr.length} values`;
+        if (sortedDistr.length <= 3) {
+          distrValue = _.join(sortedDistr.map(([k,c]) => `${k}: ${c}`), '; ');
+        }
+
+        rows += `<td>${distrValue}</td>\n`;
+        rows += `<td>${scoreValueList.filter((s) => s === undefined).length}</td>\n`;
+        return rows;
+      }
+
+
       body += '<table><thead><tr>\n';
       body += '<th>Student</th>\n';
       body += '<th>Score</th>\n';
@@ -299,6 +318,7 @@ export function graderRoutes(router: Router) {
       body += '<th>Average Score</th>\n';
       body += '<th>Min Score</th>\n';
       body += '<th>Max Score</th>\n';
+      body += '<th>Distribution</th>\n';
       body += '<th>Total Unscored</th>\n';
       body += '</tr></thead><tbody>\n';
       for (const category of rubric.categories) {
@@ -313,13 +333,10 @@ export function graderRoutes(router: Router) {
 
         const scoreList = grades.map((score) => {
           const catScore = findCategory(score, category.id);
-          return catScore?.computedScore?.score;
+          return catScore?.computedScore?.score || 0;
         });
 
-        body += `<td><b>${mean(scoreList)}</b></td>\n`;
-        body += `<td><b>${min(scoreList)}</b></td>\n`;
-        body += `<td><b>${max(scoreList)}</b></td>\n`;
-        body += `<td><b>${scoreList.filter((s) => s === undefined).length}</b></td>\n`;
+        body += statsRows(scoreList, scoreList);
 
         body += '</tr>\n';
 
@@ -332,7 +349,7 @@ export function graderRoutes(router: Router) {
 
           const scoreList = grades.map((score) => {
             const itemScore = findInRubric<RubricItemScore>(score, { itemId: item.id });
-            return itemScore?.computedScore?.score;
+            return itemScore?.computedScore?.score || 0;
           });
 
           const scoreValueList = grades.map((score) => {
@@ -340,10 +357,7 @@ export function graderRoutes(router: Router) {
             return itemScore?.score;
           });
 
-          body += `<td>${mean(scoreList)}</td>\n`;
-          body += `<td>${min(scoreList)}</td>\n`;
-          body += `<td>${max(scoreList)}</td>\n`;
-          body += `<td>${scoreValueList.filter((s) => s === undefined).length}</td>\n`;
+          body += statsRows(scoreList, scoreValueList);
 
           body += '</tr>\n';
         }
