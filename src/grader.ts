@@ -1,5 +1,5 @@
 import Router from '@koa/router';
-// import { isEqual } from 'lodash-es';
+import { memoize, mean, max, min } from 'lodash-es';
 
 import { jsonhtml, log } from './utils.js';
 import {
@@ -21,6 +21,7 @@ import {
   Student,
   Rubric,
   RubricScore,
+  RubricItemScore,
   makeRubricScore,
   scoreRubric,
   StudentGradeDbObj,
@@ -28,6 +29,10 @@ import {
   makeStudent,
   updateRubricScore,
   validateRubric,
+  findCategory,
+  findInRubric,
+  scoreCategory,
+  makeCategoryScore,
 } from 'grading';
 
 const COURSE:ResourceDef = {
@@ -57,6 +62,45 @@ const GRADE:ResourceDef = {
   paramName: 'gradeId',
   parents: [STUDENT],
 };
+
+async function fetchStudent(id:string): Promise<Student|undefined> {
+  return readResource<Student>(refWithId(STUDENT, id));
+}
+
+async function fetchRubricScore(id:string): Promise<RubricScore|undefined> {
+  return readResource<RubricScore>(refWithId(GRADE, id));
+}
+
+async function fetchGrades(course: CourseDbObj, rubric: Rubric, skipTestStudents = true): Promise<RubricScore[]> {
+  const cachedFetchStudent = memoize(fetchStudent);
+
+  const gradeRefs = course.grades.filter((grade) => grade.rubricId === rubric.id);
+  const grades = await Promise.all((await Promise.all(
+    gradeRefs
+      .map(async (gradeRef) => {
+        if (skipTestStudents) {
+          const student = await cachedFetchStudent(gradeRef.studentId);
+          if (student?.test) {
+            return undefined;
+          }
+        }
+        const rubricScore = await fetchRubricScore(gradeRef.id);
+        return rubricScore;
+      })))
+    .filter((s):s is RubricScore => s !== undefined)
+    .map(async (s) => {
+      const updated = updateRubricScore(s, rubric);
+      // TODO: this isEqual does not work
+      // if (!isEqual(s, updated)) {
+      // Old-school solution works fine
+      if (JSON.stringify(s) !== JSON.stringify(updated)) {
+        log(`Needs updated: ${s.name}`);
+        await writeResource(refWithId(GRADE, updated.id), updated);
+      }
+      return updated;
+    }));
+  return grades;
+}
 
 // function courseRef(courseId: string):ResourceDef {
 //   const ref = cloneDeep(COURSE);
@@ -200,25 +244,7 @@ export function graderRoutes(router: Router) {
       body += `<p>Course: <a href="${router.url('course-html', { courseId: course.id })}">${course.name}</a></p>\n`;
       body += `<p>Rubric: <a href="${router.url('rubric-html', { rubricId: rubric.id })}">${rubric.name}</a></p>\n`;
 
-      const gradeRefs = course.grades.filter((grade) => grade.rubricId === rubric.id);
-      const grades = await Promise.all((await Promise.all(
-        gradeRefs
-          .map(async (gradeRef) => {
-            const rubricScore = await readResource<RubricScore>(refWithId(GRADE, gradeRef.id));
-            return rubricScore;
-          })))
-        .filter((s):s is RubricScore => s !== undefined)
-        .map(async (s) => {
-          const updated = updateRubricScore(s, rubric);
-          // TODO: this isEqual does not work
-          // if (!isEqual(s, updated)) {
-          // Old-school solution works fine
-          if (JSON.stringify(s) !== JSON.stringify(updated)) {
-            log(`Needs updated: ${s.name}`);
-            await writeResource(refWithId(GRADE, updated.id), updated);
-          }
-          return updated;
-        }));
+      const grades = await fetchGrades(course, rubric);
 
       body += '<table><thead><tr>\n';
       body += '<th>Student</th>\n';
@@ -226,10 +252,6 @@ export function graderRoutes(router: Router) {
       body += '<th>Unscored</th>\n';
       body += '</tr></thead><tbody>\n';
       for (const rubricScore of grades) {
-        if (!rubricScore) {
-          // body += `<tr><td>${gradeRef.name} - failed to find resource ${gradeRef.id}</td></tr>\n`;
-          continue;
-        }
         body += '<tr>';
         body += `<td><a href="${router.url('grade-html', { gradeId: rubricScore.id })}">${rubricScore.studentName}</a></td>`;
         body += `<td style="text-align: right">${rubricScore.computedScore?.score}</td>`;
@@ -247,10 +269,6 @@ export function graderRoutes(router: Router) {
       }
       body += '</tr></thead><tbody>\n';
       for (const rubricScore of grades) {
-        if (!rubricScore) {
-          // body += `<tr><td>${gradeRef.name} - failed to find resource ${gradeRef.id}</td></tr>\n`;
-          continue;
-        }
         body += '<tr>';
         body += `<td><a href="${router.url('grade-html', { gradeId: rubricScore.id })}">${rubricScore.studentName}</a></td>`;
         body += `<td style="text-align: right">${rubricScore.computedScore?.score}</td>`;
@@ -268,13 +286,66 @@ export function graderRoutes(router: Router) {
       }
       body += '</tbody></table>\n';
 
+      body += '<table><thead><tr>\n';
+      body += '<th>Category</th>\n';
+      body += '<th>Item</th>\n';
+      body += '<th>Point Value</th>\n';
+      body += '<th>Average Score</th>\n';
+      body += '<th>Min Score</th>\n';
+      body += '<th>Max Score</th>\n';
+      body += '<th>Total Unscored</th>\n';
+      body += '</tr></thead><tbody>\n';
+      for (const category of rubric.categories) {
+        body += '<tr>';
+
+        body += `<td><b>${category.name}</b></td>\n`;
+        body += '<td><b>Category</b></td>\n';
+
+        // figure out point value
+        const catScore = scoreCategory(category, makeCategoryScore(category));
+        body += `<td><b>${catScore.pointValue}</b></td>\n`;
+
+        const scoreList = grades.map((score) => {
+          const catScore = findCategory(score, category.id);
+          return catScore?.computedScore?.score;
+        });
+
+        body += `<td><b>${mean(scoreList)}</b></td>\n`;
+        body += `<td><b>${min(scoreList)}</b></td>\n`;
+        body += `<td><b>${max(scoreList)}</b></td>\n`;
+        body += `<td><b>${scoreList.filter((s) => s === undefined).length}</b></td>\n`;
+
+        body += '</tr>\n';
+
+        for (const item of category.items) {
+          body += '<tr>';
+
+          body += `<td>${category.name}</td>\n`;
+          body += `<td>${item.name}</td>\n`;
+          body += `<td>${item.pointValue}</td>\n`;
+
+          const scoreList = grades.map((score) => {
+            const itemScore = findInRubric<RubricItemScore>(score, { itemId: item.id });
+            return itemScore?.computedScore?.score;
+          });
+
+          body += `<td>${mean(scoreList)}</td>\n`;
+          body += `<td>${min(scoreList)}</td>\n`;
+          body += `<td>${max(scoreList)}</td>\n`;
+          body += `<td>${scoreList.filter((s) => s === undefined).length}</td>\n`;
+
+          body += '</tr>\n';
+        }
+      }
+      body += '</tbody></table>\n';
+
       ctx.body = body;
     })
     .get('course-rubric-grades', '/courses/:courseId/rubrics/:rubricId/grades', async (ctx) => {
       const { course, rubric } = ctx as unknown as { course: CourseDbObj; rubric: Rubric };
       const gradeRefs = course.grades.filter((grade) => grade.rubricId === rubric.id);
       const grades = await Promise.all(gradeRefs.map(async (gradeRef) => {
-        const rubricScore = await readResource<RubricScore>(refWithId(GRADE, gradeRef.id));
+        const rubricScore = await fetchRubricScore(gradeRef.id);
         return rubricScore;
       }));
       ctx.body = grades;
