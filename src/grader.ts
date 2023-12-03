@@ -39,6 +39,7 @@ const COURSE:ResourceDef = {
   name: 'courses',
   singular: 'course',
   paramName: 'courseId',
+  sortBy: 'name',
 };
 
 const RUBRIC:ResourceDef = {
@@ -46,6 +47,7 @@ const RUBRIC:ResourceDef = {
   singular: 'rubric',
   paramName: 'rubricId',
   // parents: [COURSE],
+  sortBy: 'name',
 };
 
 const STUDENT:ResourceDef = {
@@ -54,6 +56,7 @@ const STUDENT:ResourceDef = {
   paramName: 'studentId',
   builder: makeStudent,
   // parents: [COURSE],
+  sortBy: 'name',
 };
 
 const GRADE:ResourceDef = {
@@ -61,6 +64,7 @@ const GRADE:ResourceDef = {
   singular: 'grade',
   paramName: 'gradeId',
   parents: [STUDENT],
+  sortBy: 'name',
 };
 
 async function fetchStudent(id:string): Promise<Student|undefined> {
@@ -99,7 +103,7 @@ async function fetchGrades(course: CourseDbObj, rubric: Rubric, skipTestStudents
       }
       return updated;
     }));
-  return grades;
+  return _.sortBy(grades, 'studentName');
 }
 
 // function courseRef(courseId: string):ResourceDef {
@@ -190,11 +194,14 @@ function processRubric(rubric: Rubric): Rubric|undefined {
 export function graderRoutes(router: Router) {
 
   router.get('/', async (ctx) => {
-    let body = '<div><p>Grader collections</p><ul>';
+    let body = '<div><p>Grader collections</p><ul>\n';
     [COURSE, STUDENT, RUBRIC, GRADE].forEach((resource) => {
-      body += `<li>${resource.name}: <a href="${router.url(resource.name+'-html')}">html</a> <a href="${router.url(resource.name)}">json</a></li>`;
+      body += `<li>${resource.name}: <a href="${router.url(resource.name+'-html')}">html</a> <a href="${router.url(resource.name)}">json</a></li>\n`;
     });
-    body += '</ul></div>';
+    body += '</ul></div>\n';
+    body += '<div><p>Other links</p><ul>\n';
+    body += '<li><a href="http://localhost:3000/grader/courses/CS411-2023-fall/rubrics/project-02/grades.html">Project 2 Grade stats</a></li>\n';
+    body += '</ul></div>\n';
     ctx.body = body;
   });
 

@@ -10,7 +10,7 @@ import {
   IdResource,
   refWithId,
 } from './FileDb.js';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, sortBy } from 'lodash-es';
 
 type IdName = { id: string; name: string; };
 
@@ -54,6 +54,9 @@ export function linkList(
 {
   // console.log(`linkList(router, ${resource.paramName}, ${resource.singular}, ${resources.length})`);
   let result = `<div><p>${resource.name} collection</p><ul>`;
+  if (resource.sortBy) {
+    resources = sortBy(resources, resource.sortBy);
+  }
   for (const r of resources) {
     const href = router.url(`${resource.singular}-html`, { [resource.paramName]: r.id, ...urlParams });
     // console.log(`<p><a href="${href}">${r.name} - ${r.id}</a></p>`);
@@ -118,7 +121,6 @@ export function getResource(
 
 export function postResource(router: Router, resource: ResourceDef): Router {
   router.post(`/${resource.name}`, async (ctx, next) => {
-    const requestTimestamp = new Date().toISOString();
     const data = ctx.request.body;
     let newResource = data;
     if (resource.builder) {
@@ -133,8 +135,6 @@ export function postResource(router: Router, resource: ResourceDef): Router {
       ctx.status = 400;
       return await next();
     }
-    newResource.createdAt = requestTimestamp;
-    newResource.updatedAt = requestTimestamp;
     const filename = await writeResource(ref, newResource);
     console.log(`POST written to ${filename} ${resource.singular}:`, newResource);
     ctx.body = newResource;
@@ -147,7 +147,6 @@ export function putResource(router: Router, resource: ResourceDef): Router {
     resource.singular,
     `/${resource.name}/:${resource.paramName}`,
     async (ctx) => {
-      const requestTimestamp = new Date().toISOString();
       const data = ctx.request.body;
       const id = ctx.params[resource.paramName];
       if (data.id) {
@@ -156,10 +155,6 @@ export function putResource(router: Router, resource: ResourceDef): Router {
         data.id = id;
       }
       const ref = refWithId(resource, data.id);
-      data.updatedAt = requestTimestamp;
-      if (!data.createdAt) {
-        data.createdAt = requestTimestamp;
-      }
       const filename = await writeResource(ref, data);
       // console.log(`PUT written to ${filename} ${resource.singular} body:`, data);
       console.log(`PUT written to ${filename} ${resource.singular}:`, shallowJson(data));

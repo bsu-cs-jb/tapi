@@ -40,6 +40,8 @@ export interface ResourceDef {
   // supplying default values for any missing properties
   builder?: <T extends IdResource>(props?: AllOptional<T>) => IdResource;
   parents?: ResourceDef[];
+  // field to sort by in html views
+  sortBy?: string;
 }
 
 // const ROOT = './db';
@@ -193,8 +195,15 @@ const throttleGitCommit = throttle(gitCommit, 30*1000, {
 });
 
 
-export async function writeResource(resource: ResourceDef, data: IdResource) {
+export async function writeResource(resource: ResourceDef, data: IdResource, updateTimestamps = true) {
   await ensureResourceDir(resource);
+  if (updateTimestamps) {
+    const ts = new Date().toISOString();
+    data.updatedAt = ts;
+    if (!data.createdAt) {
+      data.createdAt = ts;
+    }
+  }
   const buffer = jsonToBuffer(data);
   const filename = resourceFilename(resource);
   console.log(`writeResource(${resource.singular} ${resource.id}) to ${filename}.`);
