@@ -10,7 +10,7 @@ import {
   IdResource,
   refWithId,
 } from './FileDb.js';
-import { cloneDeep, sortBy } from 'lodash-es';
+import { cloneDeep, sortBy, capitalize } from 'lodash-es';
 
 type IdName = { id: string; name: string; };
 
@@ -53,7 +53,7 @@ export function linkList(
   urlParams: Record<string,string> = {}): string
 {
   // console.log(`linkList(router, ${resource.paramName}, ${resource.singular}, ${resources.length})`);
-  let result = `<div><p>${resource.name} collection</p><ul>`;
+  let result = `<div><p>${capitalize(resource.name)} collection</p><ul>`;
   if (resource.sortBy) {
     resources = sortBy(resources, resource.sortBy);
   }
@@ -70,8 +70,8 @@ export function getCollection(router: Router, resource:ResourceDef): Router {
     .get(`${resource.name}-html`, `/${resource.name}.html`, async (ctx) => {
       const collection = await getAll(resource);
       log(`Found ${collection?.length} ${resource.name}.`);
-      let body = '<!DOCTYPE html>\n<html><body>';
-      body += `<p>${collection?.length || 0} ${resource.name}:<p>\n`;
+      let body = `<!DOCTYPE html>\n<html><head><title>${capitalize(resource.name)}</title></head><body>`;
+      body += `<p>${collection?.length || 0} ${capitalize(resource.name)}:<p>\n`;
       if (collection) {
         body += linkList(router, resource, collection);
       }
@@ -98,15 +98,17 @@ export function getResource(
         // const { course, params: { courseId } } = ctx;
         const item = ctx[resource.singular];
         let body = '';
-        body += `<p><a href="${router.url(resource.name+'-html')}">${resource.name}</a></p>`;
-        body += `<p>${resource.singular} id: ${item.id}</p>`;
-        body += `<p>${resource.singular} name: ${item.name}</p>`;
+        body += `<!DOCTYPE html>\n<html><head><title>${capitalize(resource.singular)}: ${item.name}</title></head><body>`;
+        body += `<p><a href="${router.url(resource.name+'-html')}">${capitalize(resource.name)}</a></p>`;
+        body += `<p>${capitalize(resource.singular)} id: ${item.id}</p>`;
+        body += `<p>${capitalize(resource.singular)} name: ${item.name}</p>`;
         if (subCollections) {
           for (const sr of subCollections) {
             body += linkList(router, sr, item[sr.name], { [resource.paramName]: item.id });
           }
         }
         body += jsonhtml(item);
+        body += '</body></html>';
         ctx.body = body;
       })
     .get(
@@ -131,7 +133,7 @@ export function postResource(router: Router, resource: ResourceDef): Router {
     }
     const ref = refWithId(resource, newResource.id);
     if (await resourceExists(ref)) {
-      ctx.body = `<p>${resource.name} with id '${newResource.id}' already exists. Failing</p>\n`;
+      ctx.body = `<p>${capitalize(resource.name)} with id '${newResource.id}' already exists. Failing</p>\n`;
       ctx.status = 400;
       return await next();
     }

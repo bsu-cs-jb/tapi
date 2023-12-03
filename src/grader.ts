@@ -194,9 +194,11 @@ function processRubric(rubric: Rubric): Rubric|undefined {
 export function graderRoutes(router: Router) {
 
   router.get('/', async (ctx) => {
-    let body = '<div><p>Grader collections</p><ul>\n';
+    let body = '';
+    body += '<!DOCTYPE html>\n<html><head><title>Grader Root</title></head><body>';
+    body += '<div><p>Grader collections</p><ul>\n';
     [COURSE, STUDENT, RUBRIC, GRADE].forEach((resource) => {
-      body += `<li>${resource.name}: <a href="${router.url(resource.name+'-html')}">html</a> <a href="${router.url(resource.name)}">json</a></li>\n`;
+      body += `<li>${_.capitalize(resource.name)}: <a href="${router.url(resource.name+'-html')}">html</a> <a href="${router.url(resource.name)}">json</a></li>\n`;
     });
     body += '</ul></div>\n';
     body += '<div><p>Other links</p><ul>\n';
@@ -248,6 +250,7 @@ export function graderRoutes(router: Router) {
     .get('course-rubric-grades-html', '/courses/:courseId/rubrics/:rubricId/grades.html', async (ctx) => {
       const { course, rubric } = ctx as unknown as { course: CourseDbObj; rubric: Rubric };
       let body = '';
+      body += `<!DOCTYPE html>\n<html><head><title>${course.name} ${rubric.name} Stats</title></head><body>`;
       body += `<p>Course: <a href="${router.url('course-html', { courseId: course.id })}">${course.name}</a></p>\n`;
       body += `<p>Rubric: <a href="${router.url('rubric-html', { rubricId: rubric.id })}">${rubric.name}</a></p>\n`;
 
