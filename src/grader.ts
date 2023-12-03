@@ -1,5 +1,6 @@
 import Router from '@koa/router';
 import * as _ from 'lodash-es';
+import { standardDeviation, quantile, median } from 'simple-statistics';
 
 import { jsonhtml, log } from './utils.js';
 import {
@@ -332,17 +333,33 @@ export function graderRoutes(router: Router) {
         body += '</tr>\n';
       }
 
-      body += '<tr>';
-      body += '<td>Average</td>';
-      body += `<td style="text-align: right">${_.mean(scores).toFixed(1)}</td>\n`;
-      body += `<td style="text-align: right">${_.mean(percent).toFixed(1)}%</td>\n`;
-      body += `<td style="text-align: right">${_.mean(unscored).toFixed(1)}</td>\n`;
-      for (const category of rubric.categories) {
-        const categoryScore = scoreCategory(category, makeCategoryScore(category));
-        body += `<td style="text-align: right">${_.mean(category_scores[category.id]).toFixed(1)} / ${categoryScore.pointValue}`;
-        category_scores[category.id] = [];
+      function trimmedMean (data: number[]):number {
+        const tenP = quantile(data, 0.1);
+        const ninetyP = quantile(data, 0.9);
+        return _.mean(data.filter((n) => n >= tenP && n <= ninetyP));
       }
-      body += '</tr>\n';
+
+      const stats = [
+        { name: 'Average', method: _.mean},
+        { name: 'StdDev', method: standardDeviation},
+        { name: '10%', method: (data: number[]) => quantile(data, 0.1)},
+        { name: 'Median', method: median},
+        { name: '90%', method: (data: number[]) => quantile(data, 0.9)},
+        { name: 'Trimmed Mean', method: trimmedMean},
+      ];
+
+      for (const {name, method} of stats) {
+        body += '<tr>';
+        body += `<td>${name}</td>`;
+        body += `<td style="text-align: right">${method(scores).toFixed(1)}</td>\n`;
+        body += `<td style="text-align: right">${method(percent).toFixed(1)}%</td>\n`;
+        body += `<td style="text-align: right">${method(unscored).toFixed(1)}</td>\n`;
+        for (const category of rubric.categories) {
+          body += `<td style="text-align: right">${method(category_scores[category.id]).toFixed(1)}`;
+        }
+        body += '</tr>\n';
+
+      }
 
       body += '</tbody></table>\n';
 
