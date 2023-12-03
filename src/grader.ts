@@ -300,25 +300,50 @@ export function graderRoutes(router: Router) {
       body += '<th>Score</th>\n';
       body += '<th>Percent</th>\n';
       body += '<th>Unscored</th>\n';
+
+      const scores: number[] = [];
+      const percent: number[] = [];
+      const unscored: number[] = [];
+      const category_scores: Record<string, number[]> = {};
+
       for (const category of rubric.categories) {
         body += `<th>${category.name}</th>\n`;
+        category_scores[category.id] = [];
       }
       body += '</tr></thead><tbody>\n';
+
       for (const rubricScore of grades) {
         body += '<tr>';
         const score = rubricScore.computedScore?.score || 0;
         const pointValue = rubricScore.computedScore?.pointValue || 0;
+        scores.push(score);
+        percent.push(score/pointValue*100);
+        unscored.push(rubricScore.computedScore?.unscoredItems || 0);
         body += `<td><a href="${router.url('grade-html', { gradeId: rubricScore.id })}">${rubricScore.studentName}</a></td>`;
-        body += `<td style="text-align: right">${rubricScore.computedScore?.score}</td>`;
+        body += `<td style="text-align: right">${score}</td>`;
         body += `<td style="text-align: right">${(score/pointValue*100).toFixed(0)}%</td>`;
         body += `<td style="text-align: right">${rubricScore.computedScore?.unscoredItems}</td>`;
         for (const category of rubricScore.categories) {
           body += `<td style="text-align: right">${category.computedScore?.score}`;
           body += ` / ${category.computedScore?.pointValue}`;
           body += ` (${category.computedScore?.unscoredItems})</td>`;
+          category_scores[category.categoryId].push(category.computedScore?.score || 0);
         }
         body += '</tr>\n';
       }
+
+      body += '<tr>';
+      body += '<td>Average</td>';
+      body += `<td style="text-align: right">${_.mean(scores).toFixed(1)}</td>\n`;
+      body += `<td style="text-align: right">${_.mean(percent).toFixed(1)}%</td>\n`;
+      body += `<td style="text-align: right">${_.mean(unscored).toFixed(1)}</td>\n`;
+      for (const category of rubric.categories) {
+        const categoryScore = scoreCategory(category, makeCategoryScore(category));
+        body += `<td style="text-align: right">${_.mean(category_scores[category.id]).toFixed(1)} / ${categoryScore.pointValue}`;
+        category_scores[category.id] = [];
+      }
+      body += '</tr>\n';
+
       body += '</tbody></table>\n';
 
       body += '<table><thead><tr>\n';
