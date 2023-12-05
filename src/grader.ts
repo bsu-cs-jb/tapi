@@ -317,9 +317,12 @@ export function graderRoutes(router: Router) {
         body += '<tr>';
         const score = rubricScore.computedScore?.score || 0;
         const pointValue = rubricScore.computedScore?.pointValue || 0;
-        scores.push(score);
-        percent.push(score/pointValue*100);
-        unscored.push(rubricScore.computedScore?.unscoredItems || 0);
+        const skipStats = (rubricScore.computedScore?.unscoredItems || 0) > 20;
+        if (!skipStats) {
+          scores.push(score);
+          percent.push(score/pointValue*100);
+          unscored.push(rubricScore.computedScore?.unscoredItems || 0);
+        }
         body += `<td><a href="${router.url('grade-html', { gradeId: rubricScore.id })}">${rubricScore.studentName}</a></td>`;
         body += `<td style="text-align: right">${score}</td>`;
         body += `<td style="text-align: right">${(score/pointValue*100).toFixed(0)}%</td>`;
@@ -328,7 +331,9 @@ export function graderRoutes(router: Router) {
           body += `<td style="text-align: right">${category.computedScore?.score}`;
           body += ` / ${category.computedScore?.pointValue}`;
           body += ` (${category.computedScore?.unscoredItems})</td>`;
-          category_scores[category.categoryId].push(category.computedScore?.score || 0);
+          if (!skipStats) {
+            category_scores[category.categoryId].push(category.computedScore?.score || 0);
+          }
         }
         body += '</tr>\n';
       }
@@ -340,12 +345,13 @@ export function graderRoutes(router: Router) {
       }
 
       const stats = [
-        { name: 'Average', method: _.mean},
+        { name: 'Count', method: (data: number[]) => data.length},
+        { name: 'Mean', method: _.mean},
+        { name: 'Trimmed Mean', method: trimmedMean},
         { name: 'StdDev', method: standardDeviation},
         { name: '10%', method: (data: number[]) => quantile(data, 0.1)},
         { name: 'Median', method: median},
         { name: '90%', method: (data: number[]) => quantile(data, 0.9)},
-        { name: 'Trimmed Mean', method: trimmedMean},
       ];
 
       for (const {name, method} of stats) {
