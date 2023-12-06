@@ -344,9 +344,10 @@ export function graderRoutes(router: Router) {
         return _.mean(data.filter((n) => n >= tenP && n <= ninetyP));
       }
 
+      const fixedFmt = (d:number) => ((n:number) => n.toFixed(d));
       const stats = [
-        { name: 'Count', method: (data: number[]) => data.length},
-        { name: 'Mean', method: _.mean},
+        { name: 'Count', method: (data: number[]) => data.length, format:fixedFmt(0)},
+        { name: 'Mean', method: _.mean, format: fixedFmt(2)},
         { name: 'Trimmed Mean', method: trimmedMean},
         { name: 'StdDev', method: standardDeviation},
         { name: '10%', method: (data: number[]) => quantile(data, 0.1)},
@@ -354,14 +355,15 @@ export function graderRoutes(router: Router) {
         { name: '90%', method: (data: number[]) => quantile(data, 0.9)},
       ];
 
-      for (const {name, method} of stats) {
+      for (const {name, method, format} of stats) {
+        const numFormat = format || fixedFmt(1);
         body += '<tr>';
         body += `<td>${name}</td>`;
-        body += `<td style="text-align: right">${method(scores).toFixed(1)}</td>\n`;
-        body += `<td style="text-align: right">${method(percent).toFixed(1)}%</td>\n`;
-        body += `<td style="text-align: right">${method(unscored).toFixed(1)}</td>\n`;
+        body += `<td style="text-align: right">${numFormat(method(scores))}</td>\n`;
+        body += `<td style="text-align: right">${numFormat(method(percent))}%</td>\n`;
+        body += `<td style="text-align: right">${numFormat(method(unscored))}</td>\n`;
         for (const category of rubric.categories) {
-          body += `<td style="text-align: right">${method(category_scores[category.id]).toFixed(1)}`;
+          body += `<td style="text-align: right">${numFormat(method(category_scores[category.id]))}`;
         }
         body += '</tr>\n';
 
