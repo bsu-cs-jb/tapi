@@ -85,10 +85,11 @@ export function getCollection(router: Router, resource:ResourceDef): Router {
     });
 }
 
-export function getResource(
+export function getResource<T extends IdResource>(
   router: Router,
-  resource:ResourceDef,
+  resource: ResourceDef,
   subCollections?:ResourceDef[],
+  customHtml?: (item: T, body: string, router: Router, resource: ResourceDef, subCollections?:ResourceDef[]) => string,
 ): Router {
   return router
     .get(
@@ -102,6 +103,9 @@ export function getResource(
         body += `<p><a href="${router.url(resource.name+'-html')}">${capitalize(resource.name)}</a></p>`;
         body += `<p>${capitalize(resource.singular)} id: ${item.id}</p>`;
         body += `<p>${capitalize(resource.singular)} name: ${item.name}</p>`;
+        if (customHtml) {
+          body = customHtml(item, body, router, resource, subCollections);
+        }
         if (subCollections) {
           for (const sr of subCollections) {
             body += linkList(router, sr, item[sr.name], { [resource.paramName]: item.id });

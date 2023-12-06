@@ -4,36 +4,38 @@ import { standardDeviation, quantile, median } from 'simple-statistics';
 
 import { jsonhtml, log } from './utils.js';
 import {
-  ResourceDef,
   readResource,
-  writeResource,
   refWithId,
+  ResourceDef,
+  writeResource,
 } from './FileDb.js';
 import {
-  routerParam,
-  linkList,
   getCollection,
   getResource,
-  putResource,
+  linkList,
   postResource,
+  putResource,
+  routerParam,
 } from './RestAPI.js';
 import {
   CourseDbObj,
-  Student,
-  Rubric,
-  RubricScore,
-  RubricItemScore,
-  makeRubricScore,
-  scoreRubric,
-  StudentGradeDbObj,
   CourseGradeDbObj,
-  makeStudent,
-  updateRubricScore,
-  validateRubric,
   findCategory,
   findInRubric,
-  scoreCategory,
   makeCategoryScore,
+  makeItemScore,
+  makeRubricScore,
+  makeStudent,
+  Rubric,
+  RubricItemScore,
+  RubricScore,
+  scoreCategory,
+  scoreItem,
+  scoreRubric,
+  Student,
+  StudentGradeDbObj,
+  updateRubricScore,
+  validateRubric,
 } from 'grading';
 
 const COURSE:ResourceDef = {
@@ -76,14 +78,14 @@ async function fetchRubricScore(id:string): Promise<RubricScore|undefined> {
   return readResource<RubricScore>(refWithId(GRADE, id));
 }
 
-async function fetchGrades(course: CourseDbObj, rubric: Rubric, skipTestStudents = true): Promise<RubricScore[]> {
+async function fetchGrades(course: CourseDbObj, rubric: Rubric, includeTestStudents = false): Promise<RubricScore[]> {
   const cachedFetchStudent = _.memoize(fetchStudent);
 
   const gradeRefs = course.grades.filter((grade) => grade.rubricId === rubric.id);
   const grades = await Promise.all((await Promise.all(
     gradeRefs
       .map(async (gradeRef) => {
-        if (skipTestStudents) {
+        if (!includeTestStudents) {
           const student = await cachedFetchStudent(gradeRef.studentId);
           if (student?.test) {
             return undefined;
@@ -208,13 +210,22 @@ export function graderRoutes(router: Router) {
     ctx.body = body;
   });
 
+  const showRubricStats = (course: CourseDbObj, body: string, router: Router) => {
+    body += '<div><p>Rubric Grade Stats</p><ul>';
+    for (const rubric of course.rubrics) {
+      body += `<li><a href="${router.url('course-rubric-grades-html', { courseId: course.id, rubricId: rubric.id })}">${rubric.name} Grade Stats</a></li>`;
+    }
+    body += '</ul></div>';
+    return body;
+  };
+
   routerParam(router, COURSE);
   routerParam(router, RUBRIC, processRubric);
   routerParam(router, STUDENT);
   routerParam(router, GRADE);
 
   getCollection(router, COURSE);
-  getResource(router, COURSE, [RUBRIC, STUDENT, GRADE]);
+  getResource(router, COURSE, [RUBRIC, STUDENT, GRADE], showRubricStats);
   postResource(router, COURSE);
   putResource(router, COURSE);
 
@@ -250,12 +261,13 @@ export function graderRoutes(router: Router) {
     })
     .get('course-rubric-grades-html', '/courses/:courseId/rubrics/:rubricId/grades.html', async (ctx) => {
       const { course, rubric } = ctx as unknown as { course: CourseDbObj; rubric: Rubric };
+      const includeTestStudents: boolean = ctx.request?.query?.test === "true";
       let body = '';
       body += `<!DOCTYPE html>\n<html><head><title>${course.name} ${rubric.name} Stats</title></head><body>`;
       body += `<p>Course: <a href="${router.url('course-html', { courseId: course.id })}">${course.name}</a></p>\n`;
       body += `<p>Rubric: <a href="${router.url('rubric-html', { rubricId: rubric.id })}">${rubric.name}</a></p>\n`;
 
-      const grades = await fetchGrades(course, rubric);
+      const grades = await fetchGrades(course, rubric, includeTestStudents);
 
       function statsRows(scoreList: number[], scoreValueList: (number|undefined)[]): string {
         let rows = '';
@@ -339,13 +351,21 @@ export function graderRoutes(router: Router) {
       }
 
       function trimmedMean (data: number[]):number {
+        if (data.length < 2) {
+          return Number.NaN;
+        }
         const tenP = quantile(data, 0.1);
         const ninetyP = quantile(data, 0.9);
         return _.mean(data.filter((n) => n >= tenP && n <= ninetyP));
       }
 
       const fixedFmt = (d:number) => ((n:number) => n.toFixed(d));
-      const stats = [
+      interface StatsMethods {
+        name: string;
+        method: (d:number[])=>number;
+        format?: (n:number)=>string;
+      }
+      const stats: StatsMethods[] = [
         { name: 'Count', method: (data: number[]) => data.length, format:fixedFmt(0)},
         { name: 'Mean', method: _.mean},
         { name: 'Trimmed Mean', method: trimmedMean},
@@ -359,11 +379,27 @@ export function graderRoutes(router: Router) {
         const numFormat = format || fixedFmt(2);
         body += '<tr>';
         body += `<td>${name}</td>`;
-        body += `<td style="text-align: right">${numFormat(method(scores))}</td>\n`;
-        body += `<td style="text-align: right">${numFormat(method(percent))}%</td>\n`;
-        body += `<td style="text-align: right">${numFormat(method(unscored))}</td>\n`;
+        if (scores.length >= 2) {
+          body += `<td style="text-align: right">${numFormat(method(scores))}</td>\n`;
+        } else {
+          body += '<td style="text-align: right">N/A</td>\n';
+        }
+        if (percent.length >= 2) {
+          body += `<td style="text-align: right">${numFormat(method(percent))}%</td>\n`;
+        } else {
+          body += '<td style="text-align: right">N/A</td>\n';
+        }
+        if (unscored.length >= 2) {
+          body += `<td style="text-align: right">${numFormat(method(unscored))}</td>\n`;
+        } else {
+          body += '<td style="text-align: right">N/A</td>\n';
+        }
         for (const category of rubric.categories) {
-          body += `<td style="text-align: right">${numFormat(method(category_scores[category.id]))}`;
+          if (category_scores[category.id].length >= 2) {
+            body += `<td style="text-align: right">${numFormat(method(category_scores[category.id]))}`;
+          } else {
+            body += '<td style="text-align: right">N/A</td>\n';
+          }
         }
         body += '</tr>\n';
 
@@ -411,7 +447,14 @@ export function graderRoutes(router: Router) {
           }
           body += `<td>${category.name}</td>\n`;
           body += `<td>${item.name}${decoration}</td>\n`;
-          body += `<td>${item.pointValue}</td>\n`;
+
+          let pointValue = item.pointValue;
+          if (item.subItems) {
+            const tempItemScore = scoreItem(item, makeItemScore(item));
+            pointValue = tempItemScore.pointValue;
+          }
+
+          body += `<td>${pointValue}</td>\n`;
 
           const scoreList = grades.map((score) => {
             const itemScore = findInRubric<RubricItemScore>(score, { itemId: item.id });
