@@ -347,7 +347,7 @@ export function graderRoutes(router: Router) {
       const fixedFmt = (d:number) => ((n:number) => n.toFixed(d));
       const stats = [
         { name: 'Count', method: (data: number[]) => data.length, format:fixedFmt(0)},
-        { name: 'Mean', method: _.mean, format: fixedFmt(2)},
+        { name: 'Mean', method: _.mean},
         { name: 'Trimmed Mean', method: trimmedMean},
         { name: 'StdDev', method: standardDeviation},
         { name: '10%', method: (data: number[]) => quantile(data, 0.1)},
@@ -356,7 +356,7 @@ export function graderRoutes(router: Router) {
       ];
 
       for (const {name, method, format} of stats) {
-        const numFormat = format || fixedFmt(1);
+        const numFormat = format || fixedFmt(2);
         body += '<tr>';
         body += `<td>${name}</td>`;
         body += `<td style="text-align: right">${numFormat(method(scores))}</td>\n`;
