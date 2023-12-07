@@ -117,11 +117,18 @@
           "pointValue": 2
         },
         {
+          "id": "edit-timer-003",
+          "name": "Edit timer bonus",
+          "scoreType": "points",
+          "scoreValue": "points",
+          "pointValue": 2
+        },
+        {
           "id": "edit-timer-002",
           "name": "Edit timer problems",
           "scoreType": "boolean",
           "scoreValue": "penalty",
-          "pointValue": -1
+          "pointValue": -2
         }
       ]
     },
@@ -141,7 +148,7 @@
           "name": "Multiple timer problems",
           "scoreType": "points",
           "scoreValue": "penalty",
-          "pointValue": -1
+          "pointValue": -3
         }
       ]
     }

@@ -163,20 +163,29 @@
           "score": 1
         },
         {
+          "id": "DGdnBDEB-Q",
+          "itemId": "edit-timer-003",
+          "computedScore": {
+            "score": 2,
+            "pointValue": 2,
+            "unscoredItems": 0
+          },
+          "score": 2
+        },
+        {
           "id": "A7BGMfHYQC",
           "itemId": "edit-timer-002",
           "computedScore": {
-            "score": -1,
+            "score": 0,
             "pointValue": 0,
-            "unscoredItems": 0
-          },
-          "score": 1
+            "unscoredItems": 1
+          }
         }
       ],
       "computedScore": {
-        "score": 1,
-        "pointValue": 2,
-        "unscoredItems": 0
+        "score": 4,
+        "pointValue": 4,
+        "unscoredItems": 1
       }
     },
     {
@@ -187,26 +196,27 @@
           "id": "CKj_DKJlR4",
           "itemId": "multiple-timers-001",
           "computedScore": {
-            "score": 0,
+            "score": 4,
             "pointValue": 4,
-            "unscoredItems": 1
-          }
+            "unscoredItems": 0
+          },
+          "score": 4
         },
         {
           "id": "D5kxjb48fg",
           "itemId": "multiple-timers-002",
           "computedScore": {
-            "score": 0,
+            "score": -1,
             "pointValue": 0,
             "unscoredItems": 0
           },
-          "score": 0
+          "score": 1
         }
       ],
       "computedScore": {
-        "score": 0,
+        "score": 3,
         "pointValue": 4,
-        "unscoredItems": 1
+        "unscoredItems": 0
       }
     }
   ],
@@ -215,10 +225,10 @@
   "courseId": "CS411-2023-fall",
   "courseName": "CS 411 Fall 2023 (test)",
   "computedScore": {
-    "score": 9,
-    "pointValue": 17,
+    "score": 15,
+    "pointValue": 19,
     "unscoredItems": 8
   },
-  "updatedAt": "2023-12-07T15:18:12.876Z",
+  "updatedAt": "2023-12-07T15:19:54.685Z",
   "createdAt": "2023-12-07T13:58:44.085Z"
 }
