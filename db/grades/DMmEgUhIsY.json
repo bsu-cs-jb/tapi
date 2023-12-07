@@ -73,8 +73,9 @@
           "computedScore": {
             "score": 0,
             "pointValue": 4,
-            "unscoredItems": 1
-          }
+            "unscoredItems": 0
+          },
+          "score": 0
         },
         {
           "id": "FhI_Au_Vnw",
@@ -138,7 +139,7 @@
       "computedScore": {
         "score": -1,
         "pointValue": 25,
-        "unscoredItems": 4
+        "unscoredItems": 3
       }
     }
   ],
@@ -149,8 +150,8 @@
   "computedScore": {
     "score": -1,
     "pointValue": 25,
-    "unscoredItems": 4
+    "unscoredItems": 3
   },
-  "updatedAt": "2023-12-07T15:10:45.141Z",
+  "updatedAt": "2023-12-07T15:11:58.445Z",
   "createdAt": "2023-12-07T14:16:38.946Z"
 }
