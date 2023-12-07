@@ -1,3 +1,21 @@
+export function cycle<T>(array: T[], current?: T): T {
+  if (current === undefined) {
+    return array[0];
+  } else {
+    const index = array.findIndex((item) => item === current);
+    if (index === undefined || index === array.length - 1) {
+      return array[0];
+    } else {
+      return array[index + 1];
+    }
+  }
+}
+
+// Create a new type but make all of the properties optional
+export type AllOptional<Type> = {
+  [Property in keyof Type]?: Type[Property];
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function json(data: any): string {
   return JSON.stringify(data, undefined, 2);

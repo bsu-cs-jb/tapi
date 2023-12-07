@@ -1,5 +1,5 @@
-import { genid } from "./genid";
-import { AllOptional, cycle } from "./utils";
+import { genid } from "./genid.js";
+import { AllOptional, cycle } from "./utils.js";
 
 /**
  * DO NOT change this file.
@@ -41,6 +41,7 @@ export interface Invitation {
 export interface Session {
   id: string;
   owner: User;
+  name: string;
   description: string;
   accepted: boolean;
   attending: Attending;
@@ -85,6 +86,7 @@ export function makeSession(props?: AllOptional<Session>): Session {
       id: genid(),
       name: "Unnamed",
     },
+    name: "empty",
     description: "empty",
     accepted: false,
     attending: "undecided",
