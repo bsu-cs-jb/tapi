@@ -78,11 +78,11 @@
           "id": "FhI_Au_Vnw",
           "itemId": "increment-points",
           "computedScore": {
-            "score": 0.19999999999999962,
+            "score": 0.8,
             "pointValue": 4,
             "unscoredItems": 0
           },
-          "score": 0.19999999999999962
+          "score": 0.8
         },
         {
           "id": "CGHKoQni0g",
@@ -116,7 +116,7 @@
         }
       ],
       "computedScore": {
-        "score": -1.8000000000000007,
+        "score": -1.2000000000000002,
         "pointValue": 23,
         "unscoredItems": 4
       }
@@ -127,10 +127,10 @@
   "courseId": "test-course-id",
   "courseName": "Test Course",
   "computedScore": {
-    "score": -1.8000000000000007,
+    "score": -1.2000000000000002,
     "pointValue": 23,
     "unscoredItems": 4
   },
-  "updatedAt": "2023-12-07T14:47:22.714Z",
+  "updatedAt": "2023-12-07T14:50:43.199Z",
   "createdAt": "2023-12-07T14:16:38.946Z"
 }
