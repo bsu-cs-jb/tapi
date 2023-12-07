@@ -81,31 +81,31 @@
           "id": "FhI_Au_Vnw",
           "itemId": "increment-points",
           "computedScore": {
-            "score": 1.2,
+            "score": 2,
             "pointValue": 2,
             "unscoredItems": 0
           },
-          "score": 1.2
+          "score": 2
         },
         {
           "id": "AaclqDgu5Q",
           "itemId": "increment-points-02",
           "computedScore": {
-            "score": 0.75,
+            "score": 0.25,
             "pointValue": 2,
             "unscoredItems": 0
           },
-          "score": 0.75
+          "score": 0.25
         },
         {
           "id": "CgZm0PWyXQ",
           "itemId": "increment-points-03",
           "computedScore": {
-            "score": 1.9998,
+            "score": 1.6665,
             "pointValue": 2,
             "unscoredItems": 0
           },
-          "score": 1.9998
+          "score": 1.6665
         },
         {
           "id": "CGHKoQni0g",
@@ -121,25 +121,25 @@
           "id": "Cmsvoonuhg",
           "itemId": "penalty-points",
           "computedScore": {
-            "score": -4,
+            "score": -1,
             "pointValue": 0,
             "unscoredItems": 0
           },
-          "score": 4
+          "score": 1
         },
         {
           "id": "EVoY3RX43g",
           "itemId": "penalty-increment-points",
           "computedScore": {
-            "score": -2,
+            "score": -0.5,
             "pointValue": 0,
             "unscoredItems": 0
           },
-          "score": 2
+          "score": 0.5
         }
       ],
       "computedScore": {
-        "score": 0.9498,
+        "score": 5.4165,
         "pointValue": 25,
         "unscoredItems": 1
       }
@@ -150,10 +150,10 @@
   "courseId": "test-course-id",
   "courseName": "Test Course",
   "computedScore": {
-    "score": 0.9498,
+    "score": 5.4165,
     "pointValue": 25,
     "unscoredItems": 1
   },
-  "updatedAt": "2023-12-07T15:13:25.172Z",
+  "updatedAt": "2023-12-07T15:16:22.400Z",
   "createdAt": "2023-12-07T14:16:38.946Z"
 }
