@@ -121,6 +121,7 @@
           "name": "Edit timer bonus",
           "scoreType": "points",
           "scoreValue": "points",
+          "pointIncrement": 0.5,
           "pointValue": 2
         },
         {
