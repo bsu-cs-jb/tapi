@@ -47,7 +47,7 @@ export function indecisiveRoutes(router: Router) {
 
   router.get("/", async (ctx) => {
     let body = "";
-    body += "<!DOCTYPE html>\n<html><head><title>Grader Root</title></head><body>";
+    body += "<!DOCTYPE html>\n<html><head><title>Indecisive Root</title></head><body>";
     body += "<div><p>Indecisive</p><ul>\n";
     [USER, SESSION].forEach((resource) => {
       body += `<li>${_.capitalize(resource.name)}: <a href="${router.url(resource.name+"-html")}">html</a> <a href="${router.url(resource.name)}">json</a></li>\n`;

@@ -137,7 +137,7 @@ export function postResource(router: Router, resource: ResourceDef): Router {
     }
     const ref = refWithId(resource, newResource.id);
     if (await resourceExists(ref)) {
-      ctx.body = `<p>${capitalize(resource.name)} with id '${newResource.id}' already exists. Failing</p>\n`;
+      ctx.body = `<p>${capitalize(resource.singular)} with id '${newResource.id}' already exists. Failing</p>\n`;
       ctx.status = 400;
       return await next();
     }
@@ -154,6 +154,12 @@ export function putResource(router: Router, resource: ResourceDef): Router {
     `/${resource.name}/:${resource.paramName}`,
     async (ctx) => {
       const data = ctx.request.body;
+
+      // get the existing resource
+      const obj = ctx[resource.singular];
+      assert(obj !== undefined && obj !== null);
+
+      // Make sure the id of the resource matches
       const id = ctx.params[resource.paramName];
       if (data.id) {
         assert(data.id === id);
@@ -161,6 +167,12 @@ export function putResource(router: Router, resource: ResourceDef): Router {
         data.id = id;
       }
       const ref = refWithId(resource, data.id);
+
+      // don't let the API override createdAt
+      if (obj.createdAt) {
+        data.createdAt = obj.createdAt;
+      }
+
       const filename = await writeResource(ref, data);
       // console.log(`PUT written to ${filename} ${resource.singular} body:`, data);
       console.log(`PUT written to ${filename} ${resource.singular}:`, shallowJson(data));
