@@ -71,10 +71,18 @@
         },
         {
           "id": "penalty-points",
-          "name": "Penalty points 4",
+          "name": "Penalty points",
           "scoreType": "points",
           "scoreValue": "penalty",
           "pointValue": -4
+        },
+        {
+          "id": "penalty-increment-points",
+          "name": "Penalty increment points",
+          "scoreType": "points",
+          "scoreValue": "penalty",
+          "pointIncrement": 0.5,
+          "pointValue": -2
         }
       ]
     }
