@@ -114,13 +114,23 @@ export function indecisiveRoutes(router: Router) {
   putResource(router, USER);
 
   getCollection(router, OWN_SESSION);
+  // getResource(router, OWN_SESSION);
+  // postResource(router, OWN_SESSION);
 
   getCollection(router, SESSION);
   getResource(router, SESSION);
+  // Post to session means: create a new session owned by me
   postResource(router, SESSION);
+  // Put to session updates session (if owned by me)
   putResource(router, SESSION);
 
-  router.post("user-sessions", "/users/:userId/sessions", async (ctx) => {
+  // router.post("session-invite", "/sessions/:sessionId/invite", async (ctx) => {
+  // router.post("session-respond", "/sessions/:sessionId/respond", async (ctx) => {
+  // router.post("session-suggest", "/sessions/:sessionId/suggest", async (ctx) => {
+  // router.put("session-vote", "/sessions/:sessionId/vote/:suggestionId", async (ctx) => {
+
+  // Create a new session owned by this user
+  router.post("user-sessions", "/users/:userId/owns", async (ctx) => {
     const { user } = ctx;
     let body = `<p>User id: ${user.id}</p>`;
     body += `<p>User: <a href="${router.url("user-html", { userId: user.id })}">${user.name}</a></p>\n`;

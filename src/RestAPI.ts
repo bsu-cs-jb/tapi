@@ -14,6 +14,10 @@ import { cloneDeep, sortBy, capitalize } from "lodash-es";
 
 type IdName = { id: string; name: string; };
 
+function routeLog(method:string, type: string, resource:ResourceDef, name: string, url: string) {
+  log(`${method.padEnd(4)} route for ${type.padEnd(10)} ${resource.name.padStart(8)} Name: ${name.padEnd(18)} Url: ${url}`);
+}
+
 export function collectionRoute(
   resource: ResourceDef,
 ): { name: string, url: string } {
@@ -27,10 +31,7 @@ export function collectionRoute(
   }
   collection_name += resource.name;
   collection_url += `${resource.name}`;
-  // collection_url += `${resource.name}/:${resource.paramName}`;
-  log(`For collection ${resource.name} Name: ${collection_name} Url: ${collection_url}`);
-  const { name: resource_name, url: resource_url } = resourceRoute(resource);
-  log(`For resource ${resource.name} Name: ${resource_name} Url: ${resource_url}`);
+
   return {
     name: collection_name,
     url: collection_url,
@@ -50,7 +51,7 @@ export function resourceRoute(
   }
   resource_name += resource.singular;
   resource_url += `${resource.name}/:${resource.paramName}`;
-  log(`For resource ${resource.name} Name: ${resource_name} Url: ${resource_url}`);
+
   return {
     name: resource_name,
     url: resource_url,
@@ -126,8 +127,7 @@ export function linkList(
 
 export function getCollection(router: Router, resource:ResourceDef): Router {
   const { name: collection_name, url: collection_url } = collectionRoute(resource);
-  log(`For collection ${resource.name} Name: ${collection_name} Url: ${collection_url}`);
-
+  routeLog("GET", "collection", resource, collection_name, collection_url);
 
   return router
     .get(`${collection_name}-html`, `/${collection_url}.html`, async (ctx) => {
@@ -155,7 +155,7 @@ export function getResource<T extends IdResource>(
   customHtml?: (item: T, body: string, router: Router, resource: ResourceDef, subCollections?:ResourceDef[]) => string,
 ): Router {
   const { name: resource_name, url: resource_url } = resourceRoute(resource);
-  log(`For resource ${resource.name} Name: ${resource_name} Url: ${resource_url}`);
+  routeLog("GET", "resource", resource, resource_name, resource_url);
 
   return router
     .get(
@@ -192,7 +192,10 @@ export function getResource<T extends IdResource>(
 }
 
 export function postResource(router: Router, resource: ResourceDef): Router {
-  router.post(`/${resource.name}`, async (ctx, next) => {
+  const { name: collection_name, url: collection_url } = collectionRoute(resource);
+  routeLog("POST", "collection", resource, collection_name, collection_url);
+
+  router.post(`${collection_name}-post`, `/${collection_url}`, async (ctx, next) => {
     const data = ctx.request.body;
     let newResource = data;
     if (resource.builder) {
@@ -215,9 +218,12 @@ export function postResource(router: Router, resource: ResourceDef): Router {
 }
 
 export function putResource(router: Router, resource: ResourceDef): Router {
+  const { name: resource_name, url: resource_url } = resourceRoute(resource);
+  routeLog("PUT", "resource", resource, resource_name, resource_url);
+
   return router.put(
-    resource.singular,
-    `/${resource.name}/:${resource.paramName}`,
+    `${resource_name}-put`,
+    `/${resource_url}`,
     async (ctx) => {
       const data = ctx.request.body;
 
