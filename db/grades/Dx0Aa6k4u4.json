@@ -1,0 +1,222 @@
+{
+  "id": "Dx0Aa6k4u4",
+  "rubricId": "project-02",
+  "name": "Project 2 for Brahbrah Test in CS 411 Fall 2023 (test)",
+  "categories": [
+    {
+      "id": "BRSQH-q_Bo",
+      "categoryId": "timer-sets",
+      "items": [
+        {
+          "id": "FVu859zpkA",
+          "itemId": "timer-sets-001",
+          "computedScore": {
+            "score": 1,
+            "pointValue": 1,
+            "unscoredItems": 0
+          },
+          "score": 1
+        },
+        {
+          "id": "EvlW3ZJ3aA",
+          "itemId": "timer-sets-002",
+          "computedScore": {
+            "score": 2,
+            "pointValue": 2,
+            "unscoredItems": 0
+          },
+          "score": 1
+        },
+        {
+          "id": "Bf3wTmIvOw",
+          "itemId": "timer-sets-003",
+          "computedScore": {
+            "score": 2,
+            "pointValue": 2,
+            "unscoredItems": 0
+          },
+          "score": 1
+        },
+        {
+          "id": "ECOxlr-AhA",
+          "itemId": "timer-sets-004",
+          "computedScore": {
+            "score": 1,
+            "pointValue": 2,
+            "unscoredItems": 0
+          },
+          "score": 1
+        },
+        {
+          "id": "DHcXdmHNGo",
+          "itemId": "timer-sets-005",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0,
+            "unscoredItems": 1
+          }
+        },
+        {
+          "id": "FclDfc5nhA",
+          "itemId": "timer-sets-006",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 1,
+            "unscoredItems": 1
+          }
+        },
+        {
+          "id": "ETjA0d-l6w",
+          "itemId": "timer-sets-007",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0,
+            "unscoredItems": 1
+          }
+        },
+        {
+          "id": "DHj8CZqAIg",
+          "itemId": "timer-sets-008",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0,
+            "unscoredItems": 1
+          }
+        }
+      ],
+      "computedScore": {
+        "score": 6,
+        "pointValue": 8,
+        "unscoredItems": 4
+      }
+    },
+    {
+      "id": "Bl_6mgTFvo",
+      "categoryId": "single-timer",
+      "items": [
+        {
+          "id": "C-rPuzjo8Y",
+          "itemId": "single-timer-001",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 2,
+            "unscoredItems": 1
+          }
+        },
+        {
+          "id": "CsbbxF6Bro",
+          "itemId": "single-timer-005",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 1,
+            "unscoredItems": 1
+          }
+        },
+        {
+          "id": "EiJCG1uR2A",
+          "itemId": "single-timer-002",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0,
+            "unscoredItems": 1
+          }
+        },
+        {
+          "id": "BHjdwvrhmA",
+          "itemId": "single-timer-003",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0,
+            "unscoredItems": 1
+          }
+        },
+        {
+          "id": "DswTNZwm-Q",
+          "itemId": "single-timer-004",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 0,
+            "unscoredItems": 1
+          }
+        }
+      ],
+      "computedScore": {
+        "score": 0,
+        "pointValue": 3,
+        "unscoredItems": 5
+      }
+    },
+    {
+      "id": "CFw0klfISw",
+      "categoryId": "edit-timer",
+      "items": [
+        {
+          "id": "DUIQ4OAjnY",
+          "itemId": "edit-timer-001",
+          "computedScore": {
+            "score": 2,
+            "pointValue": 2,
+            "unscoredItems": 0
+          },
+          "score": 1
+        },
+        {
+          "id": "A7BGMfHYQC",
+          "itemId": "edit-timer-002",
+          "computedScore": {
+            "score": -1,
+            "pointValue": 0,
+            "unscoredItems": 0
+          },
+          "score": 1
+        }
+      ],
+      "computedScore": {
+        "score": 1,
+        "pointValue": 2,
+        "unscoredItems": 0
+      }
+    },
+    {
+      "id": "BsUcI6Fh9Y",
+      "categoryId": "multiple-timers",
+      "items": [
+        {
+          "id": "CKj_DKJlR4",
+          "itemId": "multiple-timers-001",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 4,
+            "unscoredItems": 1
+          }
+        },
+        {
+          "id": "D5kxjb48fg",
+          "itemId": "multiple-timers-002",
+          "computedScore": {
+            "score": -3,
+            "pointValue": 0,
+            "unscoredItems": 0
+          },
+          "score": 3
+        }
+      ],
+      "computedScore": {
+        "score": -3,
+        "pointValue": 4,
+        "unscoredItems": 1
+      }
+    }
+  ],
+  "studentId": "brahbrah-test",
+  "studentName": "Brahbrah Test",
+  "courseId": "CS411-2023-fall",
+  "courseName": "CS 411 Fall 2023 (test)",
+  "computedScore": {
+    "score": 4,
+    "pointValue": 17,
+    "unscoredItems": 10
+  },
+  "updatedAt": "2023-12-07T13:58:59.190Z",
+  "createdAt": "2023-12-07T13:58:44.085Z"
+}

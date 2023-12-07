@@ -2,5 +2,13 @@
   "name": "Brahbrah Test",
   "id": "brahbrah-test",
   "grades": [
-  ]
+    {
+      "id": "Dx0Aa6k4u4",
+      "name": "Project 2",
+      "rubricId": "project-02",
+      "courseId": "CS411-2023-fall"
+    }
+  ],
+  "updatedAt": "2023-12-07T13:58:44.087Z",
+  "createdAt": "2023-12-07T13:58:44.087Z"
 }
