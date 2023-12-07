@@ -48,6 +48,21 @@
           "pointValue": 4
         },
         {
+          "id": "normal-points",
+          "name": "Points",
+          "scoreType": "points",
+          "scoreValue": "points",
+          "pointValue": 4
+        },
+        {
+          "id": "increment-points",
+          "name": "Points with incrementValue",
+          "scoreType": "points",
+          "scoreValue": "points",
+          "pointIncrement": 0.2,
+          "pointValue": 4
+        },
+        {
           "id": "bonus-points",
           "name": "Bonus points",
           "scoreType": "points",
