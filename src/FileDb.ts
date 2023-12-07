@@ -43,6 +43,7 @@ export interface ResourceDef {
   // Optional method to create a new object of this type,
   // supplying default values for any missing properties
   builder?: <T extends IdResource>(props?: AllOptional<T>) => IdResource;
+  nestFiles?: boolean;
   parents?: ResourceDef[];
   // field to sort by in html views
   sortBy?: string;
@@ -99,7 +100,7 @@ function resourceDir(resource: ResourceDef): string {
   } else {
     throw new Error(`Unknown database ${resource.database} on resource ${resource.name}`);
   }
-  if (resource.parents) {
+  if (resource.nestFiles && resource.parents) {
     for (const parent of resource.parents) {
       if (parent.id) {
         path += `/${parent.name}/${parent.id}`;

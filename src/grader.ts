@@ -70,6 +70,7 @@ const GRADE:ResourceDef = {
   name: "grades",
   singular: "grade",
   paramName: "gradeId",
+  nestFiles: false,
   parents: [STUDENT],
   sortBy: "name",
 };
@@ -112,26 +113,6 @@ async function fetchGrades(course: CourseDbObj, rubric: Rubric, includeTestStude
     }));
   return _.sortBy(grades, "studentName");
 }
-
-// function courseRef(courseId: string):ResourceDef {
-//   const ref = cloneDeep(COURSE);
-//   ref.id = courseId;
-//   return ref;
-// }
-//
-// function rubricRef(courseId: string, rubricId:string):ResourceDef {
-//   const ref = cloneDeep(RUBRIC);
-//   ref.id = rubricId;
-//   ref.parents = [courseRef(courseId)];
-//   return ref;
-// }
-//
-// function studentRef(courseId: string, studentId: string):ResourceDef {
-//   const ref = cloneDeep(STUDENT);
-//   ref.id = studentId;
-//   ref.parents = [courseRef(courseId)];
-//   return ref;
-// }
 
 export async function getOrAddRubricScore(
   course: CourseDbObj,
@@ -229,7 +210,8 @@ export function graderRoutes(router: Router) {
   routerParam(router, GRADE);
 
   getCollection(router, COURSE);
-  getResource(router, COURSE, [RUBRIC, STUDENT, GRADE], showRubricStats);
+  // getResource(router, COURSE, [RUBRIC, STUDENT, GRADE], showRubricStats);
+  getResource(router, COURSE, [RUBRIC, STUDENT], showRubricStats);
   postResource(router, COURSE);
   putResource(router, COURSE);
 

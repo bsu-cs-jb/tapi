@@ -14,6 +14,61 @@ import { cloneDeep, sortBy, capitalize } from "lodash-es";
 
 type IdName = { id: string; name: string; };
 
+export function collectionRoute(
+  resource: ResourceDef,
+): { name: string, url: string } {
+  let collection_name = "";
+  let collection_url = "";
+  if (resource.parents) {
+    for (const parent of resource.parents) {
+      collection_name += `${parent.name}-`;
+      collection_url += `${parent.name}/:${parent.paramName}/`;
+    }
+  }
+  collection_name += resource.name;
+  collection_url += `${resource.name}`;
+  // collection_url += `${resource.name}/:${resource.paramName}`;
+  log(`For collection ${resource.name} Name: ${collection_name} Url: ${collection_url}`);
+  const { name: resource_name, url: resource_url } = resourceRoute(resource);
+  log(`For resource ${resource.name} Name: ${resource_name} Url: ${resource_url}`);
+  return {
+    name: collection_name,
+    url: collection_url,
+  };
+}
+
+export function resourceRoute(
+  resource: ResourceDef,
+): { name: string, url: string } {
+  let resource_name = "";
+  let resource_url = "";
+  if (resource.parents) {
+    for (const parent of resource.parents) {
+      resource_name += `${parent.name}-`;
+      resource_url += `${parent.name}/:${parent.paramName}/`;
+    }
+  }
+  resource_name += resource.singular;
+  resource_url += `${resource.name}/:${resource.paramName}`;
+  log(`For resource ${resource.name} Name: ${resource_name} Url: ${resource_url}`);
+  return {
+    name: resource_name,
+    url: resource_url,
+  };
+}
+
+export function resourceRouteUrl(
+  resource: ResourceDef,
+): string {
+  return resourceRoute(resource).url;
+}
+
+export function resourceRouteName(
+  resource: ResourceDef,
+): string {
+  return resourceRoute(resource).name;
+}
+
 export function resourceFromContext(resource: ResourceDef, id?:string, ctx?:Record<string,string>):ResourceDef {
   const ref = cloneDeep(resource);
   if (id) {
@@ -53,12 +108,16 @@ export function linkList(
   urlParams: Record<string,string> = {}): string
 {
   // console.log(`linkList(router, ${resource.paramName}, ${resource.singular}, ${resources.length})`);
+  if (!resources) {
+    return `<div><p>${capitalize(resource.name)} collection is empty.</p></div>`;
+  }
   let result = `<div><p>${capitalize(resource.name)} collection</p><ul>`;
   if (resource.sortBy) {
     resources = sortBy(resources, resource.sortBy);
   }
+  const { name: resource_name } = resourceRoute(resource);
   for (const r of resources) {
-    const href = router.url(`${resource.singular}-html`, { [resource.paramName]: r.id, ...urlParams });
+    const href = router.url(`${resource_name}-html`, { [resource.paramName]: r.id, ...urlParams });
     // console.log(`<p><a href="${href}">${r.name} - ${r.id}</a></p>`);
     result += `<li><a href="${href}">${r.name} - ${r.id}</a></li>\n`;
   }
@@ -66,8 +125,12 @@ export function linkList(
 }
 
 export function getCollection(router: Router, resource:ResourceDef): Router {
+  const { name: collection_name, url: collection_url } = collectionRoute(resource);
+  log(`For collection ${resource.name} Name: ${collection_name} Url: ${collection_url}`);
+
+
   return router
-    .get(`${resource.name}-html`, `/${resource.name}.html`, async (ctx) => {
+    .get(`${collection_name}-html`, `/${collection_url}.html`, async (ctx) => {
       const collection = await getAll(resource);
       log(`Found ${collection?.length} ${resource.name}.`);
       let body = `<!DOCTYPE html>\n<html><head><title>${capitalize(resource.name)}</title></head><body>`;
@@ -78,7 +141,7 @@ export function getCollection(router: Router, resource:ResourceDef): Router {
       body += "\n</body></html>";
       ctx.body = body;
     })
-    .get(resource.name, `/${resource.name}`, async (ctx) => {
+    .get(collection_name, `/${collection_url}`, async (ctx) => {
       const collection = await getAll(resource);
       // ctx.body = JSON.stringify(collection);
       ctx.body = collection;
@@ -91,10 +154,13 @@ export function getResource<T extends IdResource>(
   subCollections?:ResourceDef[],
   customHtml?: (item: T, body: string, router: Router, resource: ResourceDef, subCollections?:ResourceDef[]) => string,
 ): Router {
+  const { name: resource_name, url: resource_url } = resourceRoute(resource);
+  log(`For resource ${resource.name} Name: ${resource_name} Url: ${resource_url}`);
+
   return router
     .get(
-      `${resource.singular}-html`,
-      `/${resource.name}/:${resource.paramName}.html`,
+      `${resource_name}-html`,
+      `/${resource_url}.html`,
       async (ctx) => {
         // const { course, params: { courseId } } = ctx;
         const item = ctx[resource.singular];
@@ -116,8 +182,8 @@ export function getResource<T extends IdResource>(
         ctx.body = body;
       })
     .get(
-      resource.singular,
-      `/${resource.name}/:${resource.paramName}`,
+      resource_name,
+      `/${resource_url}`,
       async (ctx) => {
         // const { course, params: { courseId } } = ctx;
         const item = ctx[resource.singular];

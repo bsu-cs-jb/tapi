@@ -17,7 +17,35 @@ import {
   routerParam,
 } from "./RestAPI.js";
 
-import { User, Session } from "./indecisive_types.js";
+import { User, Session, Attending, Invitation, Suggestion } from "./indecisive_types.js";
+
+
+export interface UserInvitationDb {
+  sessionId: string;
+  accepted: boolean;
+  attending: Attending;
+}
+
+export interface InvitationDb {
+  userId: string;
+  accepted: boolean;
+  attending: Attending;
+}
+
+export interface SessionDb {
+  id: string;
+  ownerId: string;
+  name: string;
+  invitations: InvitationDb[];
+  suggestions: Suggestion[];
+}
+
+interface UserDb {
+  id: string;
+  name: string;
+  owns: SessionDb[];
+  invitations: UserInvitationDb[];
+}
 
 const USER:ResourceDef = {
   database: "indecisive",
@@ -25,6 +53,24 @@ const USER:ResourceDef = {
   singular: "user",
   paramName: "userId",
   sortBy: "name",
+};
+
+const INVITATIONS:ResourceDef = {
+  database: "indecisive",
+  name: "invitations",
+  singular: "invitation",
+  paramName: "invitationSessionId",
+  sortBy: "name",
+  parents: [USER],
+};
+
+const OWN_SESSION:ResourceDef = {
+  database: "indecisive",
+  name: "owns",
+  singular: "session",
+  paramName: "sessionId",
+  sortBy: "name",
+  parents: [USER],
 };
 
 const SESSION:ResourceDef = {
@@ -35,12 +81,12 @@ const SESSION:ResourceDef = {
   sortBy: "name",
 };
 
-async function fetchUser(id:string): Promise<User|undefined> {
-  return readResource<User>(refWithId(USER, id));
+async function fetchUser(id:string): Promise<UserDb|undefined> {
+  return readResource<UserDb>(refWithId(USER, id));
 }
 
-async function fetchSession(id:string): Promise<Session|undefined> {
-  return readResource<Session>(refWithId(SESSION, id));
+async function fetchSession(id:string): Promise<SessionDb|undefined> {
+  return readResource<SessionDb>(refWithId(SESSION, id));
 }
 
 export function indecisiveRoutes(router: Router) {
@@ -63,14 +109,25 @@ export function indecisiveRoutes(router: Router) {
   routerParam(router, SESSION);
 
   getCollection(router, USER);
-  getResource(router, USER);
+  getResource(router, USER, [OWN_SESSION, INVITATIONS]);
   postResource(router, USER);
   putResource(router, USER);
+
+  getCollection(router, OWN_SESSION);
 
   getCollection(router, SESSION);
   getResource(router, SESSION);
   postResource(router, SESSION);
   putResource(router, SESSION);
+
+  router.post("user-sessions", "/users/:userId/sessions", async (ctx) => {
+    const { user } = ctx;
+    let body = `<p>User id: ${user.id}</p>`;
+    body += `<p>User: <a href="${router.url("user-html", { userId: user.id })}">${user.name}</a></p>\n`;
+    // body += linkList(router, STUDENT, course.students, { courseId });
+    // body += jsonhtml(course.students);
+    ctx.body = body;
+  });
 
   router
     .get("user-sessions-html", "/users/:userId/sessions", async (ctx) => {
