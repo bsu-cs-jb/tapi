@@ -1,14 +1,14 @@
-import Router from '@koa/router';
-import * as _ from 'lodash-es';
-import { standardDeviation, quantile, median } from 'simple-statistics';
+import Router from "@koa/router";
+import * as _ from "lodash-es";
+import { standardDeviation, quantile, median } from "simple-statistics";
 
-import { jsonhtml, log } from './utils.js';
+import { jsonhtml, log } from "./utils.js";
 import {
   readResource,
   refWithId,
   ResourceDef,
   writeResource,
-} from './FileDb.js';
+} from "./FileDb.js";
 import {
   getCollection,
   getResource,
@@ -16,7 +16,7 @@ import {
   postResource,
   putResource,
   routerParam,
-} from './RestAPI.js';
+} from "./RestAPI.js";
 import {
   CourseDbObj,
   CourseGradeDbObj,
@@ -36,38 +36,42 @@ import {
   StudentGradeDbObj,
   updateRubricScore,
   validateRubric,
-} from 'grading';
+} from "grading";
 
 const COURSE:ResourceDef = {
-  name: 'courses',
-  singular: 'course',
-  paramName: 'courseId',
-  sortBy: 'name',
+  database: "grading",
+  name: "courses",
+  singular: "course",
+  paramName: "courseId",
+  sortBy: "name",
 };
 
 const RUBRIC:ResourceDef = {
-  name: 'rubrics',
-  singular: 'rubric',
-  paramName: 'rubricId',
+  database: "grading",
+  name: "rubrics",
+  singular: "rubric",
+  paramName: "rubricId",
   // parents: [COURSE],
-  sortBy: 'name',
+  sortBy: "name",
 };
 
 const STUDENT:ResourceDef = {
-  name: 'students',
-  singular: 'student',
-  paramName: 'studentId',
+  database: "grading",
+  name: "students",
+  singular: "student",
+  paramName: "studentId",
   builder: makeStudent,
   // parents: [COURSE],
-  sortBy: 'name',
+  sortBy: "name",
 };
 
 const GRADE:ResourceDef = {
-  name: 'grades',
-  singular: 'grade',
-  paramName: 'gradeId',
+  database: "grading",
+  name: "grades",
+  singular: "grade",
+  paramName: "gradeId",
   parents: [STUDENT],
-  sortBy: 'name',
+  sortBy: "name",
 };
 
 async function fetchStudent(id:string): Promise<Student|undefined> {
@@ -106,7 +110,7 @@ async function fetchGrades(course: CourseDbObj, rubric: Rubric, includeTestStude
       }
       return updated;
     }));
-  return _.sortBy(grades, 'studentName');
+  return _.sortBy(grades, "studentName");
 }
 
 // function courseRef(courseId: string):ResourceDef {
@@ -148,7 +152,7 @@ export async function getOrAddRubricScore(
       rubricScore.courseId = course.id;
       rubricScore.courseName = course.name;
       rubricScore.name = `${rubric.name} for ${student.name} in ${course.name}`;
-      log('Updating rubric score');
+      log("Updating rubric score");
       return updateRubricScore(rubricScore, rubric);
     }
     return rubricScore;
@@ -196,26 +200,26 @@ function processRubric(rubric: Rubric): Rubric|undefined {
 
 export function graderRoutes(router: Router) {
 
-  router.get('/', async (ctx) => {
-    let body = '';
-    body += '<!DOCTYPE html>\n<html><head><title>Grader Root</title></head><body>';
-    body += '<div><p>Grader collections</p><ul>\n';
+  router.get("/", async (ctx) => {
+    let body = "";
+    body += "<!DOCTYPE html>\n<html><head><title>Grader Root</title></head><body>";
+    body += "<div><p>Grader collections</p><ul>\n";
     [COURSE, STUDENT, RUBRIC, GRADE].forEach((resource) => {
-      body += `<li>${_.capitalize(resource.name)}: <a href="${router.url(resource.name+'-html')}">html</a> <a href="${router.url(resource.name)}">json</a></li>\n`;
+      body += `<li>${_.capitalize(resource.name)}: <a href="${router.url(resource.name+"-html")}">html</a> <a href="${router.url(resource.name)}">json</a></li>\n`;
     });
-    body += '</ul></div>\n';
-    body += '<div><p>Other links</p><ul>\n';
-    body += '<li><a href="http://localhost:3000/grader/courses/CS411-2023-fall/rubrics/project-02/grades.html">Project 2 Grade stats</a></li>\n';
-    body += '</ul></div>\n';
+    body += "</ul></div>\n";
+    body += "<div><p>Other links</p><ul>\n";
+    body += "<li><a href=\"http://localhost:3000/grader/courses/CS411-2023-fall/rubrics/project-02/grades.html\">Project 2 Grade stats</a></li>\n";
+    body += "</ul></div>\n";
     ctx.body = body;
   });
 
   const showRubricStats = (course: CourseDbObj, body: string, router: Router) => {
-    body += '<div><p>Rubric Grade Stats</p><ul>';
+    body += "<div><p>Rubric Grade Stats</p><ul>";
     for (const rubric of course.rubrics) {
-      body += `<li><a href="${router.url('course-rubric-grades-html', { courseId: course.id, rubricId: rubric.id })}">${rubric.name} Grade Stats</a></li>`;
+      body += `<li><a href="${router.url("course-rubric-grades-html", { courseId: course.id, rubricId: rubric.id })}">${rubric.name} Grade Stats</a></li>`;
     }
-    body += '</ul></div>';
+    body += "</ul></div>";
     return body;
   };
 
@@ -242,35 +246,35 @@ export function graderRoutes(router: Router) {
   });
 
   router
-    .get('course-students', '/courses/:courseId/students', async (ctx) => {
+    .get("course-students", "/courses/:courseId/students", async (ctx) => {
       const { course, params: { courseId } } = ctx;
       let body = `<p>Course id: ${courseId}</p>`;
-      body += `<p>Course: <a href="${router.url('course-html', { courseId: course.id })}">${course.name}</a></p>\n`;
+      body += `<p>Course: <a href="${router.url("course-html", { courseId: course.id })}">${course.name}</a></p>\n`;
       body += linkList(router, STUDENT, course.students, { courseId });
       body += jsonhtml(course.students);
       ctx.body = body;
     })
-    .get('course-student', '/courses/:courseId/students/:studentId', async (ctx) => {
+    .get("course-student", "/courses/:courseId/students/:studentId", async (ctx) => {
       const { course, student } = ctx;
-      let body = '';
-      body += `<p>Course: <a href="${router.url('course-html', { courseId: course.id })}">${course.name}</a></p>\n`;
-      body += `<p>Student: <a href="${router.url('student-html', { courseId: course.id, studentId: student.id })}">${student.name}</a></p>\n`;
+      let body = "";
+      body += `<p>Course: <a href="${router.url("course-html", { courseId: course.id })}">${course.name}</a></p>\n`;
+      body += `<p>Student: <a href="${router.url("student-html", { courseId: course.id, studentId: student.id })}">${student.name}</a></p>\n`;
       body += jsonhtml(student);
       ctx.body = body;
       return ctx;
     })
-    .get('course-rubric-grades-html', '/courses/:courseId/rubrics/:rubricId/grades.html', async (ctx) => {
+    .get("course-rubric-grades-html", "/courses/:courseId/rubrics/:rubricId/grades.html", async (ctx) => {
       const { course, rubric } = ctx as unknown as { course: CourseDbObj; rubric: Rubric };
-      const includeTestStudents: boolean = ctx.request?.query?.test === 'true';
-      let body = '';
+      const includeTestStudents: boolean = ctx.request?.query?.test === "true";
+      let body = "";
       body += `<!DOCTYPE html>\n<html><head><title>${course.name} ${rubric.name} Stats</title></head><body>`;
-      body += `<p>Course: <a href="${router.url('course-html', { courseId: course.id })}">${course.name}</a></p>\n`;
-      body += `<p>Rubric: <a href="${router.url('rubric-html', { rubricId: rubric.id })}">${rubric.name}</a></p>\n`;
+      body += `<p>Course: <a href="${router.url("course-html", { courseId: course.id })}">${course.name}</a></p>\n`;
+      body += `<p>Rubric: <a href="${router.url("rubric-html", { rubricId: rubric.id })}">${rubric.name}</a></p>\n`;
 
       const grades = await fetchGrades(course, rubric, includeTestStudents);
 
       function statsRows(scoreList: number[], scoreValueList: (number|undefined)[]): string {
-        let rows = '';
+        let rows = "";
         rows += `<td>${_.mean(scoreList).toFixed(2)}</td>\n`;
         rows += `<td>${_.min(scoreList)}</td>\n`;
         rows += `<td>${_.max(scoreList)}</td>\n`;
@@ -279,7 +283,7 @@ export function graderRoutes(router: Router) {
         const sortedDistr = _.sortBy(distr, [(i:[string,number]) => Number.parseFloat(i[0])]);
         let distrValue = `${sortedDistr.length} values`;
         if (sortedDistr.length <= 3) {
-          distrValue = _.join(sortedDistr.map(([k,c]) => `${k}: ${c}`), '; ');
+          distrValue = _.join(sortedDistr.map(([k,c]) => `${k}: ${c}`), "; ");
         }
 
         rows += `<td>${distrValue}</td>\n`;
@@ -288,31 +292,31 @@ export function graderRoutes(router: Router) {
       }
 
 
-      body += '<table><thead><tr>\n';
-      body += '<th>Student</th>\n';
-      body += '<th>Score</th>\n';
-      body += '<th>Point Value</th>\n';
-      body += '<th>Percent</th>\n';
-      body += '<th>Unscored</th>\n';
-      body += '</tr></thead><tbody>\n';
+      body += "<table><thead><tr>\n";
+      body += "<th>Student</th>\n";
+      body += "<th>Score</th>\n";
+      body += "<th>Point Value</th>\n";
+      body += "<th>Percent</th>\n";
+      body += "<th>Unscored</th>\n";
+      body += "</tr></thead><tbody>\n";
       for (const rubricScore of grades) {
         const score = rubricScore.computedScore?.score || 0;
         const pointValue = rubricScore.computedScore?.pointValue || 0;
-        body += '<tr>';
-        body += `<td><a href="${router.url('grade-html', { gradeId: rubricScore.id })}">${rubricScore.studentName}</a></td>`;
+        body += "<tr>";
+        body += `<td><a href="${router.url("grade-html", { gradeId: rubricScore.id })}">${rubricScore.studentName}</a></td>`;
         body += `<td style="text-align: right">${rubricScore.computedScore?.score}</td>`;
         body += `<td style="text-align: right">${rubricScore.computedScore?.pointValue}</td>`;
         body += `<td style="text-align: right">${(score/pointValue*100).toFixed(0)}%</td>`;
         body += `<td style="text-align: right">${rubricScore.computedScore?.unscoredItems}</td>`;
-        body += '</tr>\n';
+        body += "</tr>\n";
       }
-      body += '</tbody></table>\n';
+      body += "</tbody></table>\n";
 
-      body += '<table><thead><tr>\n';
-      body += '<th>Student</th>\n';
-      body += '<th>Score</th>\n';
-      body += '<th>Percent</th>\n';
-      body += '<th>Unscored</th>\n';
+      body += "<table><thead><tr>\n";
+      body += "<th>Student</th>\n";
+      body += "<th>Score</th>\n";
+      body += "<th>Percent</th>\n";
+      body += "<th>Unscored</th>\n";
 
       const scores: number[] = [];
       const percent: number[] = [];
@@ -323,10 +327,10 @@ export function graderRoutes(router: Router) {
         body += `<th>${category.name}</th>\n`;
         category_scores[category.id] = [];
       }
-      body += '</tr></thead><tbody>\n';
+      body += "</tr></thead><tbody>\n";
 
       for (const rubricScore of grades) {
-        body += '<tr>';
+        body += "<tr>";
         const score = rubricScore.computedScore?.score || 0;
         const pointValue = rubricScore.computedScore?.pointValue || 0;
         const skipStats = (rubricScore.computedScore?.unscoredItems || 0) > 20;
@@ -335,7 +339,7 @@ export function graderRoutes(router: Router) {
           percent.push(score/pointValue*100);
           unscored.push(rubricScore.computedScore?.unscoredItems || 0);
         }
-        body += `<td><a href="${router.url('grade-html', { gradeId: rubricScore.id })}">${rubricScore.studentName}</a></td>`;
+        body += `<td><a href="${router.url("grade-html", { gradeId: rubricScore.id })}">${rubricScore.studentName}</a></td>`;
         body += `<td style="text-align: right">${score}</td>`;
         body += `<td style="text-align: right">${(score/pointValue*100).toFixed(0)}%</td>`;
         body += `<td style="text-align: right">${rubricScore.computedScore?.unscoredItems}</td>`;
@@ -347,7 +351,7 @@ export function graderRoutes(router: Router) {
             category_scores[category.categoryId].push(category.computedScore?.score || 0);
           }
         }
-        body += '</tr>\n';
+        body += "</tr>\n";
       }
 
       function trimmedMean (data: number[]):number {
@@ -366,62 +370,62 @@ export function graderRoutes(router: Router) {
         format?: (n:number)=>string;
       }
       const stats: StatsMethods[] = [
-        { name: 'Count', method: (data: number[]) => data.length, format:fixedFmt(0)},
-        { name: 'Mean', method: _.mean},
-        { name: 'Trimmed Mean', method: trimmedMean},
-        { name: 'StdDev', method: standardDeviation},
-        { name: '10%', method: (data: number[]) => quantile(data, 0.1)},
-        { name: 'Median', method: median},
-        { name: '90%', method: (data: number[]) => quantile(data, 0.9)},
+        { name: "Count", method: (data: number[]) => data.length, format:fixedFmt(0)},
+        { name: "Mean", method: _.mean},
+        { name: "Trimmed Mean", method: trimmedMean},
+        { name: "StdDev", method: standardDeviation},
+        { name: "10%", method: (data: number[]) => quantile(data, 0.1)},
+        { name: "Median", method: median},
+        { name: "90%", method: (data: number[]) => quantile(data, 0.9)},
       ];
 
       for (const {name, method, format} of stats) {
         const numFormat = format || fixedFmt(2);
-        body += '<tr>';
+        body += "<tr>";
         body += `<td>${name}</td>`;
         if (scores.length >= 2) {
           body += `<td style="text-align: right">${numFormat(method(scores))}</td>\n`;
         } else {
-          body += '<td style="text-align: right">N/A</td>\n';
+          body += "<td style=\"text-align: right\">N/A</td>\n";
         }
         if (percent.length >= 2) {
           body += `<td style="text-align: right">${numFormat(method(percent))}%</td>\n`;
         } else {
-          body += '<td style="text-align: right">N/A</td>\n';
+          body += "<td style=\"text-align: right\">N/A</td>\n";
         }
         if (unscored.length >= 2) {
           body += `<td style="text-align: right">${numFormat(method(unscored))}</td>\n`;
         } else {
-          body += '<td style="text-align: right">N/A</td>\n';
+          body += "<td style=\"text-align: right\">N/A</td>\n";
         }
         for (const category of rubric.categories) {
           if (category_scores[category.id].length >= 2) {
             body += `<td style="text-align: right">${numFormat(method(category_scores[category.id]))}`;
           } else {
-            body += '<td style="text-align: right">N/A</td>\n';
+            body += "<td style=\"text-align: right\">N/A</td>\n";
           }
         }
-        body += '</tr>\n';
+        body += "</tr>\n";
 
       }
 
-      body += '</tbody></table>\n';
+      body += "</tbody></table>\n";
 
-      body += '<table><thead><tr>\n';
-      body += '<th>Category</th>\n';
-      body += '<th>Item</th>\n';
-      body += '<th>Point Value</th>\n';
-      body += '<th>Average Score</th>\n';
-      body += '<th>Min Score</th>\n';
-      body += '<th>Max Score</th>\n';
-      body += '<th>Distribution</th>\n';
-      body += '<th>Total Unscored</th>\n';
-      body += '</tr></thead><tbody>\n';
+      body += "<table><thead><tr>\n";
+      body += "<th>Category</th>\n";
+      body += "<th>Item</th>\n";
+      body += "<th>Point Value</th>\n";
+      body += "<th>Average Score</th>\n";
+      body += "<th>Min Score</th>\n";
+      body += "<th>Max Score</th>\n";
+      body += "<th>Distribution</th>\n";
+      body += "<th>Total Unscored</th>\n";
+      body += "</tr></thead><tbody>\n";
       for (const category of rubric.categories) {
-        body += '<tr>';
+        body += "<tr>";
 
         body += `<td><b>${category.name}</b></td>\n`;
-        body += '<td><b>Category</b></td>\n';
+        body += "<td><b>Category</b></td>\n";
 
         // figure out point value
         const catScore = scoreCategory(category, makeCategoryScore(category));
@@ -434,16 +438,16 @@ export function graderRoutes(router: Router) {
 
         body += statsRows(scoreList, scoreList);
 
-        body += '</tr>\n';
+        body += "</tr>\n";
 
         for (const item of category.items) {
-          body += '<tr>';
+          body += "<tr>";
 
-          let decoration = '';
-          if (item.scoreValue === 'bonus') {
-            decoration = ' <span style="color: green">[bonus]</span>';
-          } else if (item.scoreValue === 'penalty') {
-            decoration = ' <span style="color: red">[penalty]</span>';
+          let decoration = "";
+          if (item.scoreValue === "bonus") {
+            decoration = " <span style=\"color: green\">[bonus]</span>";
+          } else if (item.scoreValue === "penalty") {
+            decoration = " <span style=\"color: red\">[penalty]</span>";
           }
           body += `<td>${category.name}</td>\n`;
           body += `<td>${item.name}${decoration}</td>\n`;
@@ -468,14 +472,14 @@ export function graderRoutes(router: Router) {
 
           body += statsRows(scoreList, scoreValueList);
 
-          body += '</tr>\n';
+          body += "</tr>\n";
         }
       }
-      body += '</tbody></table>\n';
+      body += "</tbody></table>\n";
 
       ctx.body = body;
     })
-    .get('course-rubric-grades', '/courses/:courseId/rubrics/:rubricId/grades', async (ctx) => {
+    .get("course-rubric-grades", "/courses/:courseId/rubrics/:rubricId/grades", async (ctx) => {
       const { course, rubric } = ctx as unknown as { course: CourseDbObj; rubric: Rubric };
       const gradeRefs = course.grades.filter((grade) => grade.rubricId === rubric.id);
       const grades = await Promise.all(gradeRefs.map(async (gradeRef) => {
@@ -484,12 +488,12 @@ export function graderRoutes(router: Router) {
       }));
       ctx.body = grades;
     })
-    .get('course-student-grade', '/courses/:courseId/students/:studentId/grades/:rubricId', async (ctx) => {
+    .get("course-student-grade", "/courses/:courseId/students/:studentId/grades/:rubricId", async (ctx) => {
       const { course, student, rubric } = ctx as unknown as { course: CourseDbObj; student: Student; rubric: Rubric };
       const rubricScore = await getOrAddRubricScore(course, student, rubric);
       ctx.body = rubricScore;
     })
-    .put('student-grade', '/students/:studentId/grades/:gradeId', async (ctx) => {
+    .put("student-grade", "/students/:studentId/grades/:gradeId", async (ctx) => {
     });
 
 }

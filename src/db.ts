@@ -1,7 +1,7 @@
-import { Cat } from './cat.js';
-import { urlid, withId } from './genid.js';
-import { assert } from './utils.js';
-import { genCats } from './generate.js';
+import { Cat } from "./cat.js";
+import { urlid, withId } from "./genid.js";
+import { assert } from "./utils.js";
+import { genCats } from "./generate.js";
 
 interface Database {
   cats: Cat[];
@@ -14,20 +14,20 @@ const data: Database = {
 function initDb() {
   data.cats = [
     withId({
-      id: '',
-      name: 'Oscar',
+      id: "",
+      name: "Oscar",
       age: 10,
       claws: true,
     }),
     withId({
-      id: '',
-      name: 'Charles',
+      id: "",
+      name: "Charles",
       age: 4,
       claws: false,
     }),
     withId({
-      id: '',
-      name: 'Charles',
+      id: "",
+      name: "Charles",
       age: 4,
       claws: true,
     }),

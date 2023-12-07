@@ -1,4 +1,4 @@
-import type { Dirent } from 'node:fs';
+import type { Dirent } from "node:fs";
 import {
   readdir,
   stat,
@@ -7,12 +7,12 @@ import {
   readFile,
   writeFile,
   mkdir,
-} from 'node:fs/promises';
-import util from 'node:util';
-import { execFile } from 'node:child_process';
-import { cloneDeep, throttle } from 'lodash-es';
+} from "node:fs/promises";
+import util from "node:util";
+import { execFile } from "node:child_process";
+import { cloneDeep, throttle } from "lodash-es";
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
 const execFileP = util.promisify(execFile);
 
@@ -35,6 +35,7 @@ type AllOptional<Type> = {
 };
 
 export interface ResourceDef {
+  database: string;
   id?: string;
   name: string;
   singular: string;
@@ -90,7 +91,14 @@ async function ensureResourceDir(resource: ResourceDef) {
 }
 
 function resourceDir(resource: ResourceDef): string {
-  let path = config.DB_GRADING_DIR;
+  let path = "./db/unknown";
+  if (resource.database === "grading") {
+    path = config.DB_GRADING_DIR;
+  } else if (resource.database === "indecisive") {
+    path = config.DB_INDECISIVE_DIR;
+  } else {
+    throw new Error(`Unknown database ${resource.database} on resource ${resource.name}`);
+  }
   if (resource.parents) {
     for (const parent of resource.parents) {
       if (parent.id) {
@@ -136,7 +144,7 @@ export async function getAll(resource: ResourceDef):Promise<IdResource[]|undefin
     return undefined;
   }
   try {
-    const files = await getFiles(dirpath, 'json');
+    const files = await getFiles(dirpath, "json");
     const resources = await Promise.all(files.map((file) => readFileAsJson(`${file.path}/${file.name}`)));
     // console.log(`Found ${resources.length} ${resource} resources.`);
     // return resources.filter(defd);
@@ -153,7 +161,7 @@ export async function getResourceIds(resource: ResourceDef):Promise<string[]|und
     return undefined;
   }
   try {
-    const files = await getFiles(dirpath, 'json');
+    const files = await getFiles(dirpath, "json");
     const ids = files.map((file) => file.name.slice(0, -5));
     return ids;
   } catch {
@@ -162,7 +170,7 @@ export async function getResourceIds(resource: ResourceDef):Promise<string[]|und
 }
 
 async function readFileAsJson<T extends IdResource>(filename:string):Promise<T> {
-  const buffer = await readFile(filename, 'utf8');
+  const buffer = await readFile(filename, "utf8");
   // console.log(`DONE reading from ${filename}.`);
   const data = JSON.parse(buffer);
   // console.log(data);
@@ -182,7 +190,7 @@ export async function readResource<T extends IdResource>(resource: ResourceDef):
 
 async function gitCommit() {
   if (!config.DB_GIT_COMMIT_SCRIPT) {
-    console.error('gitCommit called but no commit script specified.');
+    console.error("gitCommit called but no commit script specified.");
     return;
   }
   try {
@@ -193,7 +201,7 @@ async function gitCommit() {
     // await execFileP('git', ['commit', '-m', 'Update db']);
     // console.log('DONE committing to git.');
   } catch (err) {
-    console.error('Error using git', err);
+    console.error("Error using git", err);
   }
 }
 

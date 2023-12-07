@@ -38,7 +38,7 @@ export function log(...data: any[]) {
 }
 
 export function rand(n = 2) {
-  return (Math.random() * 10 ** n).toFixed().toString().padStart(2, '0');
+  return (Math.random() * 10 ** n).toFixed().toString().padStart(2, "0");
 }
 
 export function ts(
@@ -60,30 +60,30 @@ export function ts(
   },
 ) {
   const timestamp = new Date();
-  let result = '';
+  let result = "";
   if (hours) {
     if (result) {
-      result += ':';
+      result += ":";
     }
-    result += timestamp.getHours().toString().padStart(2, '0');
+    result += timestamp.getHours().toString().padStart(2, "0");
   }
   if (minutes) {
     if (result) {
-      result += ':';
+      result += ":";
     }
-    result += timestamp.getMinutes().toString().padStart(2, '0');
+    result += timestamp.getMinutes().toString().padStart(2, "0");
   }
   if (seconds) {
     if (result) {
-      result += ':';
+      result += ":";
     }
-    result += timestamp.getSeconds().toString().padStart(2, '0');
+    result += timestamp.getSeconds().toString().padStart(2, "0");
   }
   if (ms) {
     if (result) {
-      result += '.';
+      result += ".";
     }
-    result += timestamp.getMilliseconds().toString().padStart(3, '0');
+    result += timestamp.getMilliseconds().toString().padStart(3, "0");
   }
   return result;
 }

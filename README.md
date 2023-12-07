@@ -7,8 +7,19 @@
 - instanceId: i-02c89d1fcd5c3d7d8
 - t4g.nano
 
+## Running
+
+SSH to server
+
 ```bash
 ssh -i cs411_ec2.pem ec2-user@cs411.duckdns.org
+```
+
+tmux is running
+
+```bash
+tmux a
+sudo yarn serve:watch
 ```
 
 ## Koa and koa-router

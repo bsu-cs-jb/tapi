@@ -1,6 +1,6 @@
-import Router from '@koa/router';
-import { urlid } from './genid.js';
-import { log, jsonhtml, shallowJson, assert } from './utils.js';
+import Router from "@koa/router";
+import { urlid } from "./genid.js";
+import { log, jsonhtml, shallowJson, assert } from "./utils.js";
 import {
   getAll,
   writeResource,
@@ -9,8 +9,8 @@ import {
   resourceExists,
   IdResource,
   refWithId,
-} from './FileDb.js';
-import { cloneDeep, sortBy, capitalize } from 'lodash-es';
+} from "./FileDb.js";
+import { cloneDeep, sortBy, capitalize } from "lodash-es";
 
 type IdName = { id: string; name: string; };
 
@@ -62,7 +62,7 @@ export function linkList(
     // console.log(`<p><a href="${href}">${r.name} - ${r.id}</a></p>`);
     result += `<li><a href="${href}">${r.name} - ${r.id}</a></li>\n`;
   }
-  return result + '</ul></div>';
+  return result + "</ul></div>";
 }
 
 export function getCollection(router: Router, resource:ResourceDef): Router {
@@ -75,7 +75,7 @@ export function getCollection(router: Router, resource:ResourceDef): Router {
       if (collection) {
         body += linkList(router, resource, collection);
       }
-      body += '\n</body></html>';
+      body += "\n</body></html>";
       ctx.body = body;
     })
     .get(resource.name, `/${resource.name}`, async (ctx) => {
@@ -98,9 +98,9 @@ export function getResource<T extends IdResource>(
       async (ctx) => {
         // const { course, params: { courseId } } = ctx;
         const item = ctx[resource.singular];
-        let body = '';
+        let body = "";
         body += `<!DOCTYPE html>\n<html><head><title>${capitalize(resource.singular)}: ${item.name}</title></head><body>`;
-        body += `<p><a href="${router.url(resource.name+'-html')}">${capitalize(resource.name)}</a></p>`;
+        body += `<p><a href="${router.url(resource.name+"-html")}">${capitalize(resource.name)}</a></p>`;
         body += `<p>${capitalize(resource.singular)} id: ${item.id}</p>`;
         body += `<p>${capitalize(resource.singular)} name: ${item.name}</p>`;
         if (customHtml) {
@@ -112,7 +112,7 @@ export function getResource<T extends IdResource>(
           }
         }
         body += jsonhtml(item);
-        body += '</body></html>';
+        body += "</body></html>";
         ctx.body = body;
       })
     .get(
