@@ -75,7 +75,7 @@
           "name": "Points with 0.333 incrementValue",
           "scoreType": "points",
           "scoreValue": "points",
-          "pointIncrement": 0.333,
+          "pointIncrement": 0.3333333,
           "pointValue": 2
         },
         {
