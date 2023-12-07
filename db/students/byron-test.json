@@ -2,23 +2,5 @@
   "id": "byron-test",
   "name": "Byron Test",
   "grades": [
-    {
-      "id": "iU3ilG2Sy",
-      "name": "Rubric Test 1",
-      "rubricId": "test-01",
-      "courseId": "CS411-2023-fall"
-    },
-    {
-      "id": "hW6rmeoRU",
-      "name": "Project 2",
-      "rubricId": "project-02",
-      "courseId": "CS411-2023-fall"
-    },
-    {
-      "id": "6DQvakXWG",
-      "name": "Rubric Test 1 - Test Course",
-      "rubricId": "test-course-test-01",
-      "courseId": "test-course-id"
-    }
   ]
 }

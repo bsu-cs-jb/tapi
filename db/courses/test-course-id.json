@@ -12,20 +12,6 @@
     }
   ],
   "grades": [
-    {
-      "id": "50RDr9U0O",
-      "name": "Rubric Test 1 - Test Course",
-      "rubricId": "test-course-test-01",
-      "studentId": "brahbrah-test",
-      "studentName": "Brahbrah Test"
-    },
-    {
-      "id": "6DQvakXWG",
-      "name": "Rubric Test 1 - Test Course",
-      "rubricId": "test-course-test-01",
-      "studentId": "byron-test",
-      "studentName": "Byron Test"
-    }
   ],
   "rubrics": [
     {
