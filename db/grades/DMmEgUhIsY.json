@@ -44,15 +44,15 @@
               "id": "FX-4oJ7-sg",
               "itemId": "sub-item-003",
               "computedScore": {
-                "score": -1,
+                "score": 0,
                 "pointValue": 0,
                 "unscoredItems": 0
               },
-              "score": 1
+              "score": 0
             }
           ],
           "computedScore": {
-            "score": 0,
+            "score": 1,
             "pointValue": 1,
             "unscoredItems": 0
           }
@@ -93,8 +93,9 @@
           "computedScore": {
             "score": 0,
             "pointValue": 2,
-            "unscoredItems": 1
-          }
+            "unscoredItems": 0
+          },
+          "score": 0
         },
         {
           "id": "CgZm0PWyXQ",
@@ -137,9 +138,9 @@
         }
       ],
       "computedScore": {
-        "score": -2,
+        "score": -1,
         "pointValue": 25,
-        "unscoredItems": 3
+        "unscoredItems": 2
       }
     }
   ],
@@ -148,10 +149,10 @@
   "courseId": "test-course-id",
   "courseName": "Test Course",
   "computedScore": {
-    "score": -2,
+    "score": -1,
     "pointValue": 25,
-    "unscoredItems": 3
+    "unscoredItems": 2
   },
-  "updatedAt": "2023-12-07T15:05:56.006Z",
+  "updatedAt": "2023-12-07T15:07:34.605Z",
   "createdAt": "2023-12-07T14:16:38.946Z"
 }
