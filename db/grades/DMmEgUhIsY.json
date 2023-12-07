@@ -71,11 +71,11 @@
           "id": "CimgWndozg",
           "itemId": "normal-points",
           "computedScore": {
-            "score": 0,
+            "score": 1,
             "pointValue": 4,
             "unscoredItems": 0
           },
-          "score": 0
+          "score": 1
         },
         {
           "id": "FhI_Au_Vnw",
@@ -91,21 +91,19 @@
           "id": "AaclqDgu5Q",
           "itemId": "increment-points-02",
           "computedScore": {
-            "score": 2,
+            "score": 0,
             "pointValue": 2,
-            "unscoredItems": 0
-          },
-          "score": 2
+            "unscoredItems": 1
+          }
         },
         {
           "id": "CgZm0PWyXQ",
           "itemId": "increment-points-03",
           "computedScore": {
-            "score": 0.3315,
+            "score": 0,
             "pointValue": 2,
-            "unscoredItems": 0
-          },
-          "score": 0.3315
+            "unscoredItems": 1
+          }
         },
         {
           "id": "CGHKoQni0g",
@@ -139,9 +137,9 @@
         }
       ],
       "computedScore": {
-        "score": 0.3315,
+        "score": -1,
         "pointValue": 25,
-        "unscoredItems": 1
+        "unscoredItems": 3
       }
     }
   ],
@@ -150,10 +148,10 @@
   "courseId": "test-course-id",
   "courseName": "Test Course",
   "computedScore": {
-    "score": 0.3315,
+    "score": -1,
     "pointValue": 25,
-    "unscoredItems": 1
+    "unscoredItems": 3
   },
-  "updatedAt": "2023-12-07T15:04:04.527Z",
+  "updatedAt": "2023-12-07T15:05:27.743Z",
   "createdAt": "2023-12-07T14:16:38.946Z"
 }
