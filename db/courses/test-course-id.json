@@ -12,11 +12,20 @@
     }
   ],
   "grades": [
+    {
+      "id": "DMmEgUhIsY",
+      "name": "Rubric Test 1 - Test Course",
+      "rubricId": "test-course-test-01",
+      "studentId": "brahbrah-test",
+      "studentName": "Brahbrah Test"
+    }
   ],
   "rubrics": [
     {
       "id": "test-course-test-01",
       "name": "Test 1"
     }
-  ]
+  ],
+  "updatedAt": "2023-12-07T14:16:38.947Z",
+  "createdAt": "2023-12-07T14:16:38.947Z"
 }

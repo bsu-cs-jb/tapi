@@ -1,0 +1,85 @@
+{
+  "id": "DMmEgUhIsY",
+  "rubricId": "test-course-test-01",
+  "name": "Rubric Test 1 - Test Course for Brahbrah Test in Test Course",
+  "categories": [
+    {
+      "id": "DxqWWdSf7g",
+      "categoryId": "test-01",
+      "items": [
+        {
+          "id": "DuQyyeMkXI",
+          "itemId": "OSyiL!GkC",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 10,
+            "unscoredItems": 1
+          }
+        },
+        {
+          "id": "CY-dAiCkpA",
+          "itemId": "nested-item-001",
+          "subItems": [
+            {
+              "id": "BH7RWNiQGw",
+              "itemId": "sub-item-001",
+              "computedScore": {
+                "score": 0,
+                "pointValue": 1,
+                "unscoredItems": 1
+              }
+            },
+            {
+              "id": "EqWhmyz29A",
+              "itemId": "sub-item-002",
+              "computedScore": {
+                "score": 0,
+                "pointValue": 0,
+                "unscoredItems": 1
+              }
+            },
+            {
+              "id": "FX-4oJ7-sg",
+              "itemId": "sub-item-003",
+              "computedScore": {
+                "score": 0,
+                "pointValue": 0,
+                "unscoredItems": 1
+              }
+            }
+          ],
+          "computedScore": {
+            "score": 0,
+            "pointValue": 1,
+            "unscoredItems": 3
+          }
+        },
+        {
+          "id": "FjXDpDLHAg",
+          "itemId": "BF!Kcg~30",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 4,
+            "unscoredItems": 1
+          }
+        }
+      ],
+      "computedScore": {
+        "score": 0,
+        "pointValue": 15,
+        "unscoredItems": 5
+      }
+    }
+  ],
+  "studentId": "brahbrah-test",
+  "studentName": "Brahbrah Test",
+  "courseId": "test-course-id",
+  "courseName": "Test Course",
+  "computedScore": {
+    "score": 0,
+    "pointValue": 15,
+    "unscoredItems": 5
+  },
+  "updatedAt": "2023-12-07T14:16:38.946Z",
+  "createdAt": "2023-12-07T14:16:38.946Z"
+}
