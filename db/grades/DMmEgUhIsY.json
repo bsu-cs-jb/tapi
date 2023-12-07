@@ -73,9 +73,8 @@
           "computedScore": {
             "score": 0,
             "pointValue": 4,
-            "unscoredItems": 0
-          },
-          "score": 0
+            "unscoredItems": 1
+          }
         },
         {
           "id": "FhI_Au_Vnw",
@@ -93,9 +92,8 @@
           "computedScore": {
             "score": 0,
             "pointValue": 2,
-            "unscoredItems": 0
-          },
-          "score": 0
+            "unscoredItems": 1
+          }
         },
         {
           "id": "CgZm0PWyXQ",
@@ -140,7 +138,7 @@
       "computedScore": {
         "score": -1,
         "pointValue": 25,
-        "unscoredItems": 2
+        "unscoredItems": 4
       }
     }
   ],
@@ -151,8 +149,8 @@
   "computedScore": {
     "score": -1,
     "pointValue": 25,
-    "unscoredItems": 2
+    "unscoredItems": 4
   },
-  "updatedAt": "2023-12-07T15:07:34.605Z",
+  "updatedAt": "2023-12-07T15:10:45.141Z",
   "createdAt": "2023-12-07T14:16:38.946Z"
 }
