@@ -11,11 +11,11 @@
           "id": "FVu859zpkA",
           "itemId": "timer-sets-001",
           "computedScore": {
-            "score": 1,
+            "score": 0,
             "pointValue": 1,
             "unscoredItems": 0
           },
-          "score": 1
+          "score": 0
         },
         {
           "id": "EvlW3ZJ3aA",
@@ -51,10 +51,11 @@
           "id": "DHcXdmHNGo",
           "itemId": "timer-sets-005",
           "computedScore": {
-            "score": 0,
+            "score": 2,
             "pointValue": 0,
-            "unscoredItems": 1
-          }
+            "unscoredItems": 0
+          },
+          "score": 2
         },
         {
           "id": "FclDfc5nhA",
@@ -69,10 +70,11 @@
           "id": "ETjA0d-l6w",
           "itemId": "timer-sets-007",
           "computedScore": {
-            "score": 0,
+            "score": 1,
             "pointValue": 0,
-            "unscoredItems": 1
-          }
+            "unscoredItems": 0
+          },
+          "score": 1
         },
         {
           "id": "DHj8CZqAIg",
@@ -85,9 +87,9 @@
         }
       ],
       "computedScore": {
-        "score": 6,
+        "score": 8,
         "pointValue": 8,
-        "unscoredItems": 4
+        "unscoredItems": 2
       }
     },
     {
@@ -194,15 +196,15 @@
           "id": "D5kxjb48fg",
           "itemId": "multiple-timers-002",
           "computedScore": {
-            "score": -3,
+            "score": 0,
             "pointValue": 0,
             "unscoredItems": 0
           },
-          "score": 3
+          "score": 0
         }
       ],
       "computedScore": {
-        "score": -3,
+        "score": 0,
         "pointValue": 4,
         "unscoredItems": 1
       }
@@ -213,10 +215,10 @@
   "courseId": "CS411-2023-fall",
   "courseName": "CS 411 Fall 2023 (test)",
   "computedScore": {
-    "score": 4,
+    "score": 9,
     "pointValue": 17,
-    "unscoredItems": 10
+    "unscoredItems": 8
   },
-  "updatedAt": "2023-12-07T13:58:59.190Z",
+  "updatedAt": "2023-12-07T15:18:12.876Z",
   "createdAt": "2023-12-07T13:58:44.085Z"
 }
