@@ -261,7 +261,7 @@ export function graderRoutes(router: Router) {
     })
     .get('course-rubric-grades-html', '/courses/:courseId/rubrics/:rubricId/grades.html', async (ctx) => {
       const { course, rubric } = ctx as unknown as { course: CourseDbObj; rubric: Rubric };
-      const includeTestStudents: boolean = ctx.request?.query?.test === "true";
+      const includeTestStudents: boolean = ctx.request?.query?.test === 'true';
       let body = '';
       body += `<!DOCTYPE html>\n<html><head><title>${course.name} ${rubric.name} Stats</title></head><body>`;
       body += `<p>Course: <a href="${router.url('course-html', { courseId: course.id })}">${course.name}</a></p>\n`;

@@ -7,6 +7,10 @@
 - instanceId: i-02c89d1fcd5c3d7d8
 - t4g.nano
 
+```bash
+ssh -i cs411_ec2.pem ec2-user@cs411.duckdns.org
+```
+
 ## Koa and koa-router
 
 [TypeScript koa boilerplate](https://github.com/kryz81/koa-ts-boilerplate/blob/master/package.json)

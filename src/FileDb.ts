@@ -9,8 +9,11 @@ import {
   mkdir,
 } from 'node:fs/promises';
 import util from 'node:util';
-import { cloneDeep, throttle } from 'lodash-es';
 import { execFile } from 'node:child_process';
+import { cloneDeep, throttle } from 'lodash-es';
+
+import { config } from './config.js';
+
 const execFileP = util.promisify(execFile);
 
 // type RecVal = string | boolean | null | number;
@@ -45,7 +48,7 @@ export interface ResourceDef {
 }
 
 // const ROOT = './db';
-const ROOT = './cs411-db/grading-db';
+// const ROOT = './cs411-db/grading-db';
 
 export function jsonToBuffer(data: IdResource): Uint8Array {
   return new Uint8Array(Buffer.from(JSON.stringify(data, undefined, 2)));
@@ -79,7 +82,7 @@ async function ensureDir(dirpath:string) {
 }
 
 async function ensureRoot() {
-  await ensureDir(ROOT);
+  await ensureDir(config.DB_GRADING_DIR);
 }
 
 async function ensureResourceDir(resource: ResourceDef) {
@@ -87,7 +90,7 @@ async function ensureResourceDir(resource: ResourceDef) {
 }
 
 function resourceDir(resource: ResourceDef): string {
-  let path = ROOT;
+  let path = config.DB_GRADING_DIR;
   if (resource.parents) {
     for (const parent of resource.parents) {
       if (parent.id) {
@@ -178,8 +181,12 @@ export async function readResource<T extends IdResource>(resource: ResourceDef):
 }
 
 async function gitCommit() {
+  if (!config.DB_GIT_COMMIT_SCRIPT) {
+    console.error('gitCommit called but no commit script specified.');
+    return;
+  }
   try {
-    const { stdout, stderr } = await execFileP('./push-db.sh');
+    const { stdout, stderr } = await execFileP(config.DB_GIT_COMMIT_SCRIPT);
     console.log(`execFile stdout:\n${stdout}`);
     console.log(`execFile stderr:\n${stderr}`);
     // await execFileP('git', ['add', '-A', 'db/']);
@@ -209,14 +216,16 @@ export async function writeResource(resource: ResourceDef, data: IdResource, upd
   console.log(`writeResource(${resource.singular} ${resource.id}) to ${filename}.`);
   await writeFile(filename, buffer);
   // console.log(`DONE writing to ${filename}.`);
-  throttleGitCommit();
+  if (config.DB_GIT_COMMIT) {
+    throttleGitCommit();
+  }
   return filename;
 }
 
 export async function writeDb(name: string, data: IdResource) {
   await ensureRoot();
   const buffer = jsonToBuffer(data);
-  await writeFile(`${ROOT}/${name}.json`, buffer);
+  await writeFile(`${config.DB_GRADING_DIR}/${name}.json`, buffer);
 }
 
 export function refWithId(resource: ResourceDef, id: string):ResourceDef {
