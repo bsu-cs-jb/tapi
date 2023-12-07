@@ -1,0 +1,86 @@
+{
+  "id": "CsmRyGTEFY",
+  "rubricId": "test-01",
+  "name": "Rubric Test 1 for Brahbrah Test in CS 411 Fall 2023 (test)",
+  "categories": [
+    {
+      "id": "C5tpKgL7oY",
+      "categoryId": "test-01",
+      "items": [
+        {
+          "id": "EwbsHKUuPw",
+          "itemId": "OSyiL!GkC",
+          "computedScore": {
+            "score": 1,
+            "pointValue": 10,
+            "unscoredItems": 0
+          },
+          "score": 1
+        },
+        {
+          "id": "DiD5EweG2I",
+          "itemId": "nested-item-001",
+          "subItems": [
+            {
+              "id": "BoUHYYsGqg",
+              "itemId": "sub-item-001",
+              "computedScore": {
+                "score": 0,
+                "pointValue": 1,
+                "unscoredItems": 1
+              }
+            },
+            {
+              "id": "EvdwfDhWQQ",
+              "itemId": "sub-item-002",
+              "computedScore": {
+                "score": 0,
+                "pointValue": 0,
+                "unscoredItems": 1
+              }
+            },
+            {
+              "id": "BQRLRAljxY",
+              "itemId": "sub-item-003",
+              "computedScore": {
+                "score": 0,
+                "pointValue": 0,
+                "unscoredItems": 1
+              }
+            }
+          ],
+          "computedScore": {
+            "score": 0,
+            "pointValue": 1,
+            "unscoredItems": 3
+          }
+        },
+        {
+          "id": "D6jF8eAyTw",
+          "itemId": "BF!Kcg~30",
+          "computedScore": {
+            "score": 0,
+            "pointValue": 4,
+            "unscoredItems": 1
+          }
+        }
+      ],
+      "computedScore": {
+        "score": 1,
+        "pointValue": 15,
+        "unscoredItems": 4
+      }
+    }
+  ],
+  "studentId": "brahbrah-test",
+  "studentName": "Brahbrah Test",
+  "courseId": "CS411-2023-fall",
+  "courseName": "CS 411 Fall 2023 (test)",
+  "computedScore": {
+    "score": 1,
+    "pointValue": 15,
+    "unscoredItems": 4
+  },
+  "updatedAt": "2023-12-07T14:00:18.107Z",
+  "createdAt": "2023-12-07T14:00:14.029Z"
+}
