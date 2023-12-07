@@ -46,6 +46,20 @@
           "scoreType": "full_half",
           "scoreValue": "points",
           "pointValue": 4
+        },
+        {
+          "id": "bonus-points",
+          "name": "Bonus points",
+          "scoreType": "points",
+          "scoreValue": "bonus",
+          "pointValue": 4
+        },
+        {
+          "id": "penalty-points",
+          "name": "Penalty points 4",
+          "scoreType": "points",
+          "scoreValue": "penalty",
+          "pointValue": -4
         }
       ]
     }

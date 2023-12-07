@@ -62,6 +62,26 @@
             "pointValue": 4,
             "unscoredItems": 1
           }
+        },
+        {
+          "id": "CGHKoQni0g",
+          "itemId": "bonus-points",
+          "computedScore": {
+            "score": 4,
+            "pointValue": 0,
+            "unscoredItems": 0
+          },
+          "score": 4
+        },
+        {
+          "id": "Cmsvoonuhg",
+          "itemId": "penalty-points",
+          "computedScore": {
+            "score": -4,
+            "pointValue": 0,
+            "unscoredItems": 0
+          },
+          "score": 4
         }
       ],
       "computedScore": {
@@ -80,6 +100,6 @@
     "pointValue": 15,
     "unscoredItems": 5
   },
-  "updatedAt": "2023-12-07T14:16:38.946Z",
+  "updatedAt": "2023-12-07T14:19:07.170Z",
   "createdAt": "2023-12-07T14:16:38.946Z"
 }
