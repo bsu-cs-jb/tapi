@@ -71,11 +71,11 @@
           "id": "CimgWndozg",
           "itemId": "normal-points",
           "computedScore": {
-            "score": 1,
+            "score": 0,
             "pointValue": 4,
             "unscoredItems": 0
           },
-          "score": 1
+          "score": 0
         },
         {
           "id": "FhI_Au_Vnw",
@@ -137,7 +137,7 @@
         }
       ],
       "computedScore": {
-        "score": -1,
+        "score": -2,
         "pointValue": 25,
         "unscoredItems": 3
       }
@@ -148,10 +148,10 @@
   "courseId": "test-course-id",
   "courseName": "Test Course",
   "computedScore": {
-    "score": -1,
+    "score": -2,
     "pointValue": 25,
     "unscoredItems": 3
   },
-  "updatedAt": "2023-12-07T15:05:27.743Z",
+  "updatedAt": "2023-12-07T15:05:56.006Z",
   "createdAt": "2023-12-07T14:16:38.946Z"
 }
