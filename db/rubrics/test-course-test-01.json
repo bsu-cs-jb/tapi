@@ -56,11 +56,27 @@
         },
         {
           "id": "increment-points",
-          "name": "Points with incrementValue",
+          "name": "Points with 0.2 incrementValue",
           "scoreType": "points",
           "scoreValue": "points",
           "pointIncrement": 0.2,
-          "pointValue": 4
+          "pointValue": 2
+        },
+        {
+          "id": "increment-points-02",
+          "name": "Points with 0.25 incrementValue",
+          "scoreType": "points",
+          "scoreValue": "points",
+          "pointIncrement": 0.25,
+          "pointValue": 2
+        },
+        {
+          "id": "increment-points-03",
+          "name": "Points with 0.333 incrementValue",
+          "scoreType": "points",
+          "scoreValue": "points",
+          "pointIncrement": 0.333,
+          "pointValue": 2
         },
         {
           "id": "bonus-points",
