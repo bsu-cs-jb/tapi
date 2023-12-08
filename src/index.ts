@@ -33,13 +33,15 @@ const router = new Router();
 
 router
   .get("/", (ctx) => {
-    ctx.body = "<p>Nice to meet you, are you looking for my <a href=\"/cats\">Cats</a> or <a href=\"/grader\">Grader</a>?</p>";
+    ctx.body =
+      '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
   })
   .get("/test", (ctx) => {
     const request = new Request();
     const response = new Response();
     oauth.authenticate(request, response);
-    ctx.body = "<p>Nice to meet you, are you looking for my <a href=\"/cats\">Cats</a> or <a href=\"/grader\">Grader</a>?</p>";
+    ctx.body =
+      '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
   })
   .get("/cats", (ctx) => {
     const cats = allCats();
@@ -57,7 +59,10 @@ router
     await next();
   })
   .get("/cats/:catId", (ctx) => {
-    const { cat, params: { catId } } = ctx;
+    const {
+      cat,
+      params: { catId },
+    } = ctx;
     let body = `<p>Cat id: ${catId}</p>`;
 
     if (ctx.cat) {
@@ -94,12 +99,10 @@ app
 log(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
 log(`LOG_LEVEL: ${config.LOG_LEVEL}`);
 
-
 log(`DB_GRADING_DIR: ${config.DB_GRADING_DIR}`);
 log(`DB_GIT_COMMIT: ${config.DB_GIT_COMMIT}`);
 log(`DB_GIT_COMMIT_SCRIPT: ${config.DB_GIT_COMMIT_SCRIPT}`);
 
 log(`Listening on port ${config.APP_PORT}`);
-
 
 app.listen(config.APP_PORT);

@@ -1,4 +1,3 @@
-
 /*
 import { RefreshTokenModel, Token, RefreshToken, Callback, Falsey } from "oauth2-server";
 

@@ -27,13 +27,15 @@ export function jsonhtml(data: any): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function shallowJson(data: Record<string, any>, indent=2): string {
+export function shallowJson(data: Record<string, any>, indent = 2): string {
   const flatObj = Object.fromEntries(
-    Object.entries(data)
-      .map(([k,v]) => {
-        const rep = Array.isArray(v) ? `[Array length=${v.length}]`: v.toString();
-        return [k,rep];
-      }));
+    Object.entries(data).map(([k, v]) => {
+      const rep = Array.isArray(v)
+        ? `[Array length=${v.length}]`
+        : v.toString();
+      return [k, rep];
+    }),
+  );
   return JSON.stringify(flatObj, undefined, indent);
 }
 
@@ -46,7 +48,7 @@ export function range(startOrEnd: number, end?: number): number[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function assert(assertion:boolean, msg?:any, ...args: any[]) {
+export function assert(assertion: boolean, msg?: any, ...args: any[]) {
   console.assert(assertion, msg, ...args);
 }
 

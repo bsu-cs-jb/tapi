@@ -1,6 +1,11 @@
 import "dotenv/config";
 
-import { BaseConfig, BaseConfigImpl, getConfig, getConfigBoolean } from "grading";
+import {
+  BaseConfig,
+  BaseConfigImpl,
+  getConfig,
+  getConfigBoolean,
+} from "grading";
 
 interface Config extends BaseConfig {
   APP_PORT: string;

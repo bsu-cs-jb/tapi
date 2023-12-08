@@ -1,4 +1,3 @@
-
 export interface Cat {
   id: string;
   name: string;
@@ -6,5 +5,3 @@ export interface Cat {
   breed?: string;
   claws: boolean;
 }
-
-

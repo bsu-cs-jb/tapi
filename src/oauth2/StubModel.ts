@@ -1,7 +1,14 @@
-import { ClientCredentialsModel, Client, User, Token, Callback, Falsey } from "oauth2-server";
+import {
+  ClientCredentialsModel,
+  Client,
+  User,
+  Token,
+  Callback,
+  Falsey,
+} from "oauth2-server";
 import { log } from "../utils.js";
 
-const model:ClientCredentialsModel = {
+const model: ClientCredentialsModel = {
   // ********** BaseModel  **********
 
   /**
@@ -18,9 +25,9 @@ const model:ClientCredentialsModel = {
   // },
 
   /**
-    * Invoked to retrieve a client using a client id or a client id/client
-    * secret combination, depending on the grant type.
-    */
+   * Invoked to retrieve a client using a client id or a client id/client
+   * secret combination, depending on the grant type.
+   */
   getClient: async (
     clientId: string,
     clientSecret: string,
@@ -31,11 +38,11 @@ const model:ClientCredentialsModel = {
   },
 
   /**
-    * Invoked to save an access token and optionally a refresh token, depending
-    * on the grant type.
-    */
+   * Invoked to save an access token and optionally a refresh token, depending
+   * on the grant type.
+   */
   saveToken: async (
-    token: Token, 
+    token: Token,
     client: Client,
     user: User,
     // callback?: Callback<Token>
@@ -46,27 +53,34 @@ const model:ClientCredentialsModel = {
   // ********** RequestAuthenticationModel  **********
 
   /**
-  * Invoked to retrieve an existing access token previously saved through
-  * Model#saveToken().
-  */
+   * Invoked to retrieve an existing access token previously saved through
+   * Model#saveToken().
+   */
   getAccessToken: async (
-    accessToken: string, 
-    callback?: Callback<Token>
+    accessToken: string,
+    callback?: Callback<Token>,
   ): Promise<Token | Falsey> => {
     return undefined;
   },
 
   /**
-  * Invoked during request authentication to check if the provided access token
-  * was authorized the requested scopes.
-  */
-  verifyScope: async (token: Token, scope: string | string[], callback?: Callback<boolean>): Promise<boolean> => {
+   * Invoked during request authentication to check if the provided access token
+   * was authorized the requested scopes.
+   */
+  verifyScope: async (
+    token: Token,
+    scope: string | string[],
+    callback?: Callback<boolean>,
+  ): Promise<boolean> => {
     return true;
   },
 
   // ********** RefreshTokenModel  **********
 
-  getUserFromClient: async (client: Client, callback?: Callback<User | Falsey>): Promise<User | Falsey> => {
+  getUserFromClient: async (
+    client: Client,
+    callback?: Callback<User | Falsey>,
+  ): Promise<User | Falsey> => {
     return undefined;
   },
 
