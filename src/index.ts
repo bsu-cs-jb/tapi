@@ -5,13 +5,13 @@ import Router from "@koa/router";
 import cors from "@koa/cors";
 import { bodyParser } from "@koa/bodyparser";
 
-import model from "./oauth2/SimpleModel.js";
+import { SimpleModel } from "./oauth2/SimpleModel.js";
 import { authenticate, token } from "./oauth2/koa.js";
 
 import OAuth2Server  from "oauth2-server";
 
 const oauth = new OAuth2Server({
-  model,
+  model: SimpleModel(),
 });
 
 import { graderRoutes } from "./grader.js";
@@ -93,7 +93,7 @@ const indecisiveRouter = new Router({
   prefix: "/indecisive",
 });
 // INDECISIVE AUTH
-indecisiveRouter.use(authenticate("read"));
+// indecisiveRouter.use(authenticate("read"));
 indecisiveRoutes(indecisiveRouter);
 
 app

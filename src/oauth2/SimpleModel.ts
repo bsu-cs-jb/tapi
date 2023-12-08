@@ -34,7 +34,7 @@ interface TokenDb {
 
 const ALLOWED_SCOPES = ["read", "write"];
 
-const clients: ClientDb = {
+const TEST_CLIENTS: ClientDb = {
   admin: {
     secret: hash("admin"),
     client: {
@@ -61,120 +61,240 @@ const clients: ClientDb = {
 
 const tokens: TokenDb = {};
 
-const model: ClientCredentialsModel = {
-  // ********** BaseModel  **********
+export function SimpleModel(clientsParam?: ClientDb):ClientCredentialsModel {
+  const clients = clientsParam || TEST_CLIENTS;
+  const model: ClientCredentialsModel = {
+    // ********** BaseModel  **********
 
-  /**
-   * Optional
-   * Invoked to generate a new access token.
-   */
-  // generateAccessToken: async(
-  //   client: Client,
-  //   user: User,
-  //   scope: string | string[],
-  //   callback?: Callback<string>,
-  // ): Promise<string> => {
-  //   return "";
-  // },
+    /**
+    * Optional
+    * Invoked to generate a new access token.
+    */
+    // generateAccessToken: async(
+    //   client: Client,
+    //   user: User,
+    //   scope: string | string[],
+    //   callback?: Callback<string>,
+    // ): Promise<string> => {
+    //   return "";
+    // },
 
-  /**
-   * Invoked to retrieve a client using a client id or a client id/client
-   * secret combination, depending on the grant type.
-   */
-  getClient: async (
-    clientId: string,
-    clientSecret: string,
-    //callback?: Callback<Client | Falsey>,
-  ): Promise<Client | Falsey> => {
-    // log(`getClient(${clientId}, ${hash(clientSecret)})`);
-    if (
-      clientId in clients &&
-      hash(clientSecret) === clients[clientId].secret
-    ) {
-      return clients[clientId].client;
-    }
-    return undefined;
-  },
+    /**
+    * Invoked to retrieve a client using a client id or a client id/client
+    * secret combination, depending on the grant type.
+    */
+    getClient: async (
+      clientId: string,
+      clientSecret: string,
+      //callback?: Callback<Client | Falsey>,
+    ): Promise<Client | Falsey> => {
+      // log(`getClient(${clientId}, ${hash(clientSecret)})`);
+      if (
+        clientId in clients &&
+        hash(clientSecret) === clients[clientId].secret
+      ) {
+        return clients[clientId].client;
+      }
+      return undefined;
+    },
 
-  /**
-   * Invoked to save an access token and optionally a refresh token, depending
-   * on the grant type.
-   */
-  saveToken: async (
-    token: Token,
-    client: Client,
-    user: User,
-    // callback?: Callback<Token>
-  ): Promise<Token | Falsey> => {
-    // log(`saveToken(${token}, ${client.id}, ${user.username})`, token);
-    tokens[token.accessToken] = token;
-    token.client = client;
-    token.user = user;
-    return token;
-  },
+    /**
+    * Invoked to save an access token and optionally a refresh token, depending
+    * on the grant type.
+    */
+    saveToken: async (
+      token: Token,
+      client: Client,
+      user: User,
+      // callback?: Callback<Token>
+    ): Promise<Token | Falsey> => {
+      // log(`saveToken(${token}, ${client.id}, ${user.username})`, token);
+      tokens[token.accessToken] = token;
+      token.client = client;
+      token.user = user;
+      return token;
+    },
 
-  // ********** RequestAuthenticationModel  **********
+    // ********** RequestAuthenticationModel  **********
 
-  /**
-   * Invoked to retrieve an existing access token previously saved through
-   * Model#saveToken().
-   */
-  getAccessToken: async (
-    accessToken: string,
-    // callback?: Callback<Token>,
-  ): Promise<Token | Falsey> => {
-    // log(`getAccessToken(${accessToken})`);
-    return tokens[accessToken];
-  },
+    /**
+    * Invoked to retrieve an existing access token previously saved through
+    * Model#saveToken().
+    */
+    getAccessToken: async (
+      accessToken: string,
+      // callback?: Callback<Token>,
+    ): Promise<Token | Falsey> => {
+      // log(`getAccessToken(${accessToken})`);
+      return tokens[accessToken];
+    },
 
-  /**
-   * Invoked during request authentication to check if the provided access token
-   * was authorized the requested scopes.
-   */
-  verifyScope: async (
-    token: Token,
-    scope: string | string[],
-    // callback?: Callback<boolean>,
-  ): Promise<boolean> => {
-    // log(`verifyScope(${token}, ${scope}) token:`, token);
-    const tokenScopes = toScopeArray(token.scope);
-    if (tokenScopes.includes("admin")) {
-      return true;
-    }
-    const requestedScopes = toScopeArray(scope);
-    return requestedScopes.every((s) => tokenScopes.includes(s));
-  },
+    /**
+    * Invoked during request authentication to check if the provided access token
+    * was authorized the requested scopes.
+    */
+    verifyScope: async (
+      token: Token,
+      scope: string | string[],
+      // callback?: Callback<boolean>,
+    ): Promise<boolean> => {
+      // log(`verifyScope(${token}, ${scope}) token:`, token);
+      const tokenScopes = toScopeArray(token.scope);
+      if (tokenScopes.includes("admin")) {
+        return true;
+      }
+      const requestedScopes = toScopeArray(scope);
+      return requestedScopes.every((s) => tokenScopes.includes(s));
+    },
 
-  // ********** RefreshTokenModel  **********
+    // ********** RefreshTokenModel  **********
 
-  getUserFromClient: async (
-    client: Client,
-    // callback?: Callback<User | Falsey>,
-  ): Promise<User | Falsey> => {
-    // log(`getUserFromClient(${client.id})`);
-    if (client.id in clients) {
-      // const user = clients[client.id].user;
-      // log(`returning user ${user.username} for client.`);
-      return clients[client.id].user;
-    }
-    return undefined;
-  },
+    getUserFromClient: async (
+      client: Client,
+      // callback?: Callback<User | Falsey>,
+    ): Promise<User | Falsey> => {
+      // log(`getUserFromClient(${client.id})`);
+      if (client.id in clients) {
+        // const user = clients[client.id].user;
+        // log(`returning user ${user.username} for client.`);
+        return clients[client.id].user;
+      }
+      return undefined;
+    },
 
-  // Optional
-  validateScope: async (
-    user: User,
-    client: Client,
-    scope: string | string[],
-    // callback?: Callback<string | Falsey>,
-  ): Promise<string | string[] | Falsey> => {
-    // log(`validateScope(${user.username}, ${client.id}, ${scope})`);
-    const requestedScopes = toScopeArray(scope);
-    if (requestedScopes.length === 0) {
-      return ALLOWED_SCOPES.filter((s) => user.scopes.includes(s));
-    } else {
-      return requestedScopes.filter((s) => user.scopes.includes(s));
-    }
-  },
-};
+    // Optional
+    validateScope: async (
+      user: User,
+      client: Client,
+      scope: string | string[],
+      // callback?: Callback<string | Falsey>,
+    ): Promise<string | string[] | Falsey> => {
+      // log(`validateScope(${user.username}, ${client.id}, ${scope})`);
+      const requestedScopes = toScopeArray(scope);
+      if (requestedScopes.length === 0) {
+        return ALLOWED_SCOPES.filter((s) => user.scopes.includes(s));
+      } else {
+        return requestedScopes.filter((s) => user.scopes.includes(s));
+      }
+    },
+  };
+  return model;
+}
 
-export default model;
+// const model: ClientCredentialsModel = {
+//   // ********** BaseModel  **********
+//
+//   /**
+//    * Optional
+//    * Invoked to generate a new access token.
+//    */
+//   // generateAccessToken: async(
+//   //   client: Client,
+//   //   user: User,
+//   //   scope: string | string[],
+//   //   callback?: Callback<string>,
+//   // ): Promise<string> => {
+//   //   return "";
+//   // },
+//
+//   /**
+//    * Invoked to retrieve a client using a client id or a client id/client
+//    * secret combination, depending on the grant type.
+//    */
+//   getClient: async (
+//     clientId: string,
+//     clientSecret: string,
+//     //callback?: Callback<Client | Falsey>,
+//   ): Promise<Client | Falsey> => {
+//     // log(`getClient(${clientId}, ${hash(clientSecret)})`);
+//     if (
+//       clientId in clients &&
+//       hash(clientSecret) === clients[clientId].secret
+//     ) {
+//       return clients[clientId].client;
+//     }
+//     return undefined;
+//   },
+//
+//   /**
+//    * Invoked to save an access token and optionally a refresh token, depending
+//    * on the grant type.
+//    */
+//   saveToken: async (
+//     token: Token,
+//     client: Client,
+//     user: User,
+//     // callback?: Callback<Token>
+//   ): Promise<Token | Falsey> => {
+//     // log(`saveToken(${token}, ${client.id}, ${user.username})`, token);
+//     tokens[token.accessToken] = token;
+//     token.client = client;
+//     token.user = user;
+//     return token;
+//   },
+//
+//   // ********** RequestAuthenticationModel  **********
+//
+//   /**
+//    * Invoked to retrieve an existing access token previously saved through
+//    * Model#saveToken().
+//    */
+//   getAccessToken: async (
+//     accessToken: string,
+//     // callback?: Callback<Token>,
+//   ): Promise<Token | Falsey> => {
+//     // log(`getAccessToken(${accessToken})`);
+//     return tokens[accessToken];
+//   },
+//
+//   /**
+//    * Invoked during request authentication to check if the provided access token
+//    * was authorized the requested scopes.
+//    */
+//   verifyScope: async (
+//     token: Token,
+//     scope: string | string[],
+//     // callback?: Callback<boolean>,
+//   ): Promise<boolean> => {
+//     // log(`verifyScope(${token}, ${scope}) token:`, token);
+//     const tokenScopes = toScopeArray(token.scope);
+//     if (tokenScopes.includes("admin")) {
+//       return true;
+//     }
+//     const requestedScopes = toScopeArray(scope);
+//     return requestedScopes.every((s) => tokenScopes.includes(s));
+//   },
+//
+//   // ********** RefreshTokenModel  **********
+//
+//   getUserFromClient: async (
+//     client: Client,
+//     // callback?: Callback<User | Falsey>,
+//   ): Promise<User | Falsey> => {
+//     // log(`getUserFromClient(${client.id})`);
+//     if (client.id in clients) {
+//       // const user = clients[client.id].user;
+//       // log(`returning user ${user.username} for client.`);
+//       return clients[client.id].user;
+//     }
+//     return undefined;
+//   },
+//
+//   // Optional
+//   validateScope: async (
+//     user: User,
+//     client: Client,
+//     scope: string | string[],
+//     // callback?: Callback<string | Falsey>,
+//   ): Promise<string | string[] | Falsey> => {
+//     // log(`validateScope(${user.username}, ${client.id}, ${scope})`);
+//     const requestedScopes = toScopeArray(scope);
+//     if (requestedScopes.length === 0) {
+//       return ALLOWED_SCOPES.filter((s) => user.scopes.includes(s));
+//     } else {
+//       return requestedScopes.filter((s) => user.scopes.includes(s));
+//     }
+//   },
+// };
+
+// export default model;
