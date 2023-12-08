@@ -54,7 +54,7 @@ router
     const response = new Response();
     const result = await oauth.authenticate(request, response, {
       scope: "read"});
-    log("Auth succeeded.", result);
+    // log("Auth succeeded.", result);
     ctx.body =
       '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
   })
@@ -64,7 +64,7 @@ router
     const result = await oauth.authenticate(request, response, {
       scope: "admin",
     });
-    log("Auth succeeded.", result);
+    // log("Auth succeeded.", result);
     ctx.body =
       '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
   })
@@ -78,7 +78,7 @@ router
       // log(`auth response: `, response);
       oauthResponse(ctx, response);
       store.token = response.body.access_token as string;
-      log(store);
+      // log(store);
       return;
     } catch (error) {
       console.error("Auth failed:", error);
