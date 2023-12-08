@@ -6,9 +6,7 @@ const { HASH_SECRET } = process.env;
 const SECRET = HASH_SECRET || "294S@t>9w";
 
 export function hash(str: string): string {
-  const hash = createHmac("sha256", SECRET)
-    .update(str)
-    .digest("base64url");
+  const hash = createHmac("sha256", SECRET).update(str).digest("base64url");
   return hash;
 }
 

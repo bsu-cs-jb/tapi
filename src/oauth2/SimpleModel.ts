@@ -32,7 +32,7 @@ interface TokenDb {
   [key: string]: Token;
 }
 
-const ALLOWED_SCOPES = ['read', 'write'];
+const ALLOWED_SCOPES = ["read", "write"];
 
 const clients: ClientDb = {
   admin: {
@@ -43,7 +43,7 @@ const clients: ClientDb = {
     },
     user: {
       username: "harvey",
-      scopes: ['read', 'write', 'admin'],
+      scopes: ["read", "write", "admin"],
     },
   },
   hello: {
@@ -54,7 +54,7 @@ const clients: ClientDb = {
     },
     user: {
       username: "billy",
-      scopes: ['read', 'write'],
+      scopes: ["read", "write"],
     },
   },
 };
@@ -87,7 +87,10 @@ const model: ClientCredentialsModel = {
     //callback?: Callback<Client | Falsey>,
   ): Promise<Client | Falsey> => {
     // log(`getClient(${clientId}, ${hash(clientSecret)})`);
-    if (clientId in clients && hash(clientSecret) === clients[clientId].secret) {
+    if (
+      clientId in clients &&
+      hash(clientSecret) === clients[clientId].secret
+    ) {
       return clients[clientId].client;
     }
     return undefined;

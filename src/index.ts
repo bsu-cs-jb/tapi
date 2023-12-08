@@ -36,7 +36,7 @@ const store: Record<string, any> = {};
 //   debug: true,
 // });
 
-function oauthResponse(ctx: Context, response:Response) {
+function oauthResponse(ctx: Context, response: Response) {
   ctx.response.status = response.status || 500;
   ctx.response.body = response.body;
   for (const header in response.headers) {
@@ -52,8 +52,9 @@ router
   .get("/test", async (ctx) => {
     const request = new Request(ctx.request);
     const response = new Response();
-    const result = await oauth.authenticate(request, response, {
-      scope: "read"});
+    const _result = await oauth.authenticate(request, response, {
+      scope: "read",
+    });
     // log("Auth succeeded.", result);
     ctx.body =
       '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
@@ -61,7 +62,7 @@ router
   .get("/admin", async (ctx) => {
     const request = new Request(ctx.request);
     const response = new Response();
-    const result = await oauth.authenticate(request, response, {
+    const _result = await oauth.authenticate(request, response, {
       scope: "admin",
     });
     // log("Auth succeeded.", result);
