@@ -1,6 +1,6 @@
 import sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
-import Koa from "koa";
+import Koa, { Context } from "koa";
 import Router from "@koa/router";
 import cors from "@koa/cors";
 import { bodyParser } from "@koa/bodyparser";
@@ -9,7 +9,7 @@ import { bodyParser } from "@koa/bodyparser";
 // import oauthserver from "koa-oauth-server";
 // import model from "oauth2-server/examples/memory/model.js";
 // import model from "./memory_model.js";
-import model from "./oauth2/StubModel.js";
+import model from "./oauth2/SimpleModel.js";
 
 import OAuth2Server, { Request, Response } from "oauth2-server";
 
@@ -27,6 +27,7 @@ import { getCat, allCats } from "./db.js";
 const app = new Koa();
 const router = new Router();
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const store: Record<string, any> = {};
 
 // const oauth = oauthserver({
@@ -34,6 +35,14 @@ const store: Record<string, any> = {};
 //   grants: ["password"],
 //   debug: true,
 // });
+
+function oauthResponse(ctx: Context, response:Response) {
+  ctx.response.status = response.status || 500;
+  ctx.response.body = response.body;
+  for (const header in response.headers) {
+    ctx.response.set(header, response.get(header));
+  }
+}
 
 router
   .get("/", (ctx) => {
@@ -43,29 +52,39 @@ router
   .get("/test", async (ctx) => {
     const request = new Request(ctx.request);
     const response = new Response();
-    const result = await oauth.authenticate(request, response);
+    const result = await oauth.authenticate(request, response, {
+      scope: "read"});
+    log("Auth succeeded.", result);
+    ctx.body =
+      '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
+  })
+  .get("/admin", async (ctx) => {
+    const request = new Request(ctx.request);
+    const response = new Response();
+    const result = await oauth.authenticate(request, response, {
+      scope: "admin",
+    });
     log("Auth succeeded.", result);
     ctx.body =
       '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
   })
   .post("/auth", async (ctx) => {
-    log(`POST /auth`, ctx.request, ctx.request.body);
+    // log(`POST /auth`, ctx.request, ctx.request.body);
     const request = new Request(ctx.request);
     const response = new Response();
     try {
-      const result = await oauth.token(request, response);
-      log(`auth result: `, result);
-      log(`auth response: `, response);
-      ctx.response.status = response.status || 500;
-      ctx.response.body = response.body;
-      for (const header in response.headers) {
-        ctx.response.set(header, response.get(header));
-      }
+      const _result = await oauth.token(request, response);
+      // log(`auth result: `, result);
+      // log(`auth response: `, response);
+      oauthResponse(ctx, response);
       store.token = response.body.access_token as string;
       log(store);
       return;
     } catch (error) {
-      console.error("Auth failed", error);
+      console.error("Auth failed:", error);
+      console.log("With Response:", response);
+      oauthResponse(ctx, response);
+      return;
     }
     ctx.body = "<p>Unknown auth failure. See logs</p>";
   })

@@ -1,5 +1,5 @@
 import { Cat } from "./cat.js";
-import { withId } from "./genid.js";
+import { withId } from "./hash.js";
 import { range } from "./utils.js";
 import { faker } from "@faker-js/faker";
 

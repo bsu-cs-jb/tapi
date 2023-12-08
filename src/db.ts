@@ -1,5 +1,6 @@
 import { Cat } from "./cat.js";
-import { urlid, withId } from "./genid.js";
+import { urlid } from "./genid.js";
+import { withId } from "./hash.js";
 import { assert } from "./utils.js";
 import { genCats } from "./generate.js";
 

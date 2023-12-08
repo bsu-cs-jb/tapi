@@ -8,6 +8,59 @@ import {
 } from "oauth2-server";
 import { log } from "../utils.js";
 
+function toScopeArray(scope: string | string[] | undefined): string[] {
+  if (scope === undefined) {
+    return [];
+  } else {
+    if (Array.isArray(scope)) {
+      return scope as string[];
+    } else {
+      return scope.split(" ");
+    }
+  }
+}
+
+interface ClientDb {
+  [key: string]: {
+    secret: string;
+    client: Client;
+    user: User;
+  };
+}
+
+interface TokenDb {
+  [key: string]: Token;
+}
+
+const ALLOWED_SCOPES = ['read', 'write'];
+
+const clients: ClientDb = {
+  admin: {
+    secret: "admin",
+    client: {
+      id: "admin",
+      grants: ["client_credentials"],
+    },
+    user: {
+      username: "harvey",
+      scopes: ['read', 'write', 'admin'],
+    },
+  },
+  hello: {
+    secret: "there",
+    client: {
+      id: "hello",
+      grants: ["client_credentials"],
+    },
+    user: {
+      username: "billy",
+      scopes: ['read', 'write'],
+    },
+  },
+};
+
+const tokens: TokenDb = {};
+
 const model: ClientCredentialsModel = {
   // ********** BaseModel  **********
 
@@ -34,6 +87,9 @@ const model: ClientCredentialsModel = {
     //callback?: Callback<Client | Falsey>,
   ): Promise<Client | Falsey> => {
     log(`getClient(${clientId}, ${clientSecret})`);
+    if (clientId in clients && clientSecret === clients[clientId].secret) {
+      return clients[clientId].client;
+    }
     return undefined;
   },
 
@@ -48,6 +104,7 @@ const model: ClientCredentialsModel = {
     // callback?: Callback<Token>
   ): Promise<Token | Falsey> => {
     log(`saveToken(${token}, ${client.id}, ${user.username})`, token);
+    tokens[token.accessToken] = token;
     token.client = client;
     token.user = user;
     return token;
@@ -64,7 +121,7 @@ const model: ClientCredentialsModel = {
     // callback?: Callback<Token>,
   ): Promise<Token | Falsey> => {
     log(`getAccessToken(${accessToken})`);
-    return undefined;
+    return tokens[accessToken];
   },
 
   /**
@@ -77,7 +134,12 @@ const model: ClientCredentialsModel = {
     // callback?: Callback<boolean>,
   ): Promise<boolean> => {
     log(`verifyScope(${token}, ${scope}) token:`, token);
-    return false;
+    const tokenScopes = toScopeArray(token.scope);
+    if (tokenScopes.includes("admin")) {
+      return true;
+    }
+    const requestedScopes = toScopeArray(scope);
+    return requestedScopes.every((s) => tokenScopes.includes(s));
   },
 
   // ********** RefreshTokenModel  **********
@@ -87,6 +149,11 @@ const model: ClientCredentialsModel = {
     // callback?: Callback<User | Falsey>,
   ): Promise<User | Falsey> => {
     log(`getUserFromClient(${client.id})`);
+    if (client.id in clients) {
+      // const user = clients[client.id].user;
+      // log(`returning user ${user.username} for client.`);
+      return clients[client.id].user;
+    }
     return undefined;
   },
 
@@ -98,7 +165,12 @@ const model: ClientCredentialsModel = {
     // callback?: Callback<string | Falsey>,
   ): Promise<string | string[] | Falsey> => {
     log(`validateScope(${user.username}, ${client.id}, ${scope})`);
-    return false;
+    const requestedScopes = toScopeArray(scope);
+    if (requestedScopes.length === 0) {
+      return ALLOWED_SCOPES.filter((s) => user.scopes.includes(s));
+    } else {
+      return requestedScopes.filter((s) => user.scopes.includes(s));
+    }
   },
 };
 
