@@ -92,6 +92,8 @@ graderRoutes(graderRouter);
 const indecisiveRouter = new Router({
   prefix: "/indecisive",
 });
+// INDECISIVE AUTH
+indecisiveRouter.use(authenticate("read"));
 indecisiveRoutes(indecisiveRouter);
 
 app
