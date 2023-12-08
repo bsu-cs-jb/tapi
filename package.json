@@ -37,6 +37,7 @@
     "lodash-es": "^4.17.21",
     "oauth2-server": "^3.1.1",
     "simple-statistics": "^7.8.3",
+    "source-map-support": "^0.5.21",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -46,6 +47,7 @@
     "@types/koa__router": "^12.0.3",
     "@types/lodash-es": "^4.17.11",
     "@types/oauth2-server": "^3.0.16",
+    "@types/source-map-support": "^0.5.10",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "eslint": "^8.52.0",
