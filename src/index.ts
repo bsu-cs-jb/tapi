@@ -2,6 +2,19 @@ import Koa from "koa";
 import Router from "@koa/router";
 import cors from "@koa/cors";
 import { bodyParser } from "@koa/bodyparser";
+
+// import mount from "koa-mount";
+// import oauthserver from "koa-oauth-server";
+// import model from "oauth2-server/examples/memory/model.js";
+// import model from "./memory_model.js";
+import model from "./oauth2/StubModel.js";
+
+import OAuth2Server, { Request, Response } from "oauth2-server";
+
+const oauth = new OAuth2Server({
+  model,
+});
+
 import { graderRoutes } from "./grader.js";
 import { indecisiveRoutes } from "./indecisive.js";
 
@@ -12,8 +25,20 @@ import { getCat, allCats } from "./db.js";
 const app = new Koa();
 const router = new Router();
 
+// const oauth = oauthserver({
+//   model: model,
+//   grants: ["password"],
+//   debug: true,
+// });
+
 router
   .get("/", (ctx) => {
+    ctx.body = "<p>Nice to meet you, are you looking for my <a href=\"/cats\">Cats</a> or <a href=\"/grader\">Grader</a>?</p>";
+  })
+  .get("/test", (ctx) => {
+    const request = new Request();
+    const response = new Response();
+    oauth.authenticate(request, response);
     ctx.body = "<p>Nice to meet you, are you looking for my <a href=\"/cats\">Cats</a> or <a href=\"/grader\">Grader</a>?</p>";
   })
   .get("/cats", (ctx) => {

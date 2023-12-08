@@ -22,6 +22,13 @@ tmux a
 sudo yarn serve:watch
 ```
 
+```bash
+# Create user
+curl -i -X POST http://localhost:3000/indecisive/users -H "Content-Type: application/json" -d @./db/test/user-jemaine.json
+# Create session
+curl -i -X POST http://localhost:3000/indecisive/sessions -H "Content-Type: application/json" -d @./db/test/session-new.json
+```
+
 ## Koa and koa-router
 
 [TypeScript koa boilerplate](https://github.com/kryz81/koa-ts-boilerplate/blob/master/package.json)
