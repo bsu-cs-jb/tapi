@@ -30,27 +30,11 @@ module.exports = {
     "@typescript-eslint"
   ],
   "rules": {
-    "indent": [
-      "error",
-      2
-    ],
-    "linebreak-style": [
-      "error",
-      "unix"
-    ],
-    "quotes": [
-      "error",
-      "double"
-    ],
     "@typescript-eslint/no-unused-vars": [
       "warn", {
         "varsIgnorePattern": "^_",
         "argsIgnorePattern": "^_"
       }
-    ],
-    "semi": [
-      "error",
-      "always"
     ]
   }
 };

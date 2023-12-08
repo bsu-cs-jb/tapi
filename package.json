@@ -16,6 +16,14 @@
     "format:fix": "prettier src --write",
     "start": "yarn serve:watch"
   },
+  "prettier": {
+    "trailingComma": "all",
+    "singleQuote": false,
+    "printWidth": 80,
+    "semi": true,
+    "proseWrap": "always",
+    "tabWidth": 2
+  },
   "dependencies": {
     "@faker-js/faker": "^8.2.0",
     "@koa/bodyparser": "^5.0.0",
