@@ -3,10 +3,37 @@ import {
   Client,
   User,
   Token,
-  Callback,
+  // Callback,
   Falsey,
 } from "oauth2-server";
 import { log } from "../utils.js";
+
+interface ClientDb {
+  [key: string]: {
+    secret: string;
+    client: Client;
+    user: User;
+  };
+}
+
+interface TokenDb {
+  [key: string]: Token;
+}
+
+const clients: ClientDb = {
+  hello: {
+    secret: "there",
+    client: {
+      id: "hello",
+      grants: ["client_credentials"],
+    },
+    user: {
+      username: "billy",
+    },
+  },
+};
+
+const tokens: TokenDb = {};
 
 const model: ClientCredentialsModel = {
   // ********** BaseModel  **********
@@ -34,6 +61,9 @@ const model: ClientCredentialsModel = {
     //callback?: Callback<Client | Falsey>,
   ): Promise<Client | Falsey> => {
     log(`getClient(${clientId}, ${clientSecret})`);
+    if (clientId in clients && clientSecret === clients[clientId].secret) {
+      return clients[clientId].client;
+    }
     return undefined;
   },
 
@@ -47,7 +77,11 @@ const model: ClientCredentialsModel = {
     user: User,
     // callback?: Callback<Token>
   ): Promise<Token | Falsey> => {
-    return undefined;
+    log(`saveToken(${token}, ${client.id}, ${user.username})`, token);
+    tokens[token.accessToken] = token;
+    token.client = client;
+    token.user = user;
+    return token;
   },
 
   // ********** RequestAuthenticationModel  **********
@@ -58,9 +92,10 @@ const model: ClientCredentialsModel = {
    */
   getAccessToken: async (
     accessToken: string,
-    callback?: Callback<Token>,
+    // callback?: Callback<Token>,
   ): Promise<Token | Falsey> => {
-    return undefined;
+    log(`getAccessToken(${accessToken})`);
+    return tokens[accessToken];
   },
 
   /**
@@ -70,8 +105,9 @@ const model: ClientCredentialsModel = {
   verifyScope: async (
     token: Token,
     scope: string | string[],
-    callback?: Callback<boolean>,
+    // callback?: Callback<boolean>,
   ): Promise<boolean> => {
+    log(`verifyScope(${token}, ${scope})`);
     return true;
   },
 
@@ -79,8 +115,14 @@ const model: ClientCredentialsModel = {
 
   getUserFromClient: async (
     client: Client,
-    callback?: Callback<User | Falsey>,
+    // callback?: Callback<User | Falsey>,
   ): Promise<User | Falsey> => {
+    log(`getUserFromClient(${client.id})`);
+    if (client.id in clients) {
+      const user = clients[client.id].user;
+      log(`returning user ${user.username} for client.'`);
+      return clients[client.id].user;
+    }
     return undefined;
   },
 

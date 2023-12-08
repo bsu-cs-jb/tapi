@@ -1,3 +1,5 @@
+import sourceMapSupport from "source-map-support";
+sourceMapSupport.install();
 import Koa from "koa";
 import Router from "@koa/router";
 import cors from "@koa/cors";
@@ -25,6 +27,8 @@ import { getCat, allCats } from "./db.js";
 const app = new Koa();
 const router = new Router();
 
+const store: Record<string, any> = {};
+
 // const oauth = oauthserver({
 //   model: model,
 //   grants: ["password"],
@@ -36,12 +40,34 @@ router
     ctx.body =
       '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
   })
-  .get("/test", (ctx) => {
-    const request = new Request();
+  .get("/test", async (ctx) => {
+    const request = new Request(ctx.request);
     const response = new Response();
-    oauth.authenticate(request, response);
+    const result = await oauth.authenticate(request, response);
+    log("Auth succeeded.", result);
     ctx.body =
       '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
+  })
+  .post("/auth", async (ctx) => {
+    log(`POST /auth`, ctx.request, ctx.request.body);
+    const request = new Request(ctx.request);
+    const response = new Response();
+    try {
+      const result = await oauth.token(request, response);
+      log(`auth result: `, result);
+      log(`auth response: `, response);
+      ctx.response.status = response.status || 500;
+      ctx.response.body = response.body;
+      for (const header in response.headers) {
+        ctx.response.set(header, response.get(header));
+      }
+      store.token = response.body.access_token as string;
+      log(store);
+      return;
+    } catch (error) {
+      console.error("Auth failed", error);
+    }
+    ctx.body = "<p>Unknown auth failure. See logs</p>";
   })
   .get("/cats", (ctx) => {
     const cats = allCats();
