@@ -43,6 +43,7 @@ const TEST_CLIENTS: ClientDb = {
     },
     user: {
       username: "harvey",
+      userId: "brahbrah",
       scopes: ["read", "write", "admin"],
     },
   },

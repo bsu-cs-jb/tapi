@@ -1,7 +1,7 @@
 import Router from "@koa/router";
 import * as _ from "lodash-es";
 
-import { jsonhtml, log } from "./utils.js";
+import { authenticate, token } from "./oauth2/koa.js";
 import {
   readResource,
   refWithId,
@@ -11,7 +11,6 @@ import {
 import {
   getCollection,
   getResource,
-  linkList,
   postResource,
   putResource,
   routerParam,
@@ -95,6 +94,13 @@ async function fetchSession(id: string): Promise<SessionDb | undefined> {
 }
 
 export function indecisiveRoutes(router: Router) {
+  // INDECISIVE AUTH
+  const authEnabled = true;
+  const NOAUTH_USERID = 'tamatoa';
+  if (authEnabled) {
+    router.use(authenticate("read"));
+  }
+
   router.get("/", async (ctx) => {
     let body = "";
     body +=
@@ -135,6 +141,20 @@ export function indecisiveRoutes(router: Router) {
   // router.post("session-respond", "/sessions/:sessionId/respond", async (ctx) => {
   // router.post("session-suggest", "/sessions/:sessionId/suggest", async (ctx) => {
   // router.put("session-vote", "/sessions/:sessionId/vote/:suggestionId", async (ctx) => {
+
+  router.get("self", "/self", async (ctx) => {
+    const { state: { auth } } = ctx;
+    console.log('/self auth', auth);
+    const userId = authEnabled ? auth?.user?.userId : NOAUTH_USERID;
+    if (!userId) {
+      ctx.status = 500;
+      console.error(`No user associated with clientId '${userId}' not found.`);
+      return;
+    }
+    console.log(`/self fetching user id ${userId}`);
+    const user = await fetchUser(userId);
+    ctx.body = user;
+  });
 
   router.get("current-session", "/current-session", async (ctx) => {
     const { user, state: auth } = ctx;
