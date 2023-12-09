@@ -55,10 +55,17 @@ async function auth_impl(ctx: Context, scopes?: string[] | string) {
 
 export function authenticate(scope?: string | string[]) {
   return async (ctx: Context, next: () => Promise<void>) => {
-    if (!await auth_impl(ctx, scope)) {
-      return;
+    const result = await auth_impl(ctx, scope);
+    console.log("Auth", result);
+
+    // if result failed then don't forward
+    if (result) {
+      ctx.state.auth = {
+        scope: result.scope,
+        user: result.user,
+      };
+      await next();
     }
-    await next();
   };
 }
 

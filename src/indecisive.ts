@@ -136,6 +136,19 @@ export function indecisiveRoutes(router: Router) {
   // router.post("session-suggest", "/sessions/:sessionId/suggest", async (ctx) => {
   // router.put("session-vote", "/sessions/:sessionId/vote/:suggestionId", async (ctx) => {
 
+  router.get("current-session", "/current-session", async (ctx) => {
+    const { user, state: auth } = ctx;
+    let body = `<p>User id: ${user.id}</p>`;
+    body += `<p>Username: ${auth.user.username}</p>`;
+    body += `<p>Scopes: ${auth.scope.join(" ")}</p>`;
+    body += `<p>User: <a href="${router.url("user-html", {
+      userId: user.id,
+    })}">${user.name}</a></p>\n`;
+    // body += linkList(router, STUDENT, course.students, { courseId });
+    // body += jsonhtml(course.students);
+    ctx.body = body;
+  });
+
   // Create a new session owned by this user
   router.post("user-sessions", "/users/:userId/owns", async (ctx) => {
     const { user } = ctx;
