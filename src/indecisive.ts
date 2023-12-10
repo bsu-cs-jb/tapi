@@ -35,6 +35,14 @@ export interface UserInvitationDb {
   attending: Attending;
 }
 
+export interface SuggestionDb {
+  userId: string;
+  id: string;
+  name: string;
+  upVoteUserIds: string[];
+  downVoteUserIds: string[];
+}
+
 export interface InvitationDb {
   userId: string;
   accepted: boolean;
@@ -46,7 +54,7 @@ export interface SessionDb extends IdResource {
   ownerId: string;
   name: string;
   invitations: InvitationDb[];
-  suggestions: Suggestion[];
+  suggestions: SuggestionDb[];
 }
 
 interface UserDb extends IdResource {
@@ -61,6 +69,13 @@ function getInvitation(
   userId: string,
 ): InvitationDb | undefined {
   return session.invitations.find((i) => i.userId === userId);
+}
+
+function findSuggestion(
+  session: SessionDb,
+  name: string,
+): SuggestionDb | undefined {
+  return session.suggestions.find((s) => s.name === name);
 }
 
 function updateResponse(
@@ -78,6 +93,34 @@ function updateResponse(
     existingInvite.accepted = accepted;
     existingInvite.attending = attending;
   }
+  return session;
+}
+
+function makeSuggestionDb(name: string, userId: string): SuggestionDb {
+  return {
+    id: urlid(),
+    userId,
+    name,
+    upVoteUserIds: [],
+    downVoteUserIds: [],
+  };
+}
+
+function addSuggestion(
+  session: SessionDb,
+  userId: string,
+  name: string,
+): SessionDb {
+  const existingInvite = getInvitation(session, userId);
+  assert(
+    existingInvite !== undefined,
+    `User ${userId} not invited to session ${session.id}`,
+  );
+  const existingSuggestion = findSuggestion(session, name);
+  if (existingSuggestion) {
+    return session;
+  }
+  session.suggestions.push(makeSuggestionDb(name, userId));
   return session;
 }
 
@@ -511,6 +554,43 @@ export function indecisiveRoutes(router: Router) {
 
       // update self response
       updateResponse(session, self.id, accepted, attending);
+
+      // persist session
+      const ref = refWithId(SESSION, session.id);
+      const filename = await writeResource(ref, session);
+      console.log(`POST written to ${filename} session:`, session);
+
+      ctx.body = session;
+      await next();
+    },
+  );
+
+  router.post(
+    "session-suggest",
+    "/sessions/:sessionId/suggest",
+    async (ctx: Context, next: Next) => {
+      const { self, session } = ctx.state;
+
+      assert(self, "Self must be defined");
+      assert(session, "Session must be defined");
+
+      if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
+        const message = `User '${self.id}' cannot respond to '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
+        console.error(message);
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          message,
+        };
+        return;
+      }
+
+      // TODO: validate parameters
+      const { name } = ctx.request.body;
+      log(`User ${self.id} adding suggestion to ${session.id}: ${name}`);
+
+      // add suggestion
+      addSuggestion(session, self.id, name);
 
       // persist session
       const ref = refWithId(SESSION, session.id);
