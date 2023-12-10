@@ -12,7 +12,7 @@ import {
   fetchToken,
   writeToken,
 } from "../AuthDb.js";
-import { log } from "../utils.js";
+import { log, toJson } from "../utils.js";
 import { hash } from "../hash.js";
 
 function toScopeArray(scope: string | string[] | undefined): string[] {
@@ -27,7 +27,7 @@ function toScopeArray(scope: string | string[] | undefined): string[] {
   }
 }
 
-const ALLOWED_SCOPES = ["read", "write"];
+const DEFAULT_SCOPES = ["read", "write"];
 
 export function FileModel(): ClientCredentialsModel {
   // load auth from resource db
@@ -44,7 +44,7 @@ export function FileModel(): ClientCredentialsModel {
       clientSecret: string,
       //callback?: Callback<Client | Falsey>,
     ): Promise<Client | Falsey> => {
-      // log(`getClient(${clientId}, ${hash(clientSecret)})`);
+      log(`getClient(${clientId}, ${hash(clientSecret)})`);
       const authDef = await fetchClient(clientId);
       if (authDef !== undefined && hash(clientSecret) === authDef.secret) {
         return authDef.client;
@@ -62,16 +62,21 @@ export function FileModel(): ClientCredentialsModel {
       user: User,
       // callback?: Callback<Token>
     ): Promise<FileModelToken | Falsey> => {
-      // log(`saveToken(${token}, ${client.id}, ${user.username})`, token);
-      // tokens[token.accessToken] = token;
-      // token.client = client;
-      // token.user = user;
+      log(`saveToken(${token}, ${client.id}, ${user.userId})`, token);
+      log(
+        `${typeof token.accessTokenExpiresAt}\nistanceof Date: ${
+          token.accessTokenExpiresAt instanceof Date
+        }\n${toJson(token)}`,
+      );
+      log(`${typeof token.accessTokenExpiresAt}\n${toJson(token)}`);
       token.clientId = client.id;
       const dbToken = {
         id: token.accessToken,
         name: `Token for ${client.id}`,
         token: token,
       };
+      token.client = client;
+      token.user = user;
       writeToken(dbToken);
       return token;
     },
@@ -89,6 +94,7 @@ export function FileModel(): ClientCredentialsModel {
       log(`getAccessToken(${accessToken})`);
       const dbToken = await fetchToken(accessToken);
       if (dbToken) {
+        log(`Found token:`, dbToken);
         return dbToken.token;
       }
     },
@@ -133,9 +139,13 @@ export function FileModel(): ClientCredentialsModel {
       // callback?: Callback<string | Falsey>,
     ): Promise<string | string[] | Falsey> => {
       // log(`validateScope(${user.username}, ${client.id}, ${scope})`);
-      const requestedScopes = toScopeArray(scope);
+      let requestedScopes = toScopeArray(scope);
       if (requestedScopes.length === 0) {
-        return ALLOWED_SCOPES.filter((s) => user.scopes?.includes(s));
+        requestedScopes = DEFAULT_SCOPES;
+      }
+      if (user.scopes.includes("admin")) {
+        // let admins request any scope
+        return requestedScopes;
       } else {
         return requestedScopes.filter((s) => user.scopes?.includes(s));
       }

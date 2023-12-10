@@ -62,7 +62,9 @@ export function authRoutes(router: Router) {
   });
 
   getCollection(router, CLIENT);
+  getResource(router, CLIENT);
   getCollection(router, TOKEN);
+  getResource(router, TOKEN);
 
   postResource<AuthDb>(router, CLIENT, {
     preProcess: preUpdateClient,

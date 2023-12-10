@@ -6,7 +6,6 @@ import {
   writeResource,
 } from "./FileDb.js";
 import { log } from "./utils.js";
-import { hash } from "./hash.js";
 
 export interface FileModelToken extends Token {
   clientId?: string;

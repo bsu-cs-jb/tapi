@@ -439,7 +439,7 @@ const SKIP_AUTH = {
 
 export function indecisiveRoutes(router: Router) {
   // INDECISIVE AUTH
-  const authEnabled = false;
+  const authEnabled = true;
   if (authEnabled) {
     router.use(authenticate("read"));
   }

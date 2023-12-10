@@ -14,6 +14,7 @@ import { execFile } from "node:child_process";
 import { cloneDeep, throttle } from "lodash-es";
 
 import { config } from "./config.js";
+import { toJson, fromJson } from "./utils.js";
 
 const execFileP = util.promisify(execFile);
 
@@ -53,7 +54,7 @@ export interface ResourceDef<T extends IdResource> {
 // const ROOT = './cs411-db/grading-db';
 
 export function jsonToBuffer(data: IdResource): Uint8Array {
-  return new Uint8Array(Buffer.from(JSON.stringify(data, undefined, 2)));
+  return new Uint8Array(Buffer.from(toJson(data)));
 }
 
 async function dirExists(dirpath: string): Promise<boolean> {
@@ -196,7 +197,7 @@ async function readFileAsJson<T extends IdResource>(
 ): Promise<T> {
   const buffer = await readFile(filename, "utf8");
   // console.log(`DONE reading from ${filename}.`);
-  const data = JSON.parse(buffer);
+  const data = fromJson<T>(buffer);
   // console.log(data);
   return data;
 }

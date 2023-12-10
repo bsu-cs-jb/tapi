@@ -6,12 +6,15 @@ import cors from "@koa/cors";
 import { bodyParser } from "@koa/bodyparser";
 
 import { SimpleModel } from "./oauth2/SimpleModel.js";
+import { FileModel } from "./oauth2/FileModel.js";
 import { authenticate, token } from "./oauth2/koa.js";
 
 import OAuth2Server from "oauth2-server";
 
+const fileAuth = true;
+
 const oauth = new OAuth2Server({
-  model: SimpleModel(),
+  model: fileAuth ? FileModel() : SimpleModel(),
 });
 
 import { graderRoutes } from "./grader.js";
