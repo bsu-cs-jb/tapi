@@ -133,11 +133,25 @@ function fetchCurrentSession(errorIfMissing: boolean = true) {
       ctx.state.currentSession = await fetchSession(currentSessionId);
     } else {
       console.error(`No current session associated with clientId.`);
+      if (errorIfMissing) {
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          message: "No current session associated with this clientId.",
+        };
+        return;
+      }
     }
-    if (errorIfMissing && !ctx.state.currentSession) {
-      ctx.status = 400;
-      console.error(`No current session associated with clientId.`);
-      return;
+    if (!ctx.state.currentSession) {
+      console.error(`Current session id '${currentSessionId}' is missing.`);
+      if (errorIfMissing) {
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          message: `Current session id '${currentSessionId}' is missing.`,
+        };
+        return;
+      }
     }
     await next();
   };
@@ -194,15 +208,7 @@ async function postCreateSession(
   } = ctx;
   log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
   await addUserSessionRef("ownership", session.id, self.id, self);
-  // if (!self.ownsSessions) {
-  //   self.ownsSessions = [];
-  // }
-  // if (!self.invitedSessions) {
-  //   self.invitedSessions = [];
-  // }
-  // self.ownsSessions.push(session.id);
-  // const ref = refWithId(USER, self.id);
-  // await writeResource(ref, self);
+  // TODO: Make new session the current session
 }
 
 function removeId(id: string, ids: string[]): string[] {
@@ -300,7 +306,7 @@ const SKIP_AUTH = {
   user: {
     username: "no-auth",
     userId: "tamatoa",
-    currentSessionId: "sessionId",
+    currentSessionId: "FhmzKh_kDQ",
   },
   scope: ["read", "write", "admin"],
 };

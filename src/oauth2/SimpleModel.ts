@@ -57,7 +57,7 @@ const TEST_CLIENTS: ClientDb = {
     user: {
       username: "Jemaine",
       userId: "tamatoa",
-      currentSessionId: "sessionId",
+      currentSessionId: "FhmzKh_kDQ",
       scopes: ["read", "write"],
     },
   },
