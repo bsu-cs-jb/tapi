@@ -41,7 +41,7 @@ export interface InvitationDb {
   attending: Attending;
 }
 
-export interface SessionDb extends IdResource{
+export interface SessionDb extends IdResource {
   id: string;
   ownerId: string;
   name: string;
@@ -50,12 +50,10 @@ export interface SessionDb extends IdResource{
 }
 
 interface UserDb extends IdResource {
-  // id: string;
-  // name: string;
-  // createdAt?: string;
-  // updatedAt?: string;
-  // ownsSessions: string[];
-  // invitedSessions: string[];
+  id: string;
+  name: string;
+  ownsSessions: string[];
+  invitedSessions: string[];
 }
 
 function makeUserDb(props?: AllOptional<UserDb>): UserDb {
@@ -67,7 +65,7 @@ function makeUserDb(props?: AllOptional<UserDb>): UserDb {
     ...props,
   };
   return user;
-};
+}
 
 const USER: ResourceDef<UserDb> = {
   database: "indecisive",
@@ -126,7 +124,11 @@ async function fetchSession(id: string): Promise<SessionDb | undefined> {
 
 function fetchCurrentSession(errorIfMissing: boolean = true) {
   return async (ctx: Context, next: () => Promise<void>) => {
-    const { auth: { user: { currentSessionId } } } = ctx.state;
+    const {
+      auth: {
+        user: { currentSessionId },
+      },
+    } = ctx.state;
     if (currentSessionId) {
       ctx.state.currentSession = await fetchSession(currentSessionId);
     } else {
@@ -142,7 +144,11 @@ function fetchCurrentSession(errorIfMissing: boolean = true) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function indecisiveAuth(authEnabled: boolean, requireSelf: boolean, skipAuthValue?: any) {
+function indecisiveAuth(
+  authEnabled: boolean,
+  requireSelf: boolean,
+  skipAuthValue?: any,
+) {
   return async (ctx: Context, next: () => Promise<void>) => {
     if (!authEnabled) {
       ctx.state.auth = skipAuthValue;
@@ -165,8 +171,13 @@ function indecisiveAuth(authEnabled: boolean, requireSelf: boolean, skipAuthValu
   };
 }
 
-async function preProcessSession(ctx: Context, session: SessionDb): Promise<SessionDb> {
-  const { state: { self } } = ctx;
+async function preCreateSession(
+  ctx: Context,
+  session: SessionDb,
+): Promise<SessionDb> {
+  const {
+    state: { self },
+  } = ctx;
   log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
   session.ownerId = self.id;
   session.invitations = [];
@@ -174,8 +185,13 @@ async function preProcessSession(ctx: Context, session: SessionDb): Promise<Sess
   return session;
 }
 
-async function postProcessSession(ctx: Context, session: SessionDb): Promise<void> {
-  const { state: { self } } = ctx;
+async function postCreateSession(
+  ctx: Context,
+  session: SessionDb,
+): Promise<void> {
+  const {
+    state: { self },
+  } = ctx;
   log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
   if (!self.ownsSessions) {
     self.ownsSessions = [];
@@ -188,19 +204,66 @@ async function postProcessSession(ctx: Context, session: SessionDb): Promise<voi
   await writeResource(ref, self);
 }
 
-async function postDeleteSession(ctx: Context, session: SessionDb): Promise<void> {
-  const { state: { self } } = ctx;
-  log(`Remove session ${session.id} from ownerId ${self.id} named ${session.name}`);
-  assert(self.id === session.ownerId);
-  if (!self.ownsSessions) {
-    self.ownsSessions = [];
+function removeId(id: string, ids: string[]): string[] {
+  return ids.filter((i) => i === id);
+}
+
+async function removeUserSessionRef(
+  refType: "invitation" | "ownership",
+  sessionId: string,
+  userId: string,
+  user?: UserDb,
+): Promise<UserDb | undefined> {
+  if (!user) {
+    user = await fetchUser(userId);
   }
-  if (!self.invitedSessions) {
-    self.invitedSessions = [];
+  if (user) {
+    if (refType === "invitation") {
+      user.invitedSessions = removeId(sessionId, user.invitedSessions);
+    } else {
+      user.ownsSessions = removeId(sessionId, user.ownsSessions);
+    }
+    const ref = refWithId(USER, user.id);
+    await writeResource(ref, user);
+    return user;
   }
-  self.ownsSessions.push(session.id);
-  const ref = refWithId(USER, self.id);
-  await writeResource(ref, self);
+}
+
+async function postDeleteSession(
+  ctx: Context,
+  session: SessionDb,
+): Promise<void> {
+  const {
+    state: { self },
+  } = ctx;
+  log(
+    `Remove session ${session.id} from invited users' lists (name: ${session.name})`,
+  );
+
+  const results = await Promise.allSettled(
+    session.invitations.map(async (invitation) =>
+      removeUserSessionRef("invitation", session.id, invitation.userId),
+    ),
+  );
+  for (const result of results) {
+    if (result.status === "rejected") {
+      console.error(
+        "Promise rejected removing invitation from user:",
+        result.reason,
+      );
+    }
+  }
+
+  log(
+    `Remove session ${session.id} from ownerId ${self.id} named ${session.name}`,
+  );
+  if (self.id === session.ownerId) {
+    removeUserSessionRef("ownership", session.id, session.ownerId, self);
+  } else {
+    console.error(
+      `Session ${session.id} ownerId ${session.ownerId} !== ${self.id} named ${session.name}`,
+    );
+  }
 }
 
 const SKIP_AUTH = {
@@ -209,7 +272,7 @@ const SKIP_AUTH = {
     userId: "tamatoa",
     currentSessionId: "sessionId",
   },
-  scope: ["read","write","admin"],
+  scope: ["read", "write", "admin"],
 };
 
 export function indecisiveRoutes(router: Router) {
@@ -256,13 +319,13 @@ export function indecisiveRoutes(router: Router) {
   getResource(router, SESSION);
   // Post to session means: create a new session owned by me
   postResource<SessionDb>(router, SESSION, {
-    preProcess: preProcessSession,
-    postProcess: postProcessSession,
+    preProcess: preCreateSession,
+    postProcess: postCreateSession,
   });
   // Put to session updates session (if owned by me)
   putResource(router, SESSION);
   deleteResource(router, SESSION, {
-    postProcess: postProcessSession,
+    postProcess: postDeleteSession,
   });
 
   // router.post("session-invite", "/sessions/:sessionId/invite", async (ctx) => {
@@ -271,8 +334,10 @@ export function indecisiveRoutes(router: Router) {
   // router.put("session-vote", "/sessions/:sessionId/vote/:suggestionId", async (ctx) => {
 
   router.get("test-html", "/test", async (ctx) => {
-    const { state: { auth, self } } = ctx;
-    let body = '';
+    const {
+      state: { auth, self },
+    } = ctx;
+    let body = "";
     body += `<p>Auth userId: ${auth?.user?.userId}</p>`;
     body += `<p>Scopes: ${auth?.scope?.join(" ")}</p>`;
     body += `<p>Self id: ${self?.id}</p>`;
@@ -286,13 +351,17 @@ export function indecisiveRoutes(router: Router) {
   });
 
   router.get("self", "/self", async (ctx) => {
-    const { state: { self, auth } } = ctx;
-    console.log('/self auth', auth);
+    const {
+      state: { self, auth },
+    } = ctx;
+    console.log("/self auth", auth);
     ctx.body = self;
   });
 
   router.get("current-session", "/current-session", async (ctx) => {
-    const { state: { currentSession } } = ctx;
+    const {
+      state: { currentSession },
+    } = ctx;
     ctx.body = currentSession;
   });
 

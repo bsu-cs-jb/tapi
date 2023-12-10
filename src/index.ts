@@ -8,7 +8,7 @@ import { bodyParser } from "@koa/bodyparser";
 import { SimpleModel } from "./oauth2/SimpleModel.js";
 import { authenticate, token } from "./oauth2/koa.js";
 
-import OAuth2Server  from "oauth2-server";
+import OAuth2Server from "oauth2-server";
 
 const oauth = new OAuth2Server({
   model: SimpleModel(),
@@ -26,8 +26,8 @@ const router = new Router();
 
 app.context.auth = oauth;
 
-router.use('/admin', authenticate("admin"));
-router.use('/test', authenticate("read"));
+router.use("/admin", authenticate("admin"));
+router.use("/test", authenticate("read"));
 
 router
   .get("/", (ctx: Context) => {

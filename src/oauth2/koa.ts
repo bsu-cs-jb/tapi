@@ -68,4 +68,3 @@ export function authenticate(scope?: string | string[]) {
     }
   };
 }
-

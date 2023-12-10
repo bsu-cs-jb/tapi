@@ -29,6 +29,11 @@ export interface IdResource {
   createdAt?: string;
   updatedAt?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // [key: string]: any;
+}
+
+export interface IdResourceExtra extends IdResource {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -90,7 +95,9 @@ async function ensureRoot() {
   await ensureDir(config.DB_GRADING_DIR);
 }
 
-async function ensureResourceDir<T extends IdResource>(resource: ResourceDef<T>) {
+async function ensureResourceDir<T extends IdResource>(
+  resource: ResourceDef<T>,
+) {
   await ensureDir(resourceDir(resource));
 }
 
@@ -116,11 +123,15 @@ function resourceDir<T extends IdResource>(resource: ResourceDef<T>): string {
   return path;
 }
 
-function resourceFilename<T extends IdResource>(resource: ResourceDef<T>): string {
+function resourceFilename<T extends IdResource>(
+  resource: ResourceDef<T>,
+): string {
   return `${resourceDir(resource)}/${resource.id}.json`;
 }
 
-export async function resourceExists<T extends IdResource>(resource: ResourceDef<T>): Promise<boolean> {
+export async function resourceExists<T extends IdResource>(
+  resource: ResourceDef<T>,
+): Promise<boolean> {
   const filename = resourceFilename(resource);
   return fileExists(filename);
 }
@@ -233,7 +244,9 @@ const throttleGitCommit = throttle(gitCommit, 30 * 1000, {
   trailing: true,
 });
 
-export async function deleteResourceDb<T extends IdResource>(resource: ResourceDef<T>): Promise<string|undefined> {
+export async function deleteResourceDb<T extends IdResource>(
+  resource: ResourceDef<T>,
+): Promise<string | undefined> {
   const filename = resourceFilename(resource);
   if (!(await fileExists(filename))) {
     console.log(
@@ -256,7 +269,7 @@ export async function writeResource<T extends IdResource>(
   resource: ResourceDef<T>,
   data: T,
   updateTimestamps = true,
-): Promise<string|undefined> {
+): Promise<string | undefined> {
   await ensureResourceDir(resource);
   if (updateTimestamps) {
     const ts = new Date().toISOString();
@@ -284,7 +297,10 @@ export async function writeDb<T extends IdResource>(name: string, data: T) {
   await writeFile(`${config.DB_GRADING_DIR}/${name}.json`, buffer);
 }
 
-export function refWithId<T extends IdResource>(resource: ResourceDef<T>, id: string): ResourceDef<T> {
+export function refWithId<T extends IdResource>(
+  resource: ResourceDef<T>,
+  id: string,
+): ResourceDef<T> {
   const ref = cloneDeep(resource);
   ref.id = id;
   return ref;

@@ -65,15 +65,15 @@ const TEST_CLIENTS: ClientDb = {
 
 const tokens: TokenDb = {};
 
-export function SimpleModel(clientsParam?: ClientDb):ClientCredentialsModel {
+export function SimpleModel(clientsParam?: ClientDb): ClientCredentialsModel {
   const clients = clientsParam || TEST_CLIENTS;
   const model: ClientCredentialsModel = {
     // ********** BaseModel  **********
 
     /**
-    * Optional
-    * Invoked to generate a new access token.
-    */
+     * Optional
+     * Invoked to generate a new access token.
+     */
     // generateAccessToken: async(
     //   client: Client,
     //   user: User,
@@ -84,9 +84,9 @@ export function SimpleModel(clientsParam?: ClientDb):ClientCredentialsModel {
     // },
 
     /**
-    * Invoked to retrieve a client using a client id or a client id/client
-    * secret combination, depending on the grant type.
-    */
+     * Invoked to retrieve a client using a client id or a client id/client
+     * secret combination, depending on the grant type.
+     */
     getClient: async (
       clientId: string,
       clientSecret: string,
@@ -103,9 +103,9 @@ export function SimpleModel(clientsParam?: ClientDb):ClientCredentialsModel {
     },
 
     /**
-    * Invoked to save an access token and optionally a refresh token, depending
-    * on the grant type.
-    */
+     * Invoked to save an access token and optionally a refresh token, depending
+     * on the grant type.
+     */
     saveToken: async (
       token: Token,
       client: Client,
@@ -122,9 +122,9 @@ export function SimpleModel(clientsParam?: ClientDb):ClientCredentialsModel {
     // ********** RequestAuthenticationModel  **********
 
     /**
-    * Invoked to retrieve an existing access token previously saved through
-    * Model#saveToken().
-    */
+     * Invoked to retrieve an existing access token previously saved through
+     * Model#saveToken().
+     */
     getAccessToken: async (
       accessToken: string,
       // callback?: Callback<Token>,
@@ -134,9 +134,9 @@ export function SimpleModel(clientsParam?: ClientDb):ClientCredentialsModel {
     },
 
     /**
-    * Invoked during request authentication to check if the provided access token
-    * was authorized the requested scopes.
-    */
+     * Invoked during request authentication to check if the provided access token
+     * was authorized the requested scopes.
+     */
     verifyScope: async (
       token: Token,
       scope: string | string[],
