@@ -2,5 +2,9 @@
   "name": "Brahbrah",
   "id": "brahbrah",
   "createdAt": "2023-12-07T16:10:49.189Z",
-  "updatedAt": "2023-12-08T06:21:54.132Z"
+  "updatedAt": "2023-12-10T18:41:21.597Z",
+  "ownsSessions": [],
+  "invitedSessions": [
+    "FhmzKh_kDQ"
+  ]
 }

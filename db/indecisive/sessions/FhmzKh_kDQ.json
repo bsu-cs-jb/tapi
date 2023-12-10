@@ -1,0 +1,42 @@
+{
+  "name": "Test Session",
+  "ownerId": "tamatoa",
+  "invitations": [
+    {
+      "userId": "brahbrah",
+      "accepted": false,
+      "attending": "undecided"
+    },
+    {
+      "userId": "prof-jb",
+      "accepted": false,
+      "attending": "undecided"
+    },
+    {
+      "userId": "tamatoa",
+      "accepted": true,
+      "attending": "no"
+    }
+  ],
+  "suggestions": [
+    {
+      "id": "Eu8J67qT2A",
+      "userId": "tamatoa",
+      "name": "New suggestion",
+      "upVoteUserIds": [],
+      "downVoteUserIds": []
+    },
+    {
+      "id": "FYGVR6kqfQ",
+      "userId": "tamatoa",
+      "name": "Bricklayers",
+      "upVoteUserIds": [
+        "tamatoa"
+      ],
+      "downVoteUserIds": []
+    }
+  ],
+  "id": "FhmzKh_kDQ",
+  "updatedAt": "2023-12-10T19:52:02.699Z",
+  "createdAt": "2023-12-10T17:20:23.461Z"
+}
