@@ -56,6 +56,20 @@ interface UserDb extends IdResource {
   invitedSessions: string[];
 }
 
+function addInvitation(session: SessionDb, userId: string): SessionDb {
+  const existingInvite = session.invitations.find(
+    (invite) => invite.userId === userId,
+  );
+  if (!existingInvite) {
+    session.invitations.push({
+      userId,
+      accepted: false,
+      attending: "undecided",
+    });
+  }
+  return session;
+}
+
 function makeUserDb(props?: AllOptional<UserDb>): UserDb {
   const user: UserDb = {
     id: urlid(),
@@ -424,20 +438,6 @@ export function indecisiveRoutes(router: Router) {
           message: `Invited user id '${userId}' does not exist.`,
         };
         return;
-      }
-
-      function addInvitation(session: SessionDb, userId: string): SessionDb {
-        const existingInvite = session.invitations.find(
-          (invite) => invite.userId === userId,
-        );
-        if (!existingInvite) {
-          session.invitations.push({
-            userId,
-            accepted: false,
-            attending: "undecided",
-          });
-        }
-        return session;
       }
 
       addInvitation(session, userId);

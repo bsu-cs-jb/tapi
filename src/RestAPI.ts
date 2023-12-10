@@ -17,6 +17,11 @@ import {
 
 type IdName = { id: string; name: string };
 
+interface RouteName {
+  name?: string;
+  path: string;
+}
+
 function routeLog<T extends IdResource>(
   method: string,
   type: string,
@@ -328,11 +333,6 @@ export function postResource<T extends IdResource>(
   return router;
 }
 
-interface RouteName {
-  name?: string;
-  path: string;
-}
-
 /*
  * Returns list of routes defined.
  */
@@ -419,12 +419,10 @@ export function putResource<T extends IdResource>(
       }
 
       const filename = await writeResource(ref, data);
-
       if (filename !== undefined && options?.postProcess) {
         data = await options.postProcess(ctx, data, ref);
       }
 
-      // console.log(`PUT written to ${filename} ${resource.singular} body:`, data);
       console.log(
         `PUT written to ${filename} ${resource.singular}:`,
         shallowJson(data),
