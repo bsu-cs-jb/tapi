@@ -199,42 +199,12 @@ const USER: ResourceDef<UserDb> = {
   builder: makeUserDb,
 };
 
-// const INVITATIONS: ResourceDef = {
-//   database: "indecisive",
-//   name: "invitations",
-//   singular: "invitation",
-//   paramName: "invitationSessionId",
-//   sortBy: "name",
-//   parents: [USER],
-// };
-//
-// const OWN_SESSION: ResourceDef = {
-//   database: "indecisive",
-//   name: "owns",
-//   singular: "session",
-//   paramName: "sessionId",
-//   sortBy: "name",
-//   parents: [USER],
-// };
-
-// function makeSessionDb(props?: AllOptional<SessionDb>):SessionDb {
-//   return {
-//     ...props,
-//     id: urlid(),
-//     ownerId: urlid(),
-//     name: "Unnamed Session",
-//     invitations: [],
-//     suggestions: [],
-//   };
-// }
-
 const SESSION: ResourceDef<SessionDb> = {
   database: "indecisive",
   name: "sessions",
   singular: "session",
   paramName: "sessionId",
   sortBy: "name",
-  // builder: makeSessionDb,
 };
 
 async function fetchUser(id: string): Promise<UserDb | undefined> {
@@ -508,10 +478,6 @@ export function indecisiveRoutes(router: Router) {
     preProcess: preCreateUser,
   });
   putResource(router, USER);
-
-  // getCollection(router, OWN_SESSION);
-  // getResource(router, OWN_SESSION);
-  // postResource(router, OWN_SESSION);
 
   getCollection(router, SESSION);
   getResource(router, SESSION);

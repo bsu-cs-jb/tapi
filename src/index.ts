@@ -16,6 +16,7 @@ const oauth = new OAuth2Server({
 
 import { graderRoutes } from "./grader.js";
 import { indecisiveRoutes } from "./indecisive.js";
+import { authRoutes } from "./AuthApi.js";
 
 import { config } from "./config.js";
 import { log, jsonhtml } from "./utils.js";
@@ -48,7 +49,7 @@ router
     ctx.body =
       '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
   })
-  .post("/auth", async (ctx) => {
+  .post("/token", async (ctx) => {
     await token(ctx);
   })
   .get("/cats", (ctx) => {
@@ -94,6 +95,11 @@ const indecisiveRouter = new Router({
 });
 indecisiveRoutes(indecisiveRouter);
 
+const authRouter = new Router({
+  prefix: "/auth",
+});
+authRoutes(authRouter);
+
 app
   .use(cors())
   .use(bodyParser())
@@ -102,7 +108,9 @@ app
   .use(graderRouter.routes())
   .use(graderRouter.allowedMethods())
   .use(indecisiveRouter.routes())
-  .use(indecisiveRouter.allowedMethods());
+  .use(indecisiveRouter.allowedMethods())
+  .use(authRouter.routes())
+  .use(authRouter.allowedMethods());
 
 log(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
 log(`LOG_LEVEL: ${config.LOG_LEVEL}`);

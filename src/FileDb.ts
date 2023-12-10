@@ -17,19 +17,11 @@ import { config } from "./config.js";
 
 const execFileP = util.promisify(execFile);
 
-// type RecVal = string | boolean | null | number;
-// export interface RestResource {
-//   id: string;
-//   [key: string]: RestResource|RecVal|RecVal[]|RestResource[];
-// }
-
 export interface IdResource {
   id: string;
   name: string;
   createdAt?: string;
   updatedAt?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // [key: string]: any;
 }
 
 export interface IdResourceExtra extends IdResource {
@@ -107,6 +99,8 @@ function resourceDir<T extends IdResource>(resource: ResourceDef<T>): string {
     path = config.DB_GRADING_DIR;
   } else if (resource.database === "indecisive") {
     path = config.DB_INDECISIVE_DIR;
+  } else if (resource.database === "auth") {
+    path = config.DB_AUTH_DIR;
   } else {
     throw new Error(
       `Unknown database ${resource.database} on resource ${resource.name}`,

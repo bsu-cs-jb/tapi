@@ -1,6 +1,6 @@
 import Router from "@koa/router";
 import { Context, Next } from "koa";
-import { cloneDeep, sortBy, capitalize } from "lodash-es";
+import { merge, cloneDeep, sortBy, capitalize } from "lodash-es";
 
 import { urlid } from "./genid.js";
 import { log, jsonhtml, shallowJson, assert } from "./utils.js";
@@ -313,10 +313,15 @@ export function postResource<T extends IdResource>(
       }
       const ref = refWithId(resource, newResource.id);
       if (await resourceExists(ref)) {
-        ctx.body = `<p>${capitalize(resource.singular)} with id '${
-          newResource.id
-        }' already exists. Failing</p>\n`;
         ctx.status = 400;
+        const message = `${capitalize(resource.singular)} with id '${
+          newResource.id
+        }' already exists.`;
+        console.error(message);
+        ctx.body = {
+          status: "error",
+          message,
+        };
         return await next();
       }
       const filename = await writeResource(ref, newResource);
@@ -409,6 +414,61 @@ export function putResource<T extends IdResource>(
       }
       const ref = refWithId(resource, data.id);
 
+      if (options?.preProcess) {
+        data = await options.preProcess(ctx, data, ref);
+      }
+
+      // don't let the API override createdAt
+      if (obj.createdAt) {
+        data.createdAt = obj.createdAt;
+      }
+
+      const filename = await writeResource(ref, data);
+      if (filename !== undefined && options?.postProcess) {
+        data = await options.postProcess(ctx, data, ref);
+      }
+
+      console.log(
+        `PUT written to ${filename} ${resource.singular}:`,
+        shallowJson(data),
+      );
+      ctx.body = data;
+
+      await next();
+    },
+  );
+}
+
+export function patchResource<T extends IdResource>(
+  router: Router,
+  resource: ResourceDef<T>,
+  options?: RestOptions<T>,
+): Router {
+  const { name: resource_name, url: resource_url } = resourceRoute(resource);
+  routeLog("PUT", "resource", resource, resource_name, resource_url);
+
+  return router.patch(
+    `${resource_name}-patch`,
+    `/${resource_url}`,
+    async (ctx: Context, next: Next) => {
+      let data = ctx.request.body;
+
+      // get the existing resource
+      const obj = ctx.state[resource.singular];
+      assert(obj !== undefined && obj !== null);
+
+      // Make sure the id of the resource matches
+      const id = ctx.params[resource.paramName];
+      if (data.id !== undefined) {
+        assert(data.id === id);
+      } else {
+        data.id = id;
+      }
+
+      // Update the existing object with new fields
+      data = merge(obj, data);
+
+      const ref = refWithId(resource, data.id);
       if (options?.preProcess) {
         data = await options.preProcess(ctx, data, ref);
       }

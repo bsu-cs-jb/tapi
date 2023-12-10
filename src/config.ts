@@ -13,6 +13,7 @@ interface Config extends BaseConfig {
   DB_GIT_COMMIT_SCRIPT: string;
   DB_GRADING_DIR: string;
   DB_INDECISIVE_DIR: string;
+  DB_AUTH_DIR: string;
 }
 
 class ConfigImpl extends BaseConfigImpl {
@@ -26,6 +27,10 @@ class ConfigImpl extends BaseConfigImpl {
 
   public get DB_INDECISIVE_DIR(): string {
     return getConfig("DB_INDECISIVE_DIR", "./db/indecisive");
+  }
+
+  public get DB_AUTH_DIR(): string {
+    return getConfig("DB_AUTH_DIR", "./db/auth");
   }
 
   public get DB_GIT_COMMIT(): boolean {
