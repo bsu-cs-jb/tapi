@@ -393,11 +393,11 @@ export function putResource<T extends IdResource>(
   return router.put(
     `${resource_name}-put`,
     `/${resource_url}`,
-    async (ctx: Context) => {
-      const data = ctx.request.body;
+    async (ctx: Context, next: Next) => {
+      let data = ctx.request.body;
 
       // get the existing resource
-      let obj = ctx.state[resource.singular];
+      const obj = ctx.state[resource.singular];
       assert(obj !== undefined && obj !== null);
 
       // Make sure the id of the resource matches
@@ -410,7 +410,7 @@ export function putResource<T extends IdResource>(
       const ref = refWithId(resource, data.id);
 
       if (options?.preProcess) {
-        obj = await options.preProcess(ctx, obj, ref);
+        data = await options.preProcess(ctx, data, ref);
       }
 
       // don't let the API override createdAt
@@ -421,15 +421,17 @@ export function putResource<T extends IdResource>(
       const filename = await writeResource(ref, data);
 
       if (filename !== undefined && options?.postProcess) {
-        obj = await options.postProcess(ctx, obj, ref);
+        data = await options.postProcess(ctx, data, ref);
       }
 
       // console.log(`PUT written to ${filename} ${resource.singular} body:`, data);
       console.log(
         `PUT written to ${filename} ${resource.singular}:`,
-        shallowJson(obj),
+        shallowJson(data),
       );
-      ctx.body = obj;
+      ctx.body = data;
+
+      await next();
     },
   );
 }

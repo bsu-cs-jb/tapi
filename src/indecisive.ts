@@ -416,6 +416,31 @@ export function indecisiveRoutes(router: Router) {
 
       const { userId } = ctx.request.body;
       assert(userId);
+      const invitedUser = await fetchUser(userId);
+      if (invitedUser === undefined) {
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          message: `Invited user id '${userId}' does not exist.`,
+        };
+        return;
+      }
+
+      function addInvitation(session: SessionDb, userId: string): SessionDb {
+        const existingInvite = session.invitations.find(
+          (invite) => invite.userId === userId,
+        );
+        if (!existingInvite) {
+          session.invitations.push({
+            userId,
+            accepted: false,
+            attending: "undecided",
+          });
+        }
+        return session;
+      }
+
+      addInvitation(session, userId);
 
       // add invitation to session
       const ref = refWithId(SESSION, session.id);
