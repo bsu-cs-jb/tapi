@@ -92,7 +92,7 @@ export function resourceRouteName<T extends IdResource>(
 export function resourceFromContext<T extends IdResource>(
   resource: ResourceDef<T>,
   id?: string,
-  ctx?: Record<string, string>,
+  ctx?: Context,
 ): ResourceDef<T> {
   const ref = cloneDeep(resource);
   if (id) {
@@ -101,7 +101,7 @@ export function resourceFromContext<T extends IdResource>(
   if (ctx && ref.parents) {
     for (const parent of ref.parents) {
       if (parent.paramName in ctx) {
-        parent.id = ctx[parent.paramName];
+        parent.id = ctx.state[parent.paramName];
       }
     }
   }
@@ -113,20 +113,24 @@ export function routerParam<T extends IdResource>(
   resource: ResourceDef<T>,
   processFn?: (obj: T) => T | undefined,
 ): Router {
-  return router.param(resource.paramName, async (id, ctx, next) => {
-    const ref = resourceFromContext(resource, id, ctx.params);
-    let obj = await readResource<T>(ref);
-    if (processFn && obj) {
-      obj = processFn(obj);
-    }
-    ctx[resource.singular] = obj;
-    if (!ctx[resource.singular]) {
-      ctx.status = 404;
-      console.error(`${resource.singular} id '${id}' not found.`);
-      return;
-    }
-    await next();
-  });
+  return router.param(
+    resource.paramName,
+    async (id: string, ctx: Context, next: () => Promise<void>) => {
+      const ref = resourceFromContext(resource, id, ctx.params);
+      let obj = await readResource<T>(ref);
+      if (processFn && obj) {
+        obj = processFn(obj);
+      }
+      // ctx[resource.singular] = obj;
+      ctx.state[resource.singular] = obj;
+      if (!ctx.state[resource.singular]) {
+        ctx.status = 404;
+        console.error(`${resource.singular} id '${id}' not found.`);
+        return;
+      }
+      await next();
+    },
+  );
 }
 
 export function linkList<T extends IdResource>(
@@ -223,7 +227,7 @@ export function getResource<T extends IdResource>(
       `/${resource_url}.html`,
       async (ctx: Context) => {
         // const { course, params: { courseId } } = ctx;
-        const item = ctx[resource.singular];
+        const item = ctx.state[resource.singular];
         let body = "";
         body += `<!DOCTYPE html>\n<html><head><title>${capitalize(
           resource.singular,
@@ -256,7 +260,7 @@ export function getResource<T extends IdResource>(
     )
     .get(resource_name, `/${resource_url}`, async (ctx: Context) => {
       // const { course, params: { courseId } } = ctx;
-      const item = ctx[resource.singular];
+      const item = ctx.state[resource.singular];
       ctx.body = item;
     });
 }
@@ -333,9 +337,9 @@ export function deleteResource<T extends IdResource>(
   router.delete(
     `${resource_name}-delete`,
     `/${resource_url}`,
-    async (ctx: Context) => {
+    async (ctx: Context, next: () => Promise<void>) => {
       // get the existing resource
-      const obj = ctx[resource.singular];
+      const obj = ctx.state[resource.singular];
       assert(obj !== undefined && obj !== null);
 
       // Make sure the id of the resource matches
@@ -356,6 +360,7 @@ export function deleteResource<T extends IdResource>(
         status: "SUCCESS",
         message: `Session ${id} succesfully deleted.`,
       };
+      await next();
     },
   );
 
@@ -376,7 +381,7 @@ export function putResource<T extends IdResource>(
       const data = ctx.request.body;
 
       // get the existing resource
-      const obj = ctx[resource.singular];
+      const obj = ctx.state[resource.singular];
       assert(obj !== undefined && obj !== null);
 
       // Make sure the id of the resource matches

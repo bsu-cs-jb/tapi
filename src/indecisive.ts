@@ -193,19 +193,48 @@ async function postCreateSession(
     state: { self },
   } = ctx;
   log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
-  if (!self.ownsSessions) {
-    self.ownsSessions = [];
-  }
-  if (!self.invitedSessions) {
-    self.invitedSessions = [];
-  }
-  self.ownsSessions.push(session.id);
-  const ref = refWithId(USER, self.id);
-  await writeResource(ref, self);
+  await addUserSessionRef("ownership", session.id, self.id, self);
+  // if (!self.ownsSessions) {
+  //   self.ownsSessions = [];
+  // }
+  // if (!self.invitedSessions) {
+  //   self.invitedSessions = [];
+  // }
+  // self.ownsSessions.push(session.id);
+  // const ref = refWithId(USER, self.id);
+  // await writeResource(ref, self);
 }
 
 function removeId(id: string, ids: string[]): string[] {
   return ids.filter((i) => i !== id);
+}
+
+async function addUserSessionRef(
+  refType: "invitation" | "ownership",
+  sessionId: string,
+  userId: string,
+  user?: UserDb,
+): Promise<UserDb | undefined> {
+  if (!user) {
+    user = await fetchUser(userId);
+  }
+  if (user) {
+    if (refType === "invitation") {
+      // ensure uniqueness
+      const updated = removeId(sessionId, user.invitedSessions);
+      updated.push(sessionId);
+      user.invitedSessions = updated;
+    } else {
+      // ensure uniqueness
+      const updated = removeId(sessionId, user.ownsSessions);
+      updated.push(sessionId);
+      user.ownsSessions = updated;
+    }
+    const ref = refWithId(USER, user.id);
+    log(`Adding session ${refType} ${sessionId} to user ${user.id}`, user);
+    await writeResource(ref, user);
+    return user;
+  }
 }
 
 async function removeUserSessionRef(
@@ -224,7 +253,7 @@ async function removeUserSessionRef(
       user.ownsSessions = removeId(sessionId, user.ownsSessions);
     }
     const ref = refWithId(USER, user.id);
-    log(`Removing session ${refType} from user ${user.id}`, user);
+    log(`Removing session ${refType} ${sessionId} from user ${user.id}`, user);
     await writeResource(ref, user);
     return user;
   }
@@ -329,7 +358,30 @@ export function indecisiveRoutes(router: Router) {
     postProcess: postDeleteSession,
   });
 
-  // router.post("session-invite", "/sessions/:sessionId/invite", async (ctx) => {
+  router.post(
+    "session-invite",
+    "/sessions/:sessionId/invite",
+    async (ctx: Context, next: () => Promise<void>) => {
+      const { self, session } = ctx.state;
+
+      assert(session);
+      // only allow owner to do this
+      // TODO: or if has admin scope
+      assert(self.id === session.ownerId);
+
+      const { userId } = ctx.request.body;
+      assert(userId);
+
+      // add invitation to session
+      const ref = refWithId(SESSION, session.id);
+      const filename = await writeResource(ref, session);
+      console.log(`POST written to ${filename} session:`, session);
+
+      // add invitation to user
+      await addUserSessionRef("invitation", session.id, self.id, self);
+      await next();
+    },
+  );
   // router.post("session-respond", "/sessions/:sessionId/respond", async (ctx) => {
   // router.post("session-suggest", "/sessions/:sessionId/suggest", async (ctx) => {
   // router.put("session-vote", "/sessions/:sessionId/vote/:suggestionId", async (ctx) => {
@@ -368,7 +420,7 @@ export function indecisiveRoutes(router: Router) {
 
   // Create a new session owned by this user
   router.post("user-sessions", "/users/:userId/owns", async (ctx) => {
-    const { user } = ctx;
+    const { user } = ctx.state;
     let body = `<p>User id: ${user.id}</p>`;
     body += `<p>User: <a href="${router.url("user-html", {
       userId: user.id,
@@ -379,7 +431,7 @@ export function indecisiveRoutes(router: Router) {
   });
 
   router.get("user-sessions-html", "/users/:userId/sessions", async (ctx) => {
-    const { user } = ctx;
+    const { user } = ctx.state;
     let body = `<p>User id: ${user.id}</p>`;
     body += `<p>User: <a href="${router.url("user-html", {
       userId: user.id,

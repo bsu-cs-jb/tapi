@@ -1,4 +1,5 @@
 import Router from "@koa/router";
+import { Context } from "koa";
 import * as _ from "lodash-es";
 import { standardDeviation, quantile, median } from "simple-statistics";
 
@@ -196,7 +197,7 @@ function processRubric(rubric: Rubric): Rubric | undefined {
 }
 
 export function graderRoutes(router: Router) {
-  router.get("/", async (ctx) => {
+  router.get("/", async (ctx: Context, next: () => Promise<void>) => {
     let body = "";
     body +=
       "<!DOCTYPE html>\n<html><head><title>Grader Root</title></head><body>";
@@ -212,6 +213,8 @@ export function graderRoutes(router: Router) {
       '<li><a href="http://localhost:3000/grader/courses/CS411-2023-fall/rubrics/project-02/grades.html">Project 2 Grade stats</a></li>\n';
     body += "</ul></div>\n";
     ctx.body = body;
+
+    await next();
   });
 
   const showRubricStats = (
@@ -259,24 +262,29 @@ export function graderRoutes(router: Router) {
   restRoutes(GRADE);
 
   router
-    .get("course-students", "/courses/:courseId/students", async (ctx) => {
-      const {
-        course,
-        params: { courseId },
-      } = ctx;
-      let body = `<p>Course id: ${courseId}</p>`;
-      body += `<p>Course: <a href="${router.url("course-html", {
-        courseId: course.id,
-      })}">${course.name}</a></p>\n`;
-      body += linkList(router, STUDENT, course.students, { courseId });
-      body += jsonhtml(course.students);
-      ctx.body = body;
-    })
+    .get(
+      "course-students",
+      "/courses/:courseId/students",
+      async (ctx: Context, next: () => Promise<void>) => {
+        const {
+          state: { course },
+          params: { courseId },
+        } = ctx;
+        let body = `<p>Course id: ${courseId}</p>`;
+        body += `<p>Course: <a href="${router.url("course-html", {
+          courseId: course.id,
+        })}">${course.name}</a></p>\n`;
+        body += linkList(router, STUDENT, course.students, { courseId });
+        body += jsonhtml(course.students);
+        ctx.body = body;
+        await next();
+      },
+    )
     .get(
       "course-student",
       "/courses/:courseId/students/:studentId",
-      async (ctx) => {
-        const { course, student } = ctx;
+      async (ctx: Context, next: () => Promise<void>) => {
+        const { course, student } = ctx.state;
         let body = "";
         body += `<p>Course: <a href="${router.url("course-html", {
           courseId: course.id,
@@ -287,14 +295,14 @@ export function graderRoutes(router: Router) {
         })}">${student.name}</a></p>\n`;
         body += jsonhtml(student);
         ctx.body = body;
-        return ctx;
+        await next();
       },
     )
     .get(
       "course-rubric-grades-html",
       "/courses/:courseId/rubrics/:rubricId/grades.html",
-      async (ctx) => {
-        const { course, rubric } = ctx as unknown as {
+      async (ctx: Context, next: () => Promise<void>) => {
+        const { course, rubric } = ctx.state as {
           course: CourseDbObj;
           rubric: Rubric;
         };
@@ -553,13 +561,14 @@ export function graderRoutes(router: Router) {
         body += "</tbody></table>\n";
 
         ctx.body = body;
+        await next();
       },
     )
     .get(
       "course-rubric-grades",
       "/courses/:courseId/rubrics/:rubricId/grades",
-      async (ctx) => {
-        const { course, rubric } = ctx as unknown as {
+      async (ctx: Context, next: () => Promise<void>) => {
+        const { course, rubric } = ctx.state as {
           course: CourseDbObj;
           rubric: Rubric;
         };
@@ -573,24 +582,21 @@ export function graderRoutes(router: Router) {
           }),
         );
         ctx.body = grades;
+        await next();
       },
     )
     .get(
       "course-student-grade",
       "/courses/:courseId/students/:studentId/grades/:rubricId",
-      async (ctx) => {
-        const { course, student, rubric } = ctx as unknown as {
+      async (ctx: Context, next: () => Promise<void>) => {
+        const { course, student, rubric } = ctx.state as {
           course: CourseDbObj;
           student: Student;
           rubric: Rubric;
         };
         const rubricScore = await getOrAddRubricScore(course, student, rubric);
         ctx.body = rubricScore;
+        await next();
       },
-    )
-    .put(
-      "student-grade",
-      "/students/:studentId/grades/:gradeId",
-      async (ctx) => {},
     );
 }
