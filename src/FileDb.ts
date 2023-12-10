@@ -27,6 +27,8 @@ export interface IdResource {
   name: string;
   createdAt?: string;
   updatedAt?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }
 
 // Create a new type but make all of the properties optional

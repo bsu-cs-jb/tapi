@@ -2,12 +2,15 @@ import { Context } from "koa";
 import Router from "@koa/router";
 import * as _ from "lodash-es";
 
-import { authenticate, token } from "./oauth2/koa.js";
+import { urlid } from "./genid.js";
+import { AllOptional } from "./utils.js";
+import { authenticate } from "./oauth2/koa.js";
 import {
   readResource,
   refWithId,
   ResourceDef,
   writeResource,
+  IdResource,
 } from "./FileDb.js";
 import {
   getCollection,
@@ -49,8 +52,8 @@ export interface SessionDb {
 interface UserDb {
   id: string;
   name: string;
-  owns: SessionDb[];
-  invitations: UserInvitationDb[];
+  ownsSessions: string[];
+  invitedSessions: string[];
 }
 
 const USER: ResourceDef = {
@@ -61,23 +64,34 @@ const USER: ResourceDef = {
   sortBy: "name",
 };
 
-const INVITATIONS: ResourceDef = {
-  database: "indecisive",
-  name: "invitations",
-  singular: "invitation",
-  paramName: "invitationSessionId",
-  sortBy: "name",
-  parents: [USER],
-};
+// const INVITATIONS: ResourceDef = {
+//   database: "indecisive",
+//   name: "invitations",
+//   singular: "invitation",
+//   paramName: "invitationSessionId",
+//   sortBy: "name",
+//   parents: [USER],
+// };
+//
+// const OWN_SESSION: ResourceDef = {
+//   database: "indecisive",
+//   name: "owns",
+//   singular: "session",
+//   paramName: "sessionId",
+//   sortBy: "name",
+//   parents: [USER],
+// };
 
-const OWN_SESSION: ResourceDef = {
-  database: "indecisive",
-  name: "owns",
-  singular: "session",
-  paramName: "sessionId",
-  sortBy: "name",
-  parents: [USER],
-};
+// function makeSessionDb(props?: AllOptional<SessionDb>):SessionDb {
+//   return {
+//     ...props,
+//     id: urlid(),
+//     ownerId: urlid(),
+//     name: "Unnamed Session",
+//     invitations: [],
+//     suggestions: [],
+//   };
+// }
 
 const SESSION: ResourceDef = {
   database: "indecisive",
@@ -85,6 +99,7 @@ const SESSION: ResourceDef = {
   singular: "session",
   paramName: "sessionId",
   sortBy: "name",
+  // builder: makeSessionDb,
 };
 
 async function fetchUser(id: string): Promise<UserDb | undefined> {
@@ -136,6 +151,29 @@ function indecisiveAuth(authEnabled: boolean, requireSelf: boolean, skipAuthValu
   };
 }
 
+async function preProcessSession(ctx: Context, session: SessionDb): Promise<SessionDb> {
+  const { state: { self } } = ctx;
+  log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
+  session.ownerId = self.id;
+  session.invitations = [];
+  session.suggestions = [];
+  return session;
+}
+
+async function postProcessSession(ctx: Context, session: SessionDb): Promise<void> {
+  const { state: { self } } = ctx;
+  log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
+  if (!self.ownsSessions) {
+    self.ownsSessions = [];
+  }
+  if (!self.invitedSessions) {
+    self.invitedSessions = [];
+  }
+  self.ownsSessions.push(session.id);
+  const ref = refWithId(USER, self.id);
+  await writeResource(ref, self);
+}
+
 const SKIP_AUTH = {
   user: {
     username: "no-auth",
@@ -176,18 +214,19 @@ export function indecisiveRoutes(router: Router) {
   routerParam(router, SESSION);
 
   getCollection(router, USER);
-  getResource(router, USER, [OWN_SESSION, INVITATIONS]);
+  // getResource(router, USER, [OWN_SESSION, INVITATIONS]);
+  getResource(router, USER);
   postResource(router, USER);
   putResource(router, USER);
 
-  getCollection(router, OWN_SESSION);
+  // getCollection(router, OWN_SESSION);
   // getResource(router, OWN_SESSION);
   // postResource(router, OWN_SESSION);
 
   getCollection(router, SESSION);
   getResource(router, SESSION);
   // Post to session means: create a new session owned by me
-  postResource(router, SESSION);
+  postResource<SessionDb>(router, SESSION, preProcessSession, postProcessSession);
   // Put to session updates session (if owned by me)
   putResource(router, SESSION);
 
@@ -208,8 +247,6 @@ export function indecisiveRoutes(router: Router) {
     body += `<p>User: <a href="${router.url("user-html", {
       userId: self.id,
     })}">${self.name}</a></p>\n`;
-    // body += linkList(router, STUDENT, course.students, { courseId });
-    // body += jsonhtml(course.students);
     ctx.body = body;
   });
 

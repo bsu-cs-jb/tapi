@@ -1,4 +1,5 @@
 import Router from "@koa/router";
+import { Context } from "koa";
 import { urlid } from "./genid.js";
 import { log, jsonhtml, shallowJson, assert } from "./utils.js";
 import {
@@ -152,7 +153,7 @@ export function getCollection(router: Router, resource: ResourceDef): Router {
   routeLog("GET", "collection", resource, collection_name, collection_url);
 
   return router
-    .get(`${collection_name}-html`, `/${collection_url}.html`, async (ctx) => {
+    .get(`${collection_name}-html`, `/${collection_url}.html`, async (ctx: Context) => {
       const collection = await getAll(resource);
       log(`Found ${collection?.length} ${resource.name}.`);
       let body = `<!DOCTYPE html>\n<html><head><title>${capitalize(
@@ -167,7 +168,7 @@ export function getCollection(router: Router, resource: ResourceDef): Router {
       body += "\n</body></html>";
       ctx.body = body;
     })
-    .get(collection_name, `/${collection_url}`, async (ctx) => {
+    .get(collection_name, `/${collection_url}`, async (ctx: Context) => {
       const collection = await getAll(resource);
       // ctx.body = JSON.stringify(collection);
       ctx.body = collection;
@@ -190,7 +191,7 @@ export function getResource<T extends IdResource>(
   routeLog("GET", "resource", resource, resource_name, resource_url);
 
   return router
-    .get(`${resource_name}-html`, `/${resource_url}.html`, async (ctx) => {
+    .get(`${resource_name}-html`, `/${resource_url}.html`, async (ctx: Context) => {
       // const { course, params: { courseId } } = ctx;
       const item = ctx[resource.singular];
       let body = "";
@@ -216,14 +217,19 @@ export function getResource<T extends IdResource>(
       body += "</body></html>";
       ctx.body = body;
     })
-    .get(resource_name, `/${resource_url}`, async (ctx) => {
+    .get(resource_name, `/${resource_url}`, async (ctx: Context) => {
       // const { course, params: { courseId } } = ctx;
       const item = ctx[resource.singular];
       ctx.body = item;
     });
 }
 
-export function postResource(router: Router, resource: ResourceDef): Router {
+export function postResource<T extends IdResource>(
+  router: Router,
+  resource: ResourceDef,
+  preProcess?: (ctx: Context, data: T, resource: ResourceDef) => Promise<T>,
+  postProcess?: (ctx: Context, data: T, resource: ResourceDef) => Promise<void>,
+): Router {
   const { name: collection_name, url: collection_url } =
     collectionRoute(resource);
   routeLog("POST", "collection", resource, collection_name, collection_url);
@@ -231,11 +237,14 @@ export function postResource(router: Router, resource: ResourceDef): Router {
   router.post(
     `${collection_name}-post`,
     `/${collection_url}`,
-    async (ctx, next) => {
+    async (ctx: Context, next) => {
       const data = ctx.request.body;
       let newResource = data;
       if (resource.builder) {
         newResource = resource.builder(data);
+      }
+      if (preProcess) {
+        newResource = await preProcess(ctx, newResource, resource);
       }
       if (!newResource.id) {
         newResource.id = urlid();
@@ -249,6 +258,9 @@ export function postResource(router: Router, resource: ResourceDef): Router {
         return await next();
       }
       const filename = await writeResource(ref, newResource);
+      if (postProcess) {
+        await postProcess(ctx, newResource, resource);
+      }
       console.log(
         `POST written to ${filename} ${resource.singular}:`,
         newResource,
@@ -263,7 +275,7 @@ export function putResource(router: Router, resource: ResourceDef): Router {
   const { name: resource_name, url: resource_url } = resourceRoute(resource);
   routeLog("PUT", "resource", resource, resource_name, resource_url);
 
-  return router.put(`${resource_name}-put`, `/${resource_url}`, async (ctx) => {
+  return router.put(`${resource_name}-put`, `/${resource_url}`, async (ctx: Context) => {
     const data = ctx.request.body;
 
     // get the existing resource
