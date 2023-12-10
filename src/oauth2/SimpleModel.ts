@@ -42,19 +42,22 @@ const TEST_CLIENTS: ClientDb = {
       grants: ["client_credentials"],
     },
     user: {
-      username: "harvey",
-      userId: "brahbrah",
+      username: "Admin",
+      userId: "admin",
+      currentSessionId: "sessionId",
       scopes: ["read", "write", "admin"],
     },
   },
-  hello: {
-    secret: hash("there"),
+  tamatoa: {
+    secret: hash("tamatoa"),
     client: {
-      id: "hello",
+      id: "tamatoa",
       grants: ["client_credentials"],
     },
     user: {
-      username: "billy",
+      username: "Jemaine",
+      userId: "tamatoa",
+      currentSessionId: "sessionId",
       scopes: ["read", "write"],
     },
   },

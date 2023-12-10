@@ -1,3 +1,4 @@
+import { Context } from "koa";
 import Router from "@koa/router";
 import * as _ from "lodash-es";
 
@@ -23,6 +24,7 @@ import {
   Invitation,
   Suggestion,
 } from "./indecisive_types.js";
+import { log } from "./utils.js";
 
 export interface UserInvitationDb {
   sessionId: string;
@@ -93,13 +95,65 @@ async function fetchSession(id: string): Promise<SessionDb | undefined> {
   return readResource<SessionDb>(refWithId(SESSION, id));
 }
 
+function fetchCurrentSession(errorIfMissing: boolean = true) {
+  return async (ctx: Context, next: () => Promise<void>) => {
+    const { auth: { user: { currentSessionId } } } = ctx.state;
+    if (currentSessionId) {
+      ctx.state.currentSession = await fetchSession(currentSessionId);
+    } else {
+      console.error(`No current session associated with clientId.`);
+    }
+    if (errorIfMissing && !ctx.state.currentSession) {
+      ctx.status = 400;
+      console.error(`No current session associated with clientId.`);
+      return;
+    }
+    await next();
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function indecisiveAuth(authEnabled: boolean, requireSelf: boolean, skipAuthValue?: any) {
+  return async (ctx: Context, next: () => Promise<void>) => {
+    if (!authEnabled) {
+      ctx.state.auth = skipAuthValue;
+    }
+    const userId = ctx?.state?.auth?.user?.userId;
+    if (userId) {
+      // log(`Fetching self for userId: ${userId}`);
+      ctx.state.self = await fetchUser(userId);
+    } else {
+      log("No userId find in ctx.state.auth");
+    }
+
+    // if self is required, then error on missing self
+    if (requireSelf && !ctx.state.self) {
+      ctx.status = 400;
+      console.error(`No user associated with clientId '${userId}' not found.`);
+      return;
+    }
+    await next();
+  };
+}
+
+const SKIP_AUTH = {
+  user: {
+    username: "no-auth",
+    userId: "tamatoa",
+    currentSessionId: "sessionId",
+  },
+  scope: ["read","write","admin"],
+};
+
 export function indecisiveRoutes(router: Router) {
   // INDECISIVE AUTH
-  const authEnabled = true;
-  const NOAUTH_USERID = 'tamatoa';
+  const authEnabled = false;
   if (authEnabled) {
     router.use(authenticate("read"));
   }
+  router.use(indecisiveAuth(authEnabled, true, SKIP_AUTH));
+
+  router.use(["/current-session"], fetchCurrentSession());
 
   router.get("/", async (ctx) => {
     let body = "";
@@ -142,31 +196,32 @@ export function indecisiveRoutes(router: Router) {
   // router.post("session-suggest", "/sessions/:sessionId/suggest", async (ctx) => {
   // router.put("session-vote", "/sessions/:sessionId/vote/:suggestionId", async (ctx) => {
 
-  router.get("self", "/self", async (ctx) => {
-    const { state: { auth } } = ctx;
-    console.log('/self auth', auth);
-    const userId = authEnabled ? auth?.user?.userId : NOAUTH_USERID;
-    if (!userId) {
-      ctx.status = 500;
-      console.error(`No user associated with clientId '${userId}' not found.`);
-      return;
-    }
-    console.log(`/self fetching user id ${userId}`);
-    const user = await fetchUser(userId);
-    ctx.body = user;
-  });
-
-  router.get("current-session", "/current-session", async (ctx) => {
-    const { user, state: auth } = ctx;
-    let body = `<p>User id: ${user.id}</p>`;
-    body += `<p>Username: ${auth.user.username}</p>`;
-    body += `<p>Scopes: ${auth.scope.join(" ")}</p>`;
+  router.get("test-html", "/test", async (ctx) => {
+    const { state: { auth, self } } = ctx;
+    let body = '';
+    body += `<p>Auth userId: ${auth?.user?.userId}</p>`;
+    body += `<p>Scopes: ${auth?.scope?.join(" ")}</p>`;
+    body += `<p>Self id: ${self?.id}</p>`;
+    body += `<p>Self name: ${self?.name}</p>`;
+    // body += `<p>Client id: ${auth.client.id}</p>`;
+    // body += `<p>Client grants: ${auth.client.grants}</p>`;
     body += `<p>User: <a href="${router.url("user-html", {
-      userId: user.id,
-    })}">${user.name}</a></p>\n`;
+      userId: self.id,
+    })}">${self.name}</a></p>\n`;
     // body += linkList(router, STUDENT, course.students, { courseId });
     // body += jsonhtml(course.students);
     ctx.body = body;
+  });
+
+  router.get("self", "/self", async (ctx) => {
+    const { state: { self, auth } } = ctx;
+    console.log('/self auth', auth);
+    ctx.body = self;
+  });
+
+  router.get("current-session", "/current-session", async (ctx) => {
+    const { state: { currentSession } } = ctx;
+    ctx.body = currentSession;
   });
 
   // Create a new session owned by this user
