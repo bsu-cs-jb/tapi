@@ -1,24 +1,26 @@
 import Router from "@koa/router";
 import { Context } from "koa";
+import { cloneDeep, sortBy, capitalize } from "lodash-es";
+
 import { urlid } from "./genid.js";
 import { log, jsonhtml, shallowJson, assert } from "./utils.js";
 import {
+  deleteResourceDb,
   getAll,
-  writeResource,
+  IdResource,
   readResource,
+  refWithId,
   ResourceDef,
   resourceExists,
-  IdResource,
-  refWithId,
+  writeResource,
 } from "./FileDb.js";
-import { cloneDeep, sortBy, capitalize } from "lodash-es";
 
 type IdName = { id: string; name: string };
 
-function routeLog(
+function routeLog<T extends IdResource>(
   method: string,
   type: string,
-  resource: ResourceDef,
+  resource: ResourceDef<T>,
   name: string,
   url: string,
 ) {
@@ -29,7 +31,7 @@ function routeLog(
   );
 }
 
-export function collectionRoute(resource: ResourceDef): {
+export function collectionRoute<T extends IdResource>(resource: ResourceDef<T>): {
   name: string;
   url: string;
 } {
@@ -50,7 +52,7 @@ export function collectionRoute(resource: ResourceDef): {
   };
 }
 
-export function resourceRoute(resource: ResourceDef): {
+export function resourceRoute<T extends IdResource>(resource: ResourceDef<T>): {
   name: string;
   url: string;
 } {
@@ -71,19 +73,19 @@ export function resourceRoute(resource: ResourceDef): {
   };
 }
 
-export function resourceRouteUrl(resource: ResourceDef): string {
+export function resourceRouteUrl<T extends IdResource>(resource: ResourceDef<T>): string {
   return resourceRoute(resource).url;
 }
 
-export function resourceRouteName(resource: ResourceDef): string {
+export function resourceRouteName<T extends IdResource>(resource: ResourceDef<T>): string {
   return resourceRoute(resource).name;
 }
 
-export function resourceFromContext(
-  resource: ResourceDef,
+export function resourceFromContext<T extends IdResource>(
+  resource: ResourceDef<T>,
   id?: string,
   ctx?: Record<string, string>,
-): ResourceDef {
+): ResourceDef<T> {
   const ref = cloneDeep(resource);
   if (id) {
     ref.id = id;
@@ -100,7 +102,7 @@ export function resourceFromContext(
 
 export function routerParam<T extends IdResource>(
   router: Router,
-  resource: ResourceDef,
+  resource: ResourceDef<T>,
   processFn?: (obj: T) => T | undefined,
 ): Router {
   return router.param(resource.paramName, async (id, ctx, next) => {
@@ -119,9 +121,9 @@ export function routerParam<T extends IdResource>(
   });
 }
 
-export function linkList(
+export function linkList<T extends IdResource>(
   router: Router,
-  resource: ResourceDef,
+  resource: ResourceDef<T>,
   resources: IdName[],
   urlParams: Record<string, string> = {},
 ): string {
@@ -147,7 +149,19 @@ export function linkList(
   return result + "</ul></div>";
 }
 
-export function getCollection(router: Router, resource: ResourceDef): Router {
+export interface RestOptions<T extends IdResource> {
+  processHtml?: (
+    item: T,
+    body: string,
+    router: Router,
+    resource: ResourceDef<T>,
+    subCollections?: ResourceDef<IdResource>[],
+  ) => string,
+  preProcess?: (ctx: Context, data: T, resource: ResourceDef<T>) => Promise<T>,
+  postProcess?: (ctx: Context, data: T, resource: ResourceDef<T>) => Promise<void>,
+}
+
+export function getCollection<T extends IdResource>(router: Router, resource: ResourceDef<T>): Router {
   const { name: collection_name, url: collection_url } =
     collectionRoute(resource);
   routeLog("GET", "collection", resource, collection_name, collection_url);
@@ -177,15 +191,9 @@ export function getCollection(router: Router, resource: ResourceDef): Router {
 
 export function getResource<T extends IdResource>(
   router: Router,
-  resource: ResourceDef,
-  subCollections?: ResourceDef[],
-  customHtml?: (
-    item: T,
-    body: string,
-    router: Router,
-    resource: ResourceDef,
-    subCollections?: ResourceDef[],
-  ) => string,
+  resource: ResourceDef<T>,
+  subCollections?: ResourceDef<IdResource>[],
+  options?: RestOptions<T>,
 ): Router {
   const { name: resource_name, url: resource_url } = resourceRoute(resource);
   routeLog("GET", "resource", resource, resource_name, resource_url);
@@ -203,8 +211,8 @@ export function getResource<T extends IdResource>(
       )}</a></p>`;
       body += `<p>${capitalize(resource.singular)} id: ${item.id}</p>`;
       body += `<p>${capitalize(resource.singular)} name: ${item.name}</p>`;
-      if (customHtml) {
-        body = customHtml(item, body, router, resource, subCollections);
+      if (options?.processHtml) {
+        body = options.processHtml(item, body, router, resource, subCollections);
       }
       if (subCollections) {
         for (const sr of subCollections) {
@@ -226,9 +234,8 @@ export function getResource<T extends IdResource>(
 
 export function postResource<T extends IdResource>(
   router: Router,
-  resource: ResourceDef,
-  preProcess?: (ctx: Context, data: T, resource: ResourceDef) => Promise<T>,
-  postProcess?: (ctx: Context, data: T, resource: ResourceDef) => Promise<void>,
+  resource: ResourceDef<T>,
+  options?: RestOptions<T>,
 ): Router {
   const { name: collection_name, url: collection_url } =
     collectionRoute(resource);
@@ -243,8 +250,8 @@ export function postResource<T extends IdResource>(
       if (resource.builder) {
         newResource = resource.builder(data);
       }
-      if (preProcess) {
-        newResource = await preProcess(ctx, newResource, resource);
+      if (options?.preProcess) {
+        newResource = await options.preProcess(ctx, newResource, resource);
       }
       if (!newResource.id) {
         newResource.id = urlid();
@@ -258,8 +265,8 @@ export function postResource<T extends IdResource>(
         return await next();
       }
       const filename = await writeResource(ref, newResource);
-      if (postProcess) {
-        await postProcess(ctx, newResource, resource);
+      if (options?.postProcess) {
+        await options.postProcess(ctx, newResource, resource);
       }
       console.log(
         `POST written to ${filename} ${resource.singular}:`,
@@ -271,7 +278,54 @@ export function postResource<T extends IdResource>(
   return router;
 }
 
-export function putResource(router: Router, resource: ResourceDef): Router {
+interface RouteName {
+  name?: string;
+  path: string;
+}
+
+/*
+ * Returns list of routes defined.
+ */
+export function deleteResource<T extends IdResource>(
+  router: Router,
+  resource: ResourceDef<T>,
+  options?: RestOptions<T>,
+): RouteName[] {
+  const { name: resource_name, url: resource_url } = resourceRoute(resource);
+  routeLog("DELETE", "resource", resource, resource_name, resource_url);
+
+  const ROUTE_NAMES = [
+    {
+      name:`${resource_name}-delete`,
+      path: `/${resource_url}`,
+    },
+  ];
+
+  router.delete(`${resource_name}-delete`, `/${resource_url}`, async (ctx: Context) => {
+    // get the existing resource
+    const obj = ctx[resource.singular];
+    assert(obj !== undefined && obj !== null);
+
+    // Make sure the id of the resource matches
+    const id = ctx.params[resource.paramName];
+    assert(obj.id !== undefined && obj.id === id);
+    const ref = refWithId(resource, id);
+
+    const filename = await deleteResourceDb(ref);
+
+    if (filename !== undefined) {
+      if (options?.postProcess) {
+        options.postProcess(ctx, obj, ref);
+      }
+    }
+
+    log(`DELETE file ${filename} for ${resource.singular} id ${id}`);
+  });
+
+  return ROUTE_NAMES;
+}
+
+export function putResource<T extends IdResource>(router: Router, resource: ResourceDef<T>): Router {
   const { name: resource_name, url: resource_url } = resourceRoute(resource);
   routeLog("PUT", "resource", resource, resource_name, resource_url);
 

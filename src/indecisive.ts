@@ -2,8 +2,6 @@ import { Context } from "koa";
 import Router from "@koa/router";
 import * as _ from "lodash-es";
 
-import { urlid } from "./genid.js";
-import { AllOptional } from "./utils.js";
 import { authenticate } from "./oauth2/koa.js";
 import {
   readResource,
@@ -13,6 +11,7 @@ import {
   IdResource,
 } from "./FileDb.js";
 import {
+  deleteResource,
   getCollection,
   getResource,
   postResource,
@@ -27,7 +26,8 @@ import {
   Invitation,
   Suggestion,
 } from "./indecisive_types.js";
-import { log } from "./utils.js";
+import { log, assert, AllOptional } from "./utils.js";
+import { urlid } from "./genid.js";
 
 export interface UserInvitationDb {
   sessionId: string;
@@ -41,7 +41,7 @@ export interface InvitationDb {
   attending: Attending;
 }
 
-export interface SessionDb {
+export interface SessionDb extends IdResource{
   id: string;
   ownerId: string;
   name: string;
@@ -49,19 +49,33 @@ export interface SessionDb {
   suggestions: Suggestion[];
 }
 
-interface UserDb {
-  id: string;
-  name: string;
-  ownsSessions: string[];
-  invitedSessions: string[];
+interface UserDb extends IdResource {
+  // id: string;
+  // name: string;
+  // createdAt?: string;
+  // updatedAt?: string;
+  // ownsSessions: string[];
+  // invitedSessions: string[];
 }
 
-const USER: ResourceDef = {
+function makeUserDb(props?: AllOptional<UserDb>): UserDb {
+  const user: UserDb = {
+    id: urlid(),
+    name: "Unnamed User",
+    ownsSessions: [],
+    invitedSessions: [],
+    ...props,
+  };
+  return user;
+};
+
+const USER: ResourceDef<UserDb> = {
   database: "indecisive",
   name: "users",
   singular: "user",
   paramName: "userId",
   sortBy: "name",
+  builder: makeUserDb,
 };
 
 // const INVITATIONS: ResourceDef = {
@@ -93,7 +107,7 @@ const USER: ResourceDef = {
 //   };
 // }
 
-const SESSION: ResourceDef = {
+const SESSION: ResourceDef<SessionDb> = {
   database: "indecisive",
   name: "sessions",
   singular: "session",
@@ -174,6 +188,21 @@ async function postProcessSession(ctx: Context, session: SessionDb): Promise<voi
   await writeResource(ref, self);
 }
 
+async function postDeleteSession(ctx: Context, session: SessionDb): Promise<void> {
+  const { state: { self } } = ctx;
+  log(`Remove session ${session.id} from ownerId ${self.id} named ${session.name}`);
+  assert(self.id === session.ownerId);
+  if (!self.ownsSessions) {
+    self.ownsSessions = [];
+  }
+  if (!self.invitedSessions) {
+    self.invitedSessions = [];
+  }
+  self.ownsSessions.push(session.id);
+  const ref = refWithId(USER, self.id);
+  await writeResource(ref, self);
+}
+
 const SKIP_AUTH = {
   user: {
     username: "no-auth",
@@ -226,9 +255,15 @@ export function indecisiveRoutes(router: Router) {
   getCollection(router, SESSION);
   getResource(router, SESSION);
   // Post to session means: create a new session owned by me
-  postResource<SessionDb>(router, SESSION, preProcessSession, postProcessSession);
+  postResource<SessionDb>(router, SESSION, {
+    preProcess: preProcessSession,
+    postProcess: postProcessSession,
+  });
   // Put to session updates session (if owned by me)
   putResource(router, SESSION);
+  deleteResource(router, SESSION, {
+    postProcess: postProcessSession,
+  });
 
   // router.post("session-invite", "/sessions/:sessionId/invite", async (ctx) => {
   // router.post("session-respond", "/sessions/:sessionId/respond", async (ctx) => {

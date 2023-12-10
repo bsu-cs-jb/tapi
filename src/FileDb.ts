@@ -1,12 +1,13 @@
 import type { Dirent } from "node:fs";
 import {
-  readdir,
-  stat,
-  constants,
   access,
-  readFile,
-  writeFile,
+  constants,
   mkdir,
+  readdir,
+  readFile,
+  stat,
+  unlink,
+  writeFile,
 } from "node:fs/promises";
 import util from "node:util";
 import { execFile } from "node:child_process";
@@ -33,10 +34,10 @@ export interface IdResource {
 
 // Create a new type but make all of the properties optional
 type AllOptional<Type> = {
-  [Property in keyof Type]?: Type[Property];
+  [Property in keyof Type]+?: Type[Property];
 };
 
-export interface ResourceDef {
+export interface ResourceDef<T extends IdResource> {
   database: string;
   id?: string;
   name: string;
@@ -44,9 +45,9 @@ export interface ResourceDef {
   paramName: string;
   // Optional method to create a new object of this type,
   // supplying default values for any missing properties
-  builder?: <T extends IdResource>(props?: AllOptional<T>) => IdResource;
+  builder?: (props?: AllOptional<T>) => T;
   nestFiles?: boolean;
-  parents?: ResourceDef[];
+  parents?: ResourceDef<IdResource>[];
   // field to sort by in html views
   sortBy?: string;
 }
@@ -89,11 +90,11 @@ async function ensureRoot() {
   await ensureDir(config.DB_GRADING_DIR);
 }
 
-async function ensureResourceDir(resource: ResourceDef) {
+async function ensureResourceDir<T extends IdResource>(resource: ResourceDef<T>) {
   await ensureDir(resourceDir(resource));
 }
 
-function resourceDir(resource: ResourceDef): string {
+function resourceDir<T extends IdResource>(resource: ResourceDef<T>): string {
   let path = "./db/unknown";
   if (resource.database === "grading") {
     path = config.DB_GRADING_DIR;
@@ -115,11 +116,11 @@ function resourceDir(resource: ResourceDef): string {
   return path;
 }
 
-function resourceFilename(resource: ResourceDef): string {
+function resourceFilename<T extends IdResource>(resource: ResourceDef<T>): string {
   return `${resourceDir(resource)}/${resource.id}.json`;
 }
 
-export async function resourceExists(resource: ResourceDef): Promise<boolean> {
+export async function resourceExists<T extends IdResource>(resource: ResourceDef<T>): Promise<boolean> {
   const filename = resourceFilename(resource);
   return fileExists(filename);
 }
@@ -144,9 +145,9 @@ async function getFiles(
   );
 }
 
-export async function getAll(
-  resource: ResourceDef,
-): Promise<IdResource[] | undefined> {
+export async function getAll<T extends IdResource>(
+  resource: ResourceDef<T>,
+): Promise<T[] | undefined> {
   const dirpath = resourceDir(resource);
   if (!(await dirExists(dirpath))) {
     console.log(`Directory ${dirpath} for ${resource} does not exist.`);
@@ -155,7 +156,7 @@ export async function getAll(
   try {
     const files = await getFiles(dirpath, "json");
     const resources = await Promise.all(
-      files.map((file) => readFileAsJson(`${file.path}/${file.name}`)),
+      files.map((file) => readFileAsJson<T>(`${file.path}/${file.name}`)),
     );
     // console.log(`Found ${resources.length} ${resource} resources.`);
     // return resources.filter(defd);
@@ -170,7 +171,7 @@ export async function getAll(
 }
 
 export async function getResourceIds(
-  resource: ResourceDef,
+  resource: ResourceDef<IdResource>,
 ): Promise<string[] | undefined> {
   const dirpath = resourceDir(resource);
   if (!(await dirExists(dirpath))) {
@@ -196,7 +197,7 @@ async function readFileAsJson<T extends IdResource>(
 }
 
 export async function readResource<T extends IdResource>(
-  resource: ResourceDef,
+  resource: ResourceDef<T>,
 ): Promise<T | undefined> {
   const filename = resourceFilename(resource);
   if (!(await fileExists(filename))) {
@@ -232,11 +233,30 @@ const throttleGitCommit = throttle(gitCommit, 30 * 1000, {
   trailing: true,
 });
 
-export async function writeResource(
-  resource: ResourceDef,
-  data: IdResource,
+export async function deleteResourceDb<T extends IdResource>(resource: ResourceDef<T>): Promise<string|undefined> {
+  const filename = resourceFilename(resource);
+  if (!(await fileExists(filename))) {
+    console.log(
+      `deleteResourceDb(${resource.name}, ${resource.id}) ${filename} does not exist.`,
+    );
+    return undefined;
+  }
+  console.log(
+    `deleteResource(${resource.singular} ${resource.id}) from ${filename}.`,
+  );
+  await unlink(filename);
+  // console.log(`DONE writing to ${filename}.`);
+  if (config.DB_GIT_COMMIT) {
+    throttleGitCommit();
+  }
+  return filename;
+}
+
+export async function writeResource<T extends IdResource>(
+  resource: ResourceDef<T>,
+  data: T,
   updateTimestamps = true,
-) {
+): Promise<string|undefined> {
   await ensureResourceDir(resource);
   if (updateTimestamps) {
     const ts = new Date().toISOString();
@@ -258,13 +278,13 @@ export async function writeResource(
   return filename;
 }
 
-export async function writeDb(name: string, data: IdResource) {
+export async function writeDb<T extends IdResource>(name: string, data: T) {
   await ensureRoot();
   const buffer = jsonToBuffer(data);
   await writeFile(`${config.DB_GRADING_DIR}/${name}.json`, buffer);
 }
 
-export function refWithId(resource: ResourceDef, id: string): ResourceDef {
+export function refWithId<T extends IdResource>(resource: ResourceDef<T>, id: string): ResourceDef<T> {
   const ref = cloneDeep(resource);
   ref.id = id;
   return ref;

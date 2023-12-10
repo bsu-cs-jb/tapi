@@ -8,6 +8,7 @@ import {
   refWithId,
   ResourceDef,
   writeResource,
+  IdResource,
 } from "./FileDb.js";
 import {
   getCollection,
@@ -38,7 +39,7 @@ import {
   validateRubric,
 } from "grading";
 
-const COURSE: ResourceDef = {
+const COURSE: ResourceDef<CourseDbObj> = {
   database: "grading",
   name: "courses",
   singular: "course",
@@ -46,7 +47,7 @@ const COURSE: ResourceDef = {
   sortBy: "name",
 };
 
-const RUBRIC: ResourceDef = {
+const RUBRIC: ResourceDef<Rubric> = {
   database: "grading",
   name: "rubrics",
   singular: "rubric",
@@ -55,7 +56,7 @@ const RUBRIC: ResourceDef = {
   sortBy: "name",
 };
 
-const STUDENT: ResourceDef = {
+const STUDENT: ResourceDef<Student> = {
   database: "grading",
   name: "students",
   singular: "student",
@@ -65,7 +66,7 @@ const STUDENT: ResourceDef = {
   sortBy: "name",
 };
 
-const GRADE: ResourceDef = {
+const GRADE: ResourceDef<RubricScore> = {
   database: "grading",
   name: "grades",
   singular: "grade",
@@ -236,7 +237,9 @@ export function graderRoutes(router: Router) {
 
   getCollection(router, COURSE);
   // getResource(router, COURSE, [RUBRIC, STUDENT, GRADE], showRubricStats);
-  getResource(router, COURSE, [RUBRIC, STUDENT], showRubricStats);
+  getResource(router, COURSE, [RUBRIC, STUDENT], {
+    processHtml: showRubricStats,
+  });
   postResource(router, COURSE);
   putResource(router, COURSE);
 
@@ -245,12 +248,15 @@ export function graderRoutes(router: Router) {
   postResource(router, STUDENT);
   putResource(router, STUDENT);
 
-  [RUBRIC, GRADE].forEach((resource) => {
+  function restRoutes<T extends IdResource>(resource: ResourceDef<T>) {
     getCollection(router, resource);
     getResource(router, resource);
     postResource(router, resource);
     putResource(router, resource);
-  });
+  }
+
+  restRoutes(RUBRIC);
+  restRoutes(GRADE);
 
   router
     .get("course-students", "/courses/:courseId/students", async (ctx) => {
