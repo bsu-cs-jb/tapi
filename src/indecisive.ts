@@ -27,7 +27,7 @@ import {
   Invitation,
   Suggestion,
 } from "./indecisive_types.js";
-import { log, assert, AllOptional } from "./utils.js";
+import { log, assert, AllOptional, toJson } from "./utils.js";
 import { urlid } from "./genid.js";
 
 export interface UserInvitationDb {
@@ -213,6 +213,26 @@ async function fetchUser(id: string): Promise<UserDb | undefined> {
 
 async function fetchSession(id: string): Promise<SessionDb | undefined> {
   return readResource<SessionDb>(refWithId(SESSION, id));
+}
+
+function authOwnerInvite() {
+  return async (ctx: Context, next: Next) => {
+    const { self, session } = ctx.state;
+    log(`authOwnerInvite(${toJson(self)} ${toJson(session)})`, ctx);
+
+    if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
+      const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
+      console.error(message);
+      ctx.status = 403;
+      ctx.body = {
+        status: "Forbidden",
+        message,
+      };
+      return;
+    }
+
+    await next();
+  };
 }
 
 function fetchCurrentSession(errorIfMissing: boolean = true) {
@@ -493,8 +513,14 @@ export function indecisiveRoutes(router: Router) {
   });
 
   // TODO: create middleware that enforces session owner or admin
+  const sessionOwnerInviteRoutes = new Router();
+  routerParam(sessionOwnerInviteRoutes, SESSION);
+  sessionOwnerInviteRoutes.use(
+    ["/sessions/:sessionId/(.*)"],
+    authOwnerInvite(),
+  );
 
-  router.post(
+  sessionOwnerInviteRoutes.post(
     "session-invite",
     "/sessions/:sessionId/invite",
     async (ctx: Context, next: Next) => {
@@ -532,7 +558,7 @@ export function indecisiveRoutes(router: Router) {
     },
   );
 
-  router.post(
+  sessionOwnerInviteRoutes.post(
     "session-respond",
     "/sessions/:sessionId/respond",
     async (ctx: Context, next: Next) => {
@@ -572,7 +598,7 @@ export function indecisiveRoutes(router: Router) {
     },
   );
 
-  router.post(
+  sessionOwnerInviteRoutes.post(
     "session-suggest",
     "/sessions/:sessionId/suggest",
     async (ctx: Context, next: Next) => {
@@ -609,7 +635,7 @@ export function indecisiveRoutes(router: Router) {
     },
   );
 
-  router.post(
+  sessionOwnerInviteRoutes.post(
     "suggestion-vote",
     "/sessions/:sessionId/vote/:suggestionId",
     async (ctx: Context, next: Next) => {
@@ -656,14 +682,11 @@ export function indecisiveRoutes(router: Router) {
     },
   );
 
-  // router.post("session-respond", "/sessions/:sessionId/respond", async (ctx) => {
-  // router.post("session-suggest", "/sessions/:sessionId/suggest", async (ctx) => {
-  // router.put("session-vote", "/sessions/:sessionId/vote/:suggestionId", async (ctx) => {
+  router.use(sessionOwnerInviteRoutes.routes());
+  router.use(sessionOwnerInviteRoutes.allowedMethods());
 
   router.get("test-html", "/test", async (ctx) => {
-    const {
-      state: { auth, self },
-    } = ctx;
+    const { auth, self } = ctx.state;
     let body = "";
     body += `<p>Auth userId: ${auth?.user?.userId}</p>`;
     body += `<p>Scopes: ${auth?.scope?.join(" ")}</p>`;
@@ -678,40 +701,13 @@ export function indecisiveRoutes(router: Router) {
   });
 
   router.get("self", "/self", async (ctx) => {
-    const {
-      state: { self, auth },
-    } = ctx;
+    const { self, auth } = ctx.state;
     console.log("/self auth", auth);
     ctx.body = self;
   });
 
   router.get("current-session", "/current-session", async (ctx) => {
-    const {
-      state: { currentSession },
-    } = ctx;
+    const { currentSession } = ctx.state;
     ctx.body = currentSession;
-  });
-
-  // Create a new session owned by this user
-  router.post("user-sessions", "/users/:userId/owns", async (ctx) => {
-    const { user } = ctx.state;
-    let body = `<p>User id: ${user.id}</p>`;
-    body += `<p>User: <a href="${router.url("user-html", {
-      userId: user.id,
-    })}">${user.name}</a></p>\n`;
-    // body += linkList(router, STUDENT, course.students, { courseId });
-    // body += jsonhtml(course.students);
-    ctx.body = body;
-  });
-
-  router.get("user-sessions-html", "/users/:userId/sessions", async (ctx) => {
-    const { user } = ctx.state;
-    let body = `<p>User id: ${user.id}</p>`;
-    body += `<p>User: <a href="${router.url("user-html", {
-      userId: user.id,
-    })}">${user.name}</a></p>\n`;
-    // body += linkList(router, STUDENT, course.students, { courseId });
-    // body += jsonhtml(course.students);
-    ctx.body = body;
   });
 }
