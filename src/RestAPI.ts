@@ -347,11 +347,15 @@ export function deleteResource<T extends IdResource>(
 
       if (filename !== undefined) {
         if (options?.postProcess) {
-          options.postProcess(ctx, obj, ref);
+          await options.postProcess(ctx, obj, ref);
         }
       }
 
       log(`DELETE file ${filename} for ${resource.singular} id ${id}`);
+      ctx.body = {
+        status: "SUCCESS",
+        message: `Session ${id} succesfully deleted.`,
+      };
     },
   );
 

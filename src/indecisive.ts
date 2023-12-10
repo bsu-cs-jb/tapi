@@ -143,10 +143,10 @@ function fetchCurrentSession(errorIfMissing: boolean = true) {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function indecisiveAuth(
   authEnabled: boolean,
   requireSelf: boolean,
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   skipAuthValue?: any,
 ) {
   return async (ctx: Context, next: () => Promise<void>) => {
@@ -205,7 +205,7 @@ async function postCreateSession(
 }
 
 function removeId(id: string, ids: string[]): string[] {
-  return ids.filter((i) => i === id);
+  return ids.filter((i) => i !== id);
 }
 
 async function removeUserSessionRef(
@@ -224,6 +224,7 @@ async function removeUserSessionRef(
       user.ownsSessions = removeId(sessionId, user.ownsSessions);
     }
     const ref = refWithId(USER, user.id);
+    log(`Removing session ${refType} from user ${user.id}`, user);
     await writeResource(ref, user);
     return user;
   }
@@ -237,7 +238,7 @@ async function postDeleteSession(
     state: { self },
   } = ctx;
   log(
-    `Remove session ${session.id} from invited users' lists (name: ${session.name})`,
+    `Remove session ${session.id} from ${session.invitations.length} invited users' lists (name: ${session.name})`,
   );
 
   const results = await Promise.allSettled(
@@ -258,7 +259,7 @@ async function postDeleteSession(
     `Remove session ${session.id} from ownerId ${self.id} named ${session.name}`,
   );
   if (self.id === session.ownerId) {
-    removeUserSessionRef("ownership", session.id, session.ownerId, self);
+    await removeUserSessionRef("ownership", session.id, session.ownerId, self);
   } else {
     console.error(
       `Session ${session.id} ownerId ${session.ownerId} !== ${self.id} named ${session.name}`,
