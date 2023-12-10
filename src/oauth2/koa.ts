@@ -1,4 +1,4 @@
-import { Context } from "koa";
+import { Context, Next } from "koa";
 import { Request, Response, OAuthError } from "oauth2-server";
 
 function oauthResponse(ctx: Context, response: Response) {
@@ -54,7 +54,7 @@ async function auth_impl(ctx: Context, scopes?: string[] | string) {
 }
 
 export function authenticate(scope?: string | string[]) {
-  return async (ctx: Context, next: () => Promise<void>) => {
+  return async (ctx: Context, next: Next) => {
     const result = await auth_impl(ctx, scope);
     console.log("Auth", result);
 

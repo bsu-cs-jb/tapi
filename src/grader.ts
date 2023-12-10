@@ -1,5 +1,5 @@
 import Router from "@koa/router";
-import { Context } from "koa";
+import { Context, Next } from "koa";
 import * as _ from "lodash-es";
 import { standardDeviation, quantile, median } from "simple-statistics";
 
@@ -197,7 +197,7 @@ function processRubric(rubric: Rubric): Rubric | undefined {
 }
 
 export function graderRoutes(router: Router) {
-  router.get("/", async (ctx: Context, next: () => Promise<void>) => {
+  router.get("/", async (ctx: Context, next: Next) => {
     let body = "";
     body +=
       "<!DOCTYPE html>\n<html><head><title>Grader Root</title></head><body>";
@@ -265,7 +265,7 @@ export function graderRoutes(router: Router) {
     .get(
       "course-students",
       "/courses/:courseId/students",
-      async (ctx: Context, next: () => Promise<void>) => {
+      async (ctx: Context, next: Next) => {
         const {
           state: { course },
           params: { courseId },
@@ -283,7 +283,7 @@ export function graderRoutes(router: Router) {
     .get(
       "course-student",
       "/courses/:courseId/students/:studentId",
-      async (ctx: Context, next: () => Promise<void>) => {
+      async (ctx: Context, next: Next) => {
         const { course, student } = ctx.state;
         let body = "";
         body += `<p>Course: <a href="${router.url("course-html", {
@@ -301,7 +301,7 @@ export function graderRoutes(router: Router) {
     .get(
       "course-rubric-grades-html",
       "/courses/:courseId/rubrics/:rubricId/grades.html",
-      async (ctx: Context, next: () => Promise<void>) => {
+      async (ctx: Context, next: Next) => {
         const { course, rubric } = ctx.state as {
           course: CourseDbObj;
           rubric: Rubric;
@@ -567,7 +567,7 @@ export function graderRoutes(router: Router) {
     .get(
       "course-rubric-grades",
       "/courses/:courseId/rubrics/:rubricId/grades",
-      async (ctx: Context, next: () => Promise<void>) => {
+      async (ctx: Context, next: Next) => {
         const { course, rubric } = ctx.state as {
           course: CourseDbObj;
           rubric: Rubric;
@@ -588,7 +588,7 @@ export function graderRoutes(router: Router) {
     .get(
       "course-student-grade",
       "/courses/:courseId/students/:studentId/grades/:rubricId",
-      async (ctx: Context, next: () => Promise<void>) => {
+      async (ctx: Context, next: Next) => {
         const { course, student, rubric } = ctx.state as {
           course: CourseDbObj;
           student: Student;

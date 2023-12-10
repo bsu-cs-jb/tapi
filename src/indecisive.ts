@@ -1,4 +1,4 @@
-import { Context } from "koa";
+import { Context, Next } from "koa";
 import Router from "@koa/router";
 import * as _ from "lodash-es";
 
@@ -123,7 +123,7 @@ async function fetchSession(id: string): Promise<SessionDb | undefined> {
 }
 
 function fetchCurrentSession(errorIfMissing: boolean = true) {
-  return async (ctx: Context, next: () => Promise<void>) => {
+  return async (ctx: Context, next: Next) => {
     const {
       auth: {
         user: { currentSessionId },
@@ -163,7 +163,7 @@ function indecisiveAuth(
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   skipAuthValue?: any,
 ) {
-  return async (ctx: Context, next: () => Promise<void>) => {
+  return async (ctx: Context, next: Next) => {
     if (!authEnabled) {
       ctx.state.auth = skipAuthValue;
     }
@@ -202,13 +202,14 @@ async function preCreateSession(
 async function postCreateSession(
   ctx: Context,
   session: SessionDb,
-): Promise<void> {
+): Promise<SessionDb> {
   const {
     state: { self },
   } = ctx;
   log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
   await addUserSessionRef("ownership", session.id, self.id, self);
   // TODO: Make new session the current session
+  return session;
 }
 
 function removeId(id: string, ids: string[]): string[] {
@@ -265,10 +266,40 @@ async function removeUserSessionRef(
   }
 }
 
+async function preCreateUser(ctx: Context, user: UserDb): Promise<UserDb> {
+  if (user.ownsSessions === undefined) {
+    user.ownsSessions = [];
+  }
+  if (user.invitedSessions === undefined) {
+    user.invitedSessions = [];
+  }
+
+  return user;
+}
+
+async function postGetUser(ctx: Context, user: UserDb): Promise<UserDb> {
+  let needsUpdate = false;
+  if (user.ownsSessions === undefined) {
+    needsUpdate = true;
+    user.ownsSessions = [];
+  }
+  if (user.invitedSessions === undefined) {
+    needsUpdate = true;
+    user.invitedSessions = [];
+  }
+
+  if (needsUpdate) {
+    const ref = refWithId(USER, user.id);
+    await writeResource(ref, user);
+  }
+
+  return user;
+}
+
 async function postDeleteSession(
   ctx: Context,
   session: SessionDb,
-): Promise<void> {
+): Promise<SessionDb> {
   const {
     state: { self },
   } = ctx;
@@ -300,6 +331,8 @@ async function postDeleteSession(
       `Session ${session.id} ownerId ${session.ownerId} !== ${self.id} named ${session.name}`,
     );
   }
+
+  return session;
 }
 
 const SKIP_AUTH = {
@@ -341,10 +374,16 @@ export function indecisiveRoutes(router: Router) {
   routerParam(router, USER);
   routerParam(router, SESSION);
 
-  getCollection(router, USER);
+  getCollection(router, USER, {
+    postProcess: postGetUser,
+  });
   // getResource(router, USER, [OWN_SESSION, INVITATIONS]);
-  getResource(router, USER);
-  postResource(router, USER);
+  getResource(router, USER, undefined, {
+    postProcess: postGetUser,
+  });
+  postResource(router, USER, {
+    preProcess: preCreateUser,
+  });
   putResource(router, USER);
 
   // getCollection(router, OWN_SESSION);
@@ -367,7 +406,7 @@ export function indecisiveRoutes(router: Router) {
   router.post(
     "session-invite",
     "/sessions/:sessionId/invite",
-    async (ctx: Context, next: () => Promise<void>) => {
+    async (ctx: Context, next: Next) => {
       const { self, session } = ctx.state;
 
       assert(session);
@@ -384,7 +423,9 @@ export function indecisiveRoutes(router: Router) {
       console.log(`POST written to ${filename} session:`, session);
 
       // add invitation to user
-      await addUserSessionRef("invitation", session.id, self.id, self);
+      await addUserSessionRef("invitation", session.id, userId);
+
+      ctx.body = session;
       await next();
     },
   );

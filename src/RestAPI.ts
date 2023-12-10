@@ -1,5 +1,5 @@
 import Router from "@koa/router";
-import { Context } from "koa";
+import { Context, Next } from "koa";
 import { cloneDeep, sortBy, capitalize } from "lodash-es";
 
 import { urlid } from "./genid.js";
@@ -115,7 +115,7 @@ export function routerParam<T extends IdResource>(
 ): Router {
   return router.param(
     resource.paramName,
-    async (id: string, ctx: Context, next: () => Promise<void>) => {
+    async (id: string, ctx: Context, next: Next) => {
       const ref = resourceFromContext(resource, id, ctx.params);
       let obj = await readResource<T>(ref);
       if (processFn && obj) {
@@ -170,16 +170,13 @@ export interface RestOptions<T extends IdResource> {
     subCollections?: ResourceDef<IdResource>[],
   ) => string;
   preProcess?: (ctx: Context, data: T, resource: ResourceDef<T>) => Promise<T>;
-  postProcess?: (
-    ctx: Context,
-    data: T,
-    resource: ResourceDef<T>,
-  ) => Promise<void>;
+  postProcess?: (ctx: Context, data: T, resource: ResourceDef<T>) => Promise<T>;
 }
 
 export function getCollection<T extends IdResource>(
   router: Router,
   resource: ResourceDef<T>,
+  options?: RestOptions<T>,
 ): Router {
   const { name: collection_name, url: collection_url } =
     collectionRoute(resource);
@@ -205,11 +202,24 @@ export function getCollection<T extends IdResource>(
         ctx.body = body;
       },
     )
-    .get(collection_name, `/${collection_url}`, async (ctx: Context) => {
-      const collection = await getAll(resource);
-      // ctx.body = JSON.stringify(collection);
-      ctx.body = collection;
-    });
+    .get(
+      collection_name,
+      `/${collection_url}`,
+      async (ctx: Context, next: Next) => {
+        let collection = await getAll(resource);
+        if (collection && options?.postProcess) {
+          const postProcess = options.postProcess;
+          collection = await Promise.all(
+            collection.map(async (item) => {
+              const ref = refWithId(resource, item.id);
+              return await postProcess(ctx, item, ref);
+            }),
+          );
+        }
+        ctx.body = collection;
+        await next();
+      },
+    );
 }
 
 export function getResource<T extends IdResource>(
@@ -226,7 +236,6 @@ export function getResource<T extends IdResource>(
       `${resource_name}-html`,
       `/${resource_url}.html`,
       async (ctx: Context) => {
-        // const { course, params: { courseId } } = ctx;
         const item = ctx.state[resource.singular];
         let body = "";
         body += `<!DOCTYPE html>\n<html><head><title>${capitalize(
@@ -258,11 +267,19 @@ export function getResource<T extends IdResource>(
         ctx.body = body;
       },
     )
-    .get(resource_name, `/${resource_url}`, async (ctx: Context) => {
-      // const { course, params: { courseId } } = ctx;
-      const item = ctx.state[resource.singular];
-      ctx.body = item;
-    });
+    .get(
+      resource_name,
+      `/${resource_url}`,
+      async (ctx: Context, next: Next) => {
+        let item = ctx.state[resource.singular];
+        if (options?.postProcess) {
+          const ref = refWithId(resource, item.id);
+          item = await options.postProcess(ctx, item, ref);
+        }
+        ctx.body = item;
+        await next();
+      },
+    );
 }
 
 export function postResource<T extends IdResource>(
@@ -299,7 +316,7 @@ export function postResource<T extends IdResource>(
       }
       const filename = await writeResource(ref, newResource);
       if (options?.postProcess) {
-        await options.postProcess(ctx, newResource, resource);
+        await options.postProcess(ctx, newResource, ref);
       }
       console.log(
         `POST written to ${filename} ${resource.singular}:`,
@@ -337,7 +354,7 @@ export function deleteResource<T extends IdResource>(
   router.delete(
     `${resource_name}-delete`,
     `/${resource_url}`,
-    async (ctx: Context, next: () => Promise<void>) => {
+    async (ctx: Context, next: Next) => {
       // get the existing resource
       const obj = ctx.state[resource.singular];
       assert(obj !== undefined && obj !== null);
@@ -349,10 +366,8 @@ export function deleteResource<T extends IdResource>(
 
       const filename = await deleteResourceDb(ref);
 
-      if (filename !== undefined) {
-        if (options?.postProcess) {
-          await options.postProcess(ctx, obj, ref);
-        }
+      if (filename !== undefined && options?.postProcess) {
+        await options.postProcess(ctx, obj, ref);
       }
 
       log(`DELETE file ${filename} for ${resource.singular} id ${id}`);
@@ -370,6 +385,7 @@ export function deleteResource<T extends IdResource>(
 export function putResource<T extends IdResource>(
   router: Router,
   resource: ResourceDef<T>,
+  options?: RestOptions<T>,
 ): Router {
   const { name: resource_name, url: resource_url } = resourceRoute(resource);
   routeLog("PUT", "resource", resource, resource_name, resource_url);
@@ -381,7 +397,7 @@ export function putResource<T extends IdResource>(
       const data = ctx.request.body;
 
       // get the existing resource
-      const obj = ctx.state[resource.singular];
+      let obj = ctx.state[resource.singular];
       assert(obj !== undefined && obj !== null);
 
       // Make sure the id of the resource matches
@@ -393,18 +409,27 @@ export function putResource<T extends IdResource>(
       }
       const ref = refWithId(resource, data.id);
 
+      if (options?.preProcess) {
+        obj = await options.preProcess(ctx, obj, ref);
+      }
+
       // don't let the API override createdAt
       if (obj.createdAt) {
         data.createdAt = obj.createdAt;
       }
 
       const filename = await writeResource(ref, data);
+
+      if (filename !== undefined && options?.postProcess) {
+        obj = await options.postProcess(ctx, obj, ref);
+      }
+
       // console.log(`PUT written to ${filename} ${resource.singular} body:`, data);
       console.log(
         `PUT written to ${filename} ${resource.singular}:`,
-        shallowJson(data),
+        shallowJson(obj),
       );
-      ctx.body = data;
+      ctx.body = obj;
     },
   );
 }
