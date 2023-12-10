@@ -56,6 +56,31 @@ interface UserDb extends IdResource {
   invitedSessions: string[];
 }
 
+function getInvitation(
+  session: SessionDb,
+  userId: string,
+): InvitationDb | undefined {
+  return session.invitations.find((i) => i.userId === userId);
+}
+
+function updateResponse(
+  session: SessionDb,
+  userId: string,
+  accepted: boolean,
+  attending: Attending,
+): SessionDb {
+  const existingInvite = getInvitation(session, userId);
+  assert(
+    existingInvite !== undefined,
+    `User ${userId} not invited to session ${session.id}`,
+  );
+  if (existingInvite) {
+    existingInvite.accepted = accepted;
+    existingInvite.attending = attending;
+  }
+  return session;
+}
+
 function addInvitation(session: SessionDb, userId: string): SessionDb {
   const existingInvite = session.invitations.find(
     (invite) => invite.userId === userId,
@@ -417,6 +442,8 @@ export function indecisiveRoutes(router: Router) {
     postProcess: postDeleteSession,
   });
 
+  // TODO: create middleware that enforces session owner or admin
+
   router.post(
     "session-invite",
     "/sessions/:sessionId/invite",
@@ -454,6 +481,47 @@ export function indecisiveRoutes(router: Router) {
       await next();
     },
   );
+
+  router.post(
+    "session-respond",
+    "/sessions/:sessionId/respond",
+    async (ctx: Context, next: Next) => {
+      const { self, session } = ctx.state;
+
+      assert(self, "Self must be defined");
+      assert(session, "Session must be defined");
+
+      if (!getInvitation(session, self.id)) {
+        console.error(
+          `User '${self.id}' cannot respond to '${session.id}' because they were not invited to the session (name: ${session.name}).`,
+        );
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          message: `User '${self.id}' cannot respond to '${session.id}' because they were not invited to the session (name: ${session.name}).`,
+        };
+        return;
+      }
+
+      // TODO: validate parameters
+      const { accepted, attending } = ctx.request.body;
+      log(
+        `Updating ${self.id} response to ${session.id} to accepted: ${accepted} attending: '${attending}'`,
+      );
+
+      // update self response
+      updateResponse(session, self.id, accepted, attending);
+
+      // persist session
+      const ref = refWithId(SESSION, session.id);
+      const filename = await writeResource(ref, session);
+      console.log(`POST written to ${filename} session:`, session);
+
+      ctx.body = session;
+      await next();
+    },
+  );
+
   // router.post("session-respond", "/sessions/:sessionId/respond", async (ctx) => {
   // router.post("session-suggest", "/sessions/:sessionId/suggest", async (ctx) => {
   // router.put("session-vote", "/sessions/:sessionId/vote/:suggestionId", async (ctx) => {
