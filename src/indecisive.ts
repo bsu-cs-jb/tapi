@@ -23,6 +23,7 @@ import {
   User,
   Session,
   Attending,
+  Vote,
   Invitation,
   Suggestion,
 } from "./indecisive_types.js";
@@ -71,7 +72,14 @@ function getInvitation(
   return session.invitations.find((i) => i.userId === userId);
 }
 
-function findSuggestion(
+function getSuggestion(
+  session: SessionDb,
+  id: string,
+): SuggestionDb | undefined {
+  return session.suggestions.find((s) => s.id === id);
+}
+
+function findSuggestionByName(
   session: SessionDb,
   name: string,
 ): SuggestionDb | undefined {
@@ -116,11 +124,44 @@ function addSuggestion(
     existingInvite !== undefined,
     `User ${userId} not invited to session ${session.id}`,
   );
-  const existingSuggestion = findSuggestion(session, name);
+  const existingSuggestion = findSuggestionByName(session, name);
   if (existingSuggestion) {
     return session;
   }
   session.suggestions.push(makeSuggestionDb(name, userId));
+  return session;
+}
+
+function updateSuggestion(
+  session: SessionDb,
+  suggestion: string | SuggestionDb,
+  userId: string,
+  vote: Vote,
+): SessionDb {
+  const existingInvite = getInvitation(session, userId);
+  assert(
+    existingInvite !== undefined,
+    `User ${userId} not invited to session ${session.id}`,
+  );
+  let suggestObj: SuggestionDb | undefined;
+  if (typeof suggestion === "string") {
+    suggestObj = getSuggestion(session, suggestion);
+  } else {
+    suggestObj = suggestion;
+  }
+  assert(suggestObj !== undefined, "Suggestion not found in session");
+  if (!suggestObj) {
+    return session;
+  }
+  // Clear up/down votes first
+  suggestObj.upVoteUserIds = removeId(userId, suggestObj.upVoteUserIds);
+  suggestObj.downVoteUserIds = removeId(userId, suggestObj.downVoteUserIds);
+
+  if (vote === "up") {
+    suggestObj.upVoteUserIds.push(userId);
+  } else if (vote === "down") {
+    suggestObj.downVoteUserIds.push(userId);
+  }
   return session;
 }
 
@@ -591,6 +632,53 @@ export function indecisiveRoutes(router: Router) {
 
       // add suggestion
       addSuggestion(session, self.id, name);
+
+      // persist session
+      const ref = refWithId(SESSION, session.id);
+      const filename = await writeResource(ref, session);
+      console.log(`POST written to ${filename} session:`, session);
+
+      ctx.body = session;
+      await next();
+    },
+  );
+
+  router.post(
+    "suggestion-vote",
+    "/sessions/:sessionId/vote/:suggestionId",
+    async (ctx: Context, next: Next) => {
+      const { self, session } = ctx.state;
+
+      assert(self, "Self must be defined");
+      assert(session, "Session must be defined");
+
+      if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
+        const message = `User '${self.id}' cannot vote on '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
+        console.error(message);
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          message,
+        };
+        return;
+      }
+
+      // find suggestion
+      const { suggestionId } = ctx.params;
+      const suggestion = getSuggestion(session, suggestionId);
+      if (!suggestion) {
+        ctx.status = 404;
+        return;
+      }
+
+      // TODO: validate parameters
+      const { vote } = ctx.request.body;
+      log(
+        `User ${self.id} voting ${vote} for ${suggestionId} on ${session.id}`,
+      );
+
+      // update suggestion
+      updateSuggestion(session, suggestion, self.id, vote);
 
       // persist session
       const ref = refWithId(SESSION, session.id);
