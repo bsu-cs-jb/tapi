@@ -215,12 +215,53 @@ async function fetchSession(id: string): Promise<SessionDb | undefined> {
   return readResource<SessionDb>(refWithId(SESSION, id));
 }
 
+function canViewSession(session: SessionDb, userId: string): boolean {
+  return (
+    userId === session.ownerId || getInvitation(session, userId) !== undefined
+  );
+}
+
+function authSessionOwner(paths: any) {
+  return async (ctx: Context, next: Next) => {
+    const {
+      self,
+      session,
+      auth: { scope },
+    } = ctx.state;
+
+    if (scope?.includes("admin")) {
+      log(`authSessionOwner() allowing admin auth ${scope}`);
+      await next();
+      return;
+    }
+
+    if (ctx.request.method === "POST") {
+      log(ctx.request);
+      log(ctx.router.opts);
+      log(ctx.routerName);
+      log(ctx.captures);
+
+      if (self.id !== session.ownerId) {
+        const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they are not the owner (name: ${session.name}).`;
+        console.error(message);
+        ctx.status = 403;
+        ctx.body = {
+          status: "Forbidden",
+          message,
+        };
+        return;
+      }
+    }
+
+    await next();
+  };
+}
+
 function authOwnerInvite() {
   return async (ctx: Context, next: Next) => {
     const { self, session } = ctx.state;
-    log(`authOwnerInvite(${toJson(self)} ${toJson(session)})`, ctx);
 
-    if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
+    if (!canViewSession(session, self.id)) {
       const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
       console.error(message);
       ctx.status = 403;
@@ -322,6 +363,18 @@ async function postCreateSession(
   log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
   await addUserSessionRef("ownership", session.id, self.id, self);
   // TODO: Make new session the current session
+  return session;
+}
+
+async function filterSessionCollection(
+  ctx: Context,
+  session: SessionDb,
+): Promise<SessionDb | undefined> {
+  const { self } = ctx.state;
+  log(`Filtering for ${self.id}`, session);
+  if (!canViewSession(session, self.id)) {
+    return undefined;
+  }
   return session;
 }
 
@@ -490,7 +543,6 @@ export function indecisiveRoutes(router: Router) {
   getCollection(router, USER, {
     postProcess: postGetUser,
   });
-  // getResource(router, USER, [OWN_SESSION, INVITATIONS]);
   getResource(router, USER, undefined, {
     postProcess: postGetUser,
   });
@@ -499,16 +551,28 @@ export function indecisiveRoutes(router: Router) {
   });
   putResource(router, USER);
 
-  getCollection(router, SESSION);
-  getResource(router, SESSION);
+  getCollection(router, SESSION, {
+    postProcess: filterSessionCollection,
+  });
   // Post to session means: create a new session owned by me
   postResource<SessionDb>(router, SESSION, {
     preProcess: preCreateSession,
     postProcess: postCreateSession,
   });
+
+  const sessionOwnerRoutes = new Router();
+  routerParam(sessionOwnerRoutes, SESSION);
+  sessionOwnerRoutes.use(
+    ["/sessions/:sessionId", "/sessions/:sessionId/(.*)"],
+    authSessionOwner([
+      {
+        method: "POST",
+      },
+    ]),
+  );
   // Put to session updates session (if owned by me)
-  putResource(router, SESSION);
-  deleteResource(router, SESSION, {
+  putResource(sessionOwnerRoutes, SESSION);
+  deleteResource(sessionOwnerRoutes, SESSION, {
     postProcess: postDeleteSession,
   });
 
@@ -519,6 +583,8 @@ export function indecisiveRoutes(router: Router) {
     ["/sessions/:sessionId/(.*)"],
     authOwnerInvite(),
   );
+
+  getResource(sessionOwnerInviteRoutes, SESSION);
 
   sessionOwnerInviteRoutes.post(
     "session-invite",
@@ -607,16 +673,16 @@ export function indecisiveRoutes(router: Router) {
       assert(self, "Self must be defined");
       assert(session, "Session must be defined");
 
-      if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
-        const message = `User '${self.id}' cannot respond to '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
-        console.error(message);
-        ctx.status = 400;
-        ctx.body = {
-          status: "error",
-          message,
-        };
-        return;
-      }
+      // if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
+      //   const message = `User '${self.id}' cannot respond to '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
+      //   console.error(message);
+      //   ctx.status = 400;
+      //   ctx.body = {
+      //     status: "error",
+      //     message,
+      //   };
+      //   return;
+      // }
 
       // TODO: validate parameters
       const { name } = ctx.request.body;
@@ -644,16 +710,16 @@ export function indecisiveRoutes(router: Router) {
       assert(self, "Self must be defined");
       assert(session, "Session must be defined");
 
-      if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
-        const message = `User '${self.id}' cannot vote on '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
-        console.error(message);
-        ctx.status = 400;
-        ctx.body = {
-          status: "error",
-          message,
-        };
-        return;
-      }
+      // if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
+      //   const message = `User '${self.id}' cannot vote on '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
+      //   console.error(message);
+      //   ctx.status = 400;
+      //   ctx.body = {
+      //     status: "error",
+      //     message,
+      //   };
+      //   return;
+      // }
 
       // find suggestion
       const { suggestionId } = ctx.params;
@@ -682,9 +748,6 @@ export function indecisiveRoutes(router: Router) {
     },
   );
 
-  router.use(sessionOwnerInviteRoutes.routes());
-  router.use(sessionOwnerInviteRoutes.allowedMethods());
-
   router.get("test-html", "/test", async (ctx) => {
     const { auth, self } = ctx.state;
     let body = "";
@@ -710,4 +773,10 @@ export function indecisiveRoutes(router: Router) {
     const { currentSession } = ctx.state;
     ctx.body = currentSession;
   });
+
+  router.use(sessionOwnerRoutes.routes());
+  router.use(sessionOwnerRoutes.allowedMethods());
+
+  router.use(sessionOwnerInviteRoutes.routes());
+  router.use(sessionOwnerInviteRoutes.allowedMethods());
 }

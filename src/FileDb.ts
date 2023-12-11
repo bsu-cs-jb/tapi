@@ -50,9 +50,6 @@ export interface ResourceDef<T extends IdResource> {
   sortBy?: string;
 }
 
-// const ROOT = './db';
-// const ROOT = './cs411-db/grading-db';
-
 export function jsonToBuffer(data: IdResource): Uint8Array {
   return new Uint8Array(Buffer.from(toJson(data)));
 }

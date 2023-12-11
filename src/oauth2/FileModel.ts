@@ -11,6 +11,8 @@ import {
   fetchClient,
   fetchToken,
   writeToken,
+  deleteToken,
+  isInvalid,
 } from "../AuthDb.js";
 import { log } from "../utils.js";
 import { hash } from "../hash.js";
@@ -89,6 +91,9 @@ export function FileModel(): ClientCredentialsModel {
       const dbToken = await fetchToken(accessToken);
       if (dbToken) {
         // log(`Found token:`, dbToken);
+        if (await isInvalid(dbToken)) {
+          deleteToken(dbToken.id);
+        }
         return dbToken.token;
       }
     },

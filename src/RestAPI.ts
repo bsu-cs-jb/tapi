@@ -174,8 +174,16 @@ export interface RestOptions<T extends IdResource> {
     resource: ResourceDef<T>,
     subCollections?: ResourceDef<IdResource>[],
   ) => string;
-  preProcess?: (ctx: Context, data: T, resource: ResourceDef<T>) => Promise<T>;
-  postProcess?: (ctx: Context, data: T, resource: ResourceDef<T>) => Promise<T>;
+  preProcess?: (
+    ctx: Context,
+    data: T,
+    resource: ResourceDef<T>,
+  ) => Promise<T | undefined>;
+  postProcess?: (
+    ctx: Context,
+    data: T,
+    resource: ResourceDef<T>,
+  ) => Promise<T | undefined>;
 }
 
 export function getCollection<T extends IdResource>(
@@ -214,12 +222,13 @@ export function getCollection<T extends IdResource>(
         let collection = await getAll(resource);
         if (collection && options?.postProcess) {
           const postProcess = options.postProcess;
-          collection = await Promise.all(
-            collection.map(async (item) => {
+          const processed: (T | undefined)[] = await Promise.all(
+            collection.map(async (item): Promise<T | undefined> => {
               const ref = refWithId(resource, item.id);
               return await postProcess(ctx, item, ref);
             }),
           );
+          collection = processed.filter((s): s is T => s !== undefined);
         }
         ctx.body = collection;
         await next();

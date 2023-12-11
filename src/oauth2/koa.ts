@@ -1,5 +1,6 @@
 import { Context, Next } from "koa";
 import { Request, Response, OAuthError } from "oauth2-server";
+import { log } from "../utils.js";
 
 function oauthResponse(ctx: Context, response: Response) {
   ctx.response.status = response.status || 500;
@@ -31,22 +32,22 @@ export async function token(ctx: Context) {
   }
 }
 
-async function auth_impl(ctx: Context, scopes?: string[] | string) {
+async function auth_impl(ctx: Context, scope?: string[] | string) {
   const request = new Request(ctx.request);
   const response = new Response();
   try {
     const result = await ctx.auth.authenticate(request, response, {
-      scope: scopes,
+      scope,
     });
     return result;
   } catch (error) {
     if (error instanceof OAuthError) {
-      // log("error is OAuthError", {
-      //   code: error.code,
-      //   name: error.name,
-      //   message: error.message,
-      // });
-      // log("response:", response);
+      log("error is OAuthError", {
+        code: error.code,
+        name: error.name,
+        message: error.message,
+      });
+      log("response:", response);
       oauthError(ctx, error);
     }
     return null;
@@ -56,7 +57,7 @@ async function auth_impl(ctx: Context, scopes?: string[] | string) {
 export function authenticate(scope?: string | string[]) {
   return async (ctx: Context, next: Next) => {
     const result = await auth_impl(ctx, scope);
-    console.log("Auth", result);
+    console.log(`oauth2/koa/authenticate(${scope})`, result);
 
     // if result failed then don't forward
     if (result) {

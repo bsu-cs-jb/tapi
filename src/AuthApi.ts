@@ -3,25 +3,21 @@ import Router from "@koa/router";
 import * as _ from "lodash-es";
 
 import {
-  deleteResource,
   getCollection,
   getResource,
   postResource,
-  putResource,
   patchResource,
   routerParam,
 } from "./RestAPI.js";
 import {
-  CLIENT,
-  TOKEN,
   AuthDb,
-  FileModelToken,
-  FileModelUser,
-  fetchClient,
-  fetchToken,
-  writeToken,
+  CLIENT,
+  deleteToken,
+  fetchTokens,
+  isInvalid,
+  TOKEN,
+  TokenDb,
 } from "./AuthDb.js";
-import { authenticate } from "./oauth2/koa.js";
 import { log } from "./utils.js";
 import { hash } from "./hash.js";
 
@@ -44,7 +40,7 @@ export function authRoutes(router: Router) {
   routerParam(router, CLIENT);
   routerParam(router, TOKEN);
 
-  router.get("/", async (ctx) => {
+  router.get("/", async (ctx: Context, next: Next) => {
     let body = "";
     body +=
       "<!DOCTYPE html>\n<html><head><title>Auth Root</title></head><body>";
@@ -56,9 +52,32 @@ export function authRoutes(router: Router) {
     });
     body += "</ul></div>\n";
     body += "<div><p>Other links</p><ul>\n";
-    body += '<li><a href="http://google.com">Google</a></li>\n';
+    body += '<li><a href="/auth/clean-tokens">Clean Tokens</a></li>\n';
     body += "</ul></div>\n";
+
     ctx.body = body;
+    await next();
+  });
+
+  router.get("/clean-tokens", async (ctx: Context, next: Next) => {
+    let body = "";
+    const tokens = await fetchTokens();
+    const deletedTokens: TokenDb[] = [];
+
+    body +=
+      "<!DOCTYPE html>\n<html><head><title>Cleaned Tokens</title></head><body>";
+    body += "<div><p>Deleted Tokens</p><ul>\n";
+    for (const token of tokens) {
+      if (await isInvalid(token)) {
+        deletedTokens.push(token);
+        deleteToken(token.id);
+        body += `<li>${token.id} - ${token.name}</li>\n`;
+      }
+    }
+    body += "</ul></div>\n";
+
+    ctx.body = body;
+    await next();
   });
 
   getCollection(router, CLIENT);

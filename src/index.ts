@@ -13,8 +13,10 @@ import OAuth2Server from "oauth2-server";
 
 const fileAuth = true;
 
+const authModel = fileAuth ? FileModel() : SimpleModel();
+
 const oauth = new OAuth2Server({
-  model: fileAuth ? FileModel() : SimpleModel(),
+  model: authModel,
 });
 
 import { graderRoutes } from "./grader.js";
@@ -29,6 +31,7 @@ const app = new Koa();
 const router = new Router();
 
 app.context.auth = oauth;
+app.context.authModel = authModel;
 
 router.use("/admin", authenticate("admin"));
 router.use("/test", authenticate("read"));

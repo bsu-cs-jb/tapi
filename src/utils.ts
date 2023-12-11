@@ -56,13 +56,10 @@ export function jsonhtml(data: any): string {
 export function shallowJson(data: Record<string, any>, indent = 2): string {
   const flatObj = Object.fromEntries(
     Object.entries(data).map(([k, v]) => {
-      const rep = Array.isArray(v)
-        ? `[Array length=${v.length}]`
-        : v.toString();
+      const rep = Array.isArray(v) ? `[Array length=${v.length}]` : v;
       return [k, rep];
     }),
   );
-  // return JSON.stringify(flatObj, undefined, indent);
   return toJson(flatObj, indent);
 }
 
