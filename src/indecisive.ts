@@ -221,7 +221,28 @@ function canViewSession(session: SessionDb, userId: string): boolean {
   );
 }
 
-function authSessionOwner(paths: any) {
+interface PathDef {
+  method: "POST" | "GET" | "PUT" | "PATCH" | "DELETE";
+  endsWith?: string;
+}
+
+function pathDefsMatch(ctx: Context, paths: PathDef[]): boolean {
+  for (const pathDef of paths) {
+    if (ctx.request.method !== pathDef.method) {
+      continue;
+    }
+    if (pathDef.endsWith !== undefined) {
+      if (!ctx._matchedRoute.endsWith(pathDef.endsWith)) {
+        continue;
+      }
+    }
+    return true;
+  }
+
+  return false;
+}
+
+function authSessionOwner(paths: PathDef[]) {
   return async (ctx: Context, next: Next) => {
     const {
       self,
@@ -235,11 +256,13 @@ function authSessionOwner(paths: any) {
       return;
     }
 
-    if (ctx.request.method === "POST") {
-      log(ctx.request);
-      log(ctx.router.opts);
-      log(ctx.routerName);
-      log(ctx.captures);
+    log("ctx.request.method:", ctx.request.method);
+    log("ctx._matchedRoute:", ctx._matchedRoute);
+    if (pathDefsMatch(ctx, paths)) {
+      log("authOwnerInvite() matches spec");
+      // log("ctx.routerName:", ctx.routerName);
+      // log("ctx._matchedRoute:", ctx._matchedRoute);
+      // log("ctx._matchedRouteName:", ctx._matchedRouteName);
 
       if (self.id !== session.ownerId) {
         const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they are not the owner (name: ${session.name}).`;
@@ -257,7 +280,45 @@ function authSessionOwner(paths: any) {
   };
 }
 
-function authOwnerInvite() {
+function authOwnerInvite(paths: PathDef[]) {
+  return async (ctx: Context, next: Next) => {
+    const {
+      self,
+      session,
+      auth: { scope },
+    } = ctx.state;
+
+    if (scope?.includes("admin")) {
+      log(`authSessionOwner() allowing admin auth ${scope}`);
+      await next();
+      return;
+    }
+
+    log("ctx.request.method:", ctx.request.method);
+    log("ctx._matchedRoute:", ctx._matchedRoute);
+    if (pathDefsMatch(ctx, paths)) {
+      log("authOwnerInvite() matches spec");
+      // log("ctx.routerName:", ctx.routerName);
+      // log("ctx._matchedRoute:", ctx._matchedRoute);
+      // log("ctx._matchedRouteName:", ctx._matchedRouteName);
+
+      if (!canViewSession(session, self.id)) {
+        const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
+        console.error(message);
+        ctx.status = 403;
+        ctx.body = {
+          status: "Forbidden",
+          message,
+        };
+        return;
+      }
+    }
+
+    await next();
+  };
+}
+
+function _authOwnerInvite_2() {
   return async (ctx: Context, next: Next) => {
     const { self, session } = ctx.state;
 
@@ -563,10 +624,15 @@ export function indecisiveRoutes(router: Router) {
   const sessionOwnerRoutes = new Router();
   routerParam(sessionOwnerRoutes, SESSION);
   sessionOwnerRoutes.use(
-    ["/sessions/:sessionId", "/sessions/:sessionId/(.*)"],
+    ["/sessions/:sessionId"],
     authSessionOwner([
       {
-        method: "POST",
+        method: "DELETE",
+        endsWith: "/sessions/:sessionId",
+      },
+      {
+        method: "PUT",
+        endsWith: "/sessions/:sessionId",
       },
     ]),
   );
@@ -580,8 +646,30 @@ export function indecisiveRoutes(router: Router) {
   const sessionOwnerInviteRoutes = new Router();
   routerParam(sessionOwnerInviteRoutes, SESSION);
   sessionOwnerInviteRoutes.use(
-    ["/sessions/:sessionId/(.*)"],
-    authOwnerInvite(),
+    [
+      "/sessions/:sessionId/invite",
+      "/sessions/:sessionId/respond",
+      "/sessions/:sessionId/suggest",
+      "/sessions/:sessionId/vote/:voteId",
+    ],
+    authOwnerInvite([
+      {
+        method: "POST",
+        endsWith: "/sessions/:sessionId/invite",
+      },
+      {
+        method: "POST",
+        endsWith: "/sessions/:sessionId/respond",
+      },
+      {
+        method: "POST",
+        endsWith: "/sessions/:sessionId/suggest",
+      },
+      {
+        method: "POST",
+        endsWith: "/sessions/:sessionId/vote/:voteId",
+      },
+    ]),
   );
 
   getResource(sessionOwnerInviteRoutes, SESSION);
@@ -755,8 +843,6 @@ export function indecisiveRoutes(router: Router) {
     body += `<p>Scopes: ${auth?.scope?.join(" ")}</p>`;
     body += `<p>Self id: ${self?.id}</p>`;
     body += `<p>Self name: ${self?.name}</p>`;
-    // body += `<p>Client id: ${auth.client.id}</p>`;
-    // body += `<p>Client grants: ${auth.client.grants}</p>`;
     body += `<p>User: <a href="${router.url("user-html", {
       userId: self.id,
     })}">${self.name}</a></p>\n`;

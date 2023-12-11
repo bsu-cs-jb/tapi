@@ -177,6 +177,8 @@ export interface RestOptions<T extends IdResource> {
   preProcess?: (
     ctx: Context,
     data: T,
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    body: any,
     resource: ResourceDef<T>,
   ) => Promise<T | undefined>;
   postProcess?: (
@@ -308,14 +310,20 @@ export function postResource<T extends IdResource>(
   router.post(
     `${collection_name}-post`,
     `/${collection_url}`,
-    async (ctx: Context, next) => {
+    async (ctx: Context, next: Next) => {
+      const origBody = cloneDeep(ctx.request.body);
       const data = ctx.request.body;
       let newResource = data;
       if (resource.builder) {
         newResource = resource.builder(data);
       }
       if (options?.preProcess) {
-        newResource = await options.preProcess(ctx, newResource, resource);
+        newResource = await options.preProcess(
+          ctx,
+          newResource,
+          origBody,
+          resource,
+        );
       }
       if (!newResource.id) {
         newResource.id = urlid();
@@ -408,6 +416,7 @@ export function putResource<T extends IdResource>(
     `${resource_name}-put`,
     `/${resource_url}`,
     async (ctx: Context, next: Next) => {
+      const origBody = cloneDeep(ctx.request.body);
       let data = ctx.request.body;
 
       // get the existing resource
@@ -424,7 +433,7 @@ export function putResource<T extends IdResource>(
       const ref = refWithId(resource, data.id);
 
       if (options?.preProcess) {
-        data = await options.preProcess(ctx, data, ref);
+        data = await options.preProcess(ctx, data, origBody, ref);
       }
 
       // don't let the API override createdAt
@@ -460,6 +469,7 @@ export function patchResource<T extends IdResource>(
     `${resource_name}-patch`,
     `/${resource_url}`,
     async (ctx: Context, next: Next) => {
+      const origBody = cloneDeep(ctx.request.body);
       let data = ctx.request.body;
 
       // get the existing resource
@@ -479,7 +489,7 @@ export function patchResource<T extends IdResource>(
 
       const ref = refWithId(resource, data.id);
       if (options?.preProcess) {
-        data = await options.preProcess(ctx, data, ref);
+        data = await options.preProcess(ctx, data, origBody, ref);
       }
 
       // don't let the API override createdAt

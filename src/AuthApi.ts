@@ -21,8 +21,13 @@ import {
 import { log } from "./utils.js";
 import { hash } from "./hash.js";
 
-async function preUpdateClient(ctx: Context, dbAuth: AuthDb): Promise<AuthDb> {
-  log("preUpdateClient()");
+async function preUpdateClient(
+  ctx: Context,
+  dbAuth: AuthDb,
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  body: any,
+): Promise<AuthDb> {
+  log("preUpdateClient()", dbAuth);
   const clientId = dbAuth.client?.id || dbAuth.user?.userId || dbAuth.id;
   dbAuth.id = clientId;
   dbAuth.client.id = clientId;
@@ -30,8 +35,9 @@ async function preUpdateClient(ctx: Context, dbAuth: AuthDb): Promise<AuthDb> {
   if (!dbAuth.name) {
     dbAuth.name = `Auth for ${clientId}`;
   }
-  if (dbAuth.secret) {
+  if (body.secret !== undefined) {
     dbAuth.secret = hash(dbAuth.secret);
+    log(`Updating clientSecret: ${dbAuth.secret}`);
   }
   return dbAuth;
 }
