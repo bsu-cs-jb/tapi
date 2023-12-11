@@ -128,6 +128,7 @@ export async function resourceExists<T extends IdResource>(
   return fileExists(filename);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function defd<T>(v: T | undefined): v is T {
   return v !== undefined;
 }

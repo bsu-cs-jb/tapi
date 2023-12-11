@@ -192,6 +192,7 @@ export interface RestOptions<T extends IdResource> {
     ctx: Context,
     data: T,
     resource: ResourceDef<T>,
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   ) => Promise<any | undefined>;
 }
 

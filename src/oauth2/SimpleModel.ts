@@ -5,6 +5,7 @@ import {
   Token,
   Falsey,
 } from "oauth2-server";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "../utils.js";
 import { hash } from "../hash.js";
 
