@@ -54,6 +54,7 @@
     "@types/lodash-es": "^4.17.11",
     "@types/oauth2-server": "^3.0.16",
     "@types/source-map-support": "^0.5.10",
+    "@types/supertest": "^2.0.16",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "babel-jest": "^29.7.0",

@@ -1,3 +1,9 @@
+import { Buffer } from "buffer";
+
+export function base64(input: string): string {
+  return Buffer.from(input, "utf8").toString("base64");
+}
+
 export function cycle<T>(array: T[], current?: T): T {
   if (current === undefined) {
     return array[0];

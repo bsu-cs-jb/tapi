@@ -1,4 +1,4 @@
-import { expect, test, describe, beforeEach } from '@jest/globals';
+import { expect, test, describe } from '@jest/globals';
 
 import { cycle } from "./utils.js";
 
