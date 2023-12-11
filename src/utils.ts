@@ -17,6 +17,10 @@ export function cycle<T>(array: T[], current?: T): T {
   }
 }
 
+export function removeId(id: string, ids: string[]): string[] {
+  return ids.filter((i) => i !== id);
+}
+
 // Create a new type but make all of the properties optional
 export type AllOptional<Type> = {
   [Property in keyof Type]?: Type[Property];

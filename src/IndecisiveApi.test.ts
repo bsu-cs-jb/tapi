@@ -1,10 +1,11 @@
-import { expect, test, describe, beforeAll } from '@jest/globals';
+import { expect, test, describe, beforeAll } from "@jest/globals";
 
-import request from 'supertest';
+import request from "supertest";
 
 import { base64 } from "./utils.js";
 
 const URL = "http://localhost:3000";
+// const URL = "http://cs411.duckdns.org";
 const CLIENT_ID = "test";
 const CLIENT_SECRET = "test";
 
@@ -20,7 +21,10 @@ interface TokenResponse {
   scope: string[];
 }
 
-async function fetchToken(id=CLIENT_ID, secret=CLIENT_SECRET): Promise<string> {
+async function fetchToken(
+  id = CLIENT_ID,
+  secret = CLIENT_SECRET,
+): Promise<string> {
   const result = await fetch(`${URL}/token`, {
     method: "POST",
     body: "grant_type=client_credentials",
@@ -28,16 +32,18 @@ async function fetchToken(id=CLIENT_ID, secret=CLIENT_SECRET): Promise<string> {
       "Content-Type": "application/x-www-form-urlencoded",
       Authorization: `Basic ${base64(`${id}:${secret}`)}`,
     }),
-  }).then((response) => {
-    return response.json();
-  }).then((json) => {
-    return (json as TokenResponse).access_token;
-  });
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((json) => {
+      return (json as TokenResponse).access_token;
+    });
   return result;
 }
 
-describe('auth', () => {
-  test('generates token', async () => {
+describe("auth", () => {
+  test("generates token", async () => {
     const result = await fetch(`${URL}/token`, {
       method: "POST",
       body: "grant_type=client_credentials",
@@ -56,19 +62,18 @@ describe('auth', () => {
     expect(result).toHaveProperty("expires_in");
   });
 
-  test('supertest fails without token', async () => {
+  test("supertest fails without token", async () => {
     const req = request(URL);
-    await req.get('/indecisive/self').expect(401);
+    await req.get("/indecisive/self").expect(401);
   });
 
-  test('fails without token', async () => {
-    await fetch(`${URL}/indecisive/self`, {
-    }).then((response) => {
+  test("fails without token", async () => {
+    await fetch(`${URL}/indecisive/self`, {}).then((response) => {
       expect(response).toHaveProperty("status", 401);
     });
   });
 
-  test('uses token', async () => {
+  test("uses token", async () => {
     const token = await fetchToken();
     const result = await fetch(`${URL}/indecisive/self`, {
       headers: new Headers({
@@ -84,14 +89,14 @@ describe('auth', () => {
   });
 });
 
-describe('/self', () => {
+describe("/self", () => {
   let token = "EMPTY";
 
   beforeAll(async () => {
     token = await fetchToken();
   });
 
-  test('works', async () => {
+  test("works", async () => {
     const result = await fetch(`${URL}/indecisive/self`, {
       headers: new Headers({
         Authorization: `Bearer ${token}`,
@@ -106,28 +111,27 @@ describe('/self', () => {
     expect(result).toHaveProperty("name", USER_NAME);
   });
 
-  test('supertest works', async () => {
+  test("supertest works", async () => {
     const req = request(URL);
     const result = await req
-      .get('/indecisive/self')
-      .auth(token, { type: 'bearer' })
+      .get("/indecisive/self")
+      .auth(token, { type: "bearer" })
       .expect(200)
-      .expect('Content-Type', /json/);
+      .expect("Content-Type", /json/);
     expect(result.body).toBeDefined();
     expect(result.body).toHaveProperty("id", USER_ID);
     expect(result.body).toHaveProperty("name", USER_NAME);
   });
-
 });
 
-describe('/current-session', () => {
+describe("/current-session", () => {
   let token = "EMPTY";
 
   beforeAll(async () => {
     token = await fetchToken();
   });
 
-  test('works', async () => {
+  test("works", async () => {
     const result = await fetch(`${URL}/indecisive/current-session`, {
       headers: new Headers({
         Authorization: `Bearer ${token}`,
@@ -145,24 +149,23 @@ describe('/current-session', () => {
     expect(result).toHaveProperty("invitations");
     expect(result).toHaveProperty("suggestions");
   });
-
 });
 
-describe('/session/invite', () => {
+describe("/session/invite", () => {
   let token = "EMPTY";
 
   beforeAll(async () => {
     token = await fetchToken();
   });
 
-  test('works', async () => {
+  test("works", async () => {
     const req = request(URL);
     const result = await req
       .post(`/indecisive/sessions/${SESSION_ID}/invite`)
-      .auth(token, { type: 'bearer' })
+      .auth(token, { type: "bearer" })
       .send({ userId: "brahbrah" })
       .expect(200)
-      .expect('Content-Type', /json/);
+      .expect("Content-Type", /json/);
     expect(result.body).toBeDefined();
     expect(result.body).toHaveProperty("id", SESSION_ID);
     expect(result.body.invitations).toContainEqual({
@@ -174,5 +177,4 @@ describe('/session/invite', () => {
       attending: "undecided",
     });
   });
-
 });

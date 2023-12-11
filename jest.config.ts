@@ -1,7 +1,8 @@
-import type { Config } from 'jest';
+import type { Config } from "jest";
 
 const config: Config = {
-  roots: ['dist'],
+  roots: ["dist"],
+  transformIgnorePatterns: ["node_modules/(?!lodash-es)"],
 };
 
 export default config;

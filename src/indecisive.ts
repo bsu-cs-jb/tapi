@@ -20,6 +20,20 @@ import {
   routerParam,
 } from "./RestAPI.js";
 
+import { fetchUser, fetchSession, SESSION, USER } from "./IndecisiveDb.js";
+import {
+  toSession,
+  toSessionDb,
+  addInvitation,
+  getSuggestion,
+  updateResponse,
+  getInvitation,
+  addSuggestion,
+  updateSuggestion,
+  canViewSession,
+  UserDb,
+  SessionDb,
+} from "./IndecisiveTypes.js";
 import {
   User,
   Session,
@@ -27,293 +41,9 @@ import {
   Vote,
   Invitation,
   Suggestion,
-} from "./indecisive_types.js";
-import { log, assert, AllOptional, toJson } from "./utils.js";
+} from "./indecisive_rn_types.js";
+import { log, assert, AllOptional, removeId } from "./utils.js";
 import { urlid } from "./genid.js";
-
-export interface UserInvitationDb {
-  sessionId: string;
-  accepted: boolean;
-  attending: Attending;
-}
-
-export interface SuggestionDb {
-  id: string;
-  name: string;
-  upVoteUserIds: string[];
-  downVoteUserIds: string[];
-}
-
-export interface InvitationDb {
-  userId: string;
-  accepted: boolean;
-  attending: Attending;
-}
-
-export interface SessionDb extends IdResource {
-  id: string;
-  ownerId: string;
-  name: string;
-  invitations: InvitationDb[];
-  suggestions: SuggestionDb[];
-}
-
-function toInvitationDb(invite: Invitation): InvitationDb {
-  return {
-    userId: invite.user.id,
-    accepted: invite.accepted || false,
-    attending: invite.attending || "undecided",
-  };
-}
-
-function toSuggestionDb(suggest: Suggestion): SuggestionDb {
-  return {
-    id: suggest.id,
-    name: suggest.name,
-    upVoteUserIds: suggest.upVoteUserIds || [] ,
-    downVoteUserIds: suggest.downVoteUserIds || [] ,
-  };
-}
-
-function toSessionDb(session: Session, selfUserId: string): SessionDb {
-  const selfInvite = {
-    userId: selfUserId,
-    accepted: session.accepted || false,
-    attending: session.attending || "undecided",
-  };
-  const invitations = session.invitations ? session.invitations.map(toInvitationDb) : [];
-  invitations.push(selfInvite);
-  return {
-    id: session.id,
-    name: session.description,
-    ownerId: session.owner?.id || "",
-    invitations,
-    suggestions: session.suggestions ? session.suggestions.map(toSuggestionDb) : [],
-  };
-}
-
-function toIdName(item: IdResource): IdName {
-  return {
-    id: item.id,
-    name: item.name || "",
-  };
-}
-
-async function toSession(
-  sessionDb: SessionDb,
-  selfUserId: string,
-): Promise<Session> {
-  const userCache: Record<string, UserDb> = {};
-  const invitations: Invitation[] = [];
-  let selfInvite;
-  for (const invite of sessionDb.invitations) {
-    // If this is the invite for myself, drop it from the list
-    if (invite.userId === selfUserId) {
-      selfInvite = invite;
-      continue;
-    }
-
-    let user;
-    if (invite.userId in userCache) {
-      user = userCache[invite.userId];
-    } else {
-      user = await fetchUser(invite.userId);
-    }
-    if (user) {
-      invitations.push({
-        user: toIdName(user),
-        accepted: invite.accepted,
-        attending: invite.attending,
-      });
-    }
-  }
-  const suggestions: Suggestion[] = [];
-  for (const suggestion of sessionDb.suggestions) {
-    suggestions.push({
-      id: suggestion.id,
-      name: suggestion.name,
-      upVoteUserIds: suggestion.upVoteUserIds,
-      downVoteUserIds: suggestion.downVoteUserIds,
-    });
-  }
-  const owner = await fetchUser(sessionDb.ownerId);
-  return {
-    id: sessionDb.id,
-    owner: owner
-      ? toIdName(owner)
-      : {
-          id: sessionDb.ownerId,
-          name: "Missing owner",
-        },
-    description: sessionDb.name,
-    accepted: selfInvite?.accepted || false,
-    attending: selfInvite?.attending || "undecided",
-    invitations,
-    suggestions,
-  };
-}
-
-interface UserDb extends IdResource {
-  id: string;
-  name: string;
-  ownsSessions: string[];
-  invitedSessions: string[];
-}
-
-function getInvitation(
-  session: SessionDb,
-  userId: string,
-): InvitationDb | undefined {
-  return session.invitations.find((i) => i.userId === userId);
-}
-
-function getSuggestion(
-  session: SessionDb,
-  id: string,
-): SuggestionDb | undefined {
-  return session.suggestions.find((s) => s.id === id);
-}
-
-function findSuggestionByName(
-  session: SessionDb,
-  name: string,
-): SuggestionDb | undefined {
-  return session.suggestions.find((s) => s.name === name);
-}
-
-function updateResponse(
-  session: SessionDb,
-  userId: string,
-  accepted: boolean,
-  attending: Attending,
-): SessionDb {
-  const existingInvite = getInvitation(session, userId);
-  assert(
-    existingInvite !== undefined,
-    `User ${userId} not invited to session ${session.id}`,
-  );
-  if (existingInvite) {
-    existingInvite.accepted = accepted;
-    existingInvite.attending = attending;
-  }
-  return session;
-}
-
-function makeSuggestionDb(name: string): SuggestionDb {
-  return {
-    id: urlid(),
-    name,
-    upVoteUserIds: [],
-    downVoteUserIds: [],
-  };
-}
-
-function addSuggestion(
-  session: SessionDb,
-  userId: string,
-  name: string,
-): SessionDb {
-  const existingInvite = getInvitation(session, userId);
-  assert(
-    existingInvite !== undefined,
-    `User ${userId} not invited to session ${session.id}`,
-  );
-  const existingSuggestion = findSuggestionByName(session, name);
-  if (existingSuggestion) {
-    return session;
-  }
-  session.suggestions.push(makeSuggestionDb(name));
-  return session;
-}
-
-function updateSuggestion(
-  session: SessionDb,
-  suggestion: string | SuggestionDb,
-  userId: string,
-  vote: Vote,
-): SessionDb {
-  const existingInvite = getInvitation(session, userId);
-  assert(
-    existingInvite !== undefined,
-    `User ${userId} not invited to session ${session.id}`,
-  );
-  let suggestObj: SuggestionDb | undefined;
-  if (typeof suggestion === "string") {
-    suggestObj = getSuggestion(session, suggestion);
-  } else {
-    suggestObj = suggestion;
-  }
-  assert(suggestObj !== undefined, "Suggestion not found in session");
-  if (!suggestObj) {
-    return session;
-  }
-  // Clear up/down votes first
-  suggestObj.upVoteUserIds = removeId(userId, suggestObj.upVoteUserIds);
-  suggestObj.downVoteUserIds = removeId(userId, suggestObj.downVoteUserIds);
-
-  if (vote === "up") {
-    suggestObj.upVoteUserIds.push(userId);
-  } else if (vote === "down") {
-    suggestObj.downVoteUserIds.push(userId);
-  }
-  return session;
-}
-
-function addInvitation(session: SessionDb, userId: string): SessionDb {
-  const existingInvite = session.invitations.find(
-    (invite) => invite.userId === userId,
-  );
-  if (!existingInvite) {
-    session.invitations.push({
-      userId,
-      accepted: false,
-      attending: "undecided",
-    });
-  }
-  return session;
-}
-
-function makeUserDb(props?: AllOptional<UserDb>): UserDb {
-  const user: UserDb = {
-    id: urlid(),
-    name: "Unnamed User",
-    ownsSessions: [],
-    invitedSessions: [],
-    ...props,
-  };
-  return user;
-}
-
-const USER: ResourceDef<UserDb> = {
-  database: "indecisive",
-  name: "users",
-  singular: "user",
-  paramName: "userId",
-  sortBy: "name",
-  builder: makeUserDb,
-};
-
-const SESSION: ResourceDef<SessionDb> = {
-  database: "indecisive",
-  name: "sessions",
-  singular: "session",
-  paramName: "sessionId",
-  sortBy: "name",
-};
-
-async function fetchUser(id: string): Promise<UserDb | undefined> {
-  return readResource<UserDb>(refWithId(USER, id));
-}
-
-async function fetchSession(id: string): Promise<SessionDb | undefined> {
-  return readResource<SessionDb>(refWithId(SESSION, id));
-}
-
-function canViewSession(session: SessionDb, userId: string): boolean {
-  return (
-    userId === session.ownerId || getInvitation(session, userId) !== undefined
-  );
-}
 
 interface PathDef {
   method: "POST" | "GET" | "PUT" | "PATCH" | "DELETE";
@@ -508,6 +238,7 @@ async function preCreateSession(
     accepted: true,
     attending: "yes",
   });
+  addInvitation(newSessionDb, self.id);
   return newSessionDb;
 }
 
@@ -549,10 +280,6 @@ async function filterSessionCollection(
     return undefined;
   }
   return await toSession(session, self.id);
-}
-
-function removeId(id: string, ids: string[]): string[] {
-  return ids.filter((i) => i !== id);
 }
 
 async function addUserSessionRef(
