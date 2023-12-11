@@ -41,7 +41,6 @@ export interface Invitation {
 export interface Session {
   id: string;
   owner: User;
-  name: string;
   description: string;
   accepted: boolean;
   attending: Attending;
@@ -86,7 +85,6 @@ export function makeSession(props?: AllOptional<Session>): Session {
       id: genid(),
       name: "Unnamed",
     },
-    name: "empty",
     description: "empty",
     accepted: false,
     attending: "undecided",

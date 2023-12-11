@@ -11,6 +11,7 @@ import {
   IdResource,
 } from "./FileDb.js";
 import {
+  IdName,
   deleteResource,
   getCollection,
   getResource,
@@ -56,6 +57,84 @@ export interface SessionDb extends IdResource {
   name: string;
   invitations: InvitationDb[];
   suggestions: SuggestionDb[];
+}
+
+// function toInvitationDb(invite: Invitation): InvitationDb {
+//   return {
+//     userId: invite.user.id,
+//     accepted: invite.accepted,
+//     attending: invite.attending,
+//   };
+// }
+//
+// async function toSessionDb(session: Session): Promise<SessionDb> {
+//   return {
+//     id: session.id,
+//     name: session.description,
+//     ownerId: session.owner.id,
+//     invitations: session.invitations.map(toInvitationDb);
+//   };
+// }
+
+function toIdName(item: IdResource): IdName {
+  return {
+    id: item.id,
+    name: item.name || "",
+  };
+}
+
+async function toSession(
+  sessionDb: SessionDb,
+  selfUserId: string,
+): Promise<Session> {
+  const userCache: Record<string, UserDb> = {};
+  const invitations: Invitation[] = [];
+  let selfInvite;
+  for (const invite of sessionDb.invitations) {
+    // If this is the invite for myself, drop it from the list
+    if (invite.userId === selfUserId) {
+      selfInvite = invite;
+      continue;
+    }
+
+    let user;
+    if (invite.userId in userCache) {
+      user = userCache[invite.userId];
+    } else {
+      user = await fetchUser(invite.userId);
+    }
+    if (user) {
+      invitations.push({
+        user: toIdName(user),
+        accepted: invite.accepted,
+        attending: invite.attending,
+      });
+    }
+  }
+  const suggestions: Suggestion[] = [];
+  for (const suggestion of sessionDb.suggestions) {
+    suggestions.push({
+      id: suggestion.id,
+      name: suggestion.name,
+      upVoteUserIds: suggestion.upVoteUserIds,
+      downVoteUserIds: suggestion.downVoteUserIds,
+    });
+  }
+  const owner = await fetchUser(sessionDb.ownerId);
+  return {
+    id: sessionDb.id,
+    owner: owner
+      ? toIdName(owner)
+      : {
+          id: sessionDb.ownerId,
+          name: "Missing owner",
+        },
+    description: sessionDb.name,
+    accepted: selfInvite?.accepted || false,
+    attending: selfInvite?.attending || "undecided",
+    invitations,
+    suggestions,
+  };
 }
 
 interface UserDb extends IdResource {
@@ -404,9 +483,7 @@ async function preCreateSession(
   ctx: Context,
   session: SessionDb,
 ): Promise<SessionDb> {
-  const {
-    state: { self },
-  } = ctx;
+  const { self } = ctx.state;
   log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
   session.ownerId = self.id;
   session.invitations = [];
@@ -417,26 +494,32 @@ async function preCreateSession(
 async function postCreateSession(
   ctx: Context,
   session: SessionDb,
-): Promise<SessionDb> {
-  const {
-    state: { self },
-  } = ctx;
+): Promise<Session> {
+  const { self } = ctx.state;
   log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
   await addUserSessionRef("ownership", session.id, self.id, self);
   // TODO: Make new session the current session
-  return session;
+  return await toSession(session, self.id);
+}
+
+async function ppSessionDbToSession(
+  ctx: Context,
+  session: SessionDb,
+): Promise<Session> {
+  const { self } = ctx.state;
+  return await toSession(session, self.id);
 }
 
 async function filterSessionCollection(
   ctx: Context,
   session: SessionDb,
-): Promise<SessionDb | undefined> {
+): Promise<Session | undefined> {
   const { self } = ctx.state;
   log(`Filtering for ${self.id}`, session);
   if (!canViewSession(session, self.id)) {
     return undefined;
   }
-  return session;
+  return await toSession(session, self.id);
 }
 
 function removeId(id: string, ids: string[]): string[] {
@@ -672,7 +755,9 @@ export function indecisiveRoutes(router: Router) {
     ]),
   );
 
-  getResource(sessionOwnerInviteRoutes, SESSION);
+  getResource(sessionOwnerInviteRoutes, SESSION, undefined, {
+    postProcess: ppSessionDbToSession,
+  });
 
   sessionOwnerInviteRoutes.post(
     "session-invite",
@@ -707,7 +792,7 @@ export function indecisiveRoutes(router: Router) {
       // add invitation to user
       await addUserSessionRef("invitation", session.id, userId);
 
-      ctx.body = session;
+      ctx.body = await toSession(session, self.id);
       await next();
     },
   );
@@ -747,7 +832,7 @@ export function indecisiveRoutes(router: Router) {
       const filename = await writeResource(ref, session);
       console.log(`POST written to ${filename} session:`, session);
 
-      ctx.body = session;
+      ctx.body = await toSession(session, self.id);
       await next();
     },
   );
@@ -784,7 +869,7 @@ export function indecisiveRoutes(router: Router) {
       const filename = await writeResource(ref, session);
       console.log(`POST written to ${filename} session:`, session);
 
-      ctx.body = session;
+      ctx.body = await toSession(session, self.id);
       await next();
     },
   );
@@ -831,7 +916,7 @@ export function indecisiveRoutes(router: Router) {
       const filename = await writeResource(ref, session);
       console.log(`POST written to ${filename} session:`, session);
 
-      ctx.body = session;
+      ctx.body = await toSession(session, self.id);
       await next();
     },
   );
@@ -855,10 +940,16 @@ export function indecisiveRoutes(router: Router) {
     ctx.body = self;
   });
 
-  router.get("current-session", "/current-session", async (ctx) => {
-    const { currentSession } = ctx.state;
-    ctx.body = currentSession;
-  });
+  router.get(
+    "current-session",
+    "/current-session",
+    async (ctx: Context, next: Next) => {
+      const { self, currentSession } = ctx.state;
+      ctx.body = await toSession(currentSession, self.id);
+
+      await next();
+    },
+  );
 
   router.use(sessionOwnerRoutes.routes());
   router.use(sessionOwnerRoutes.allowedMethods());

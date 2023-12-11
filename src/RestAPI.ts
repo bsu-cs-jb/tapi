@@ -15,7 +15,10 @@ import {
   writeResource,
 } from "./FileDb.js";
 
-type IdName = { id: string; name: string };
+export interface IdName {
+  id: string;
+  name: string;
+}
 
 interface RouteName {
   name?: string;
@@ -141,7 +144,7 @@ export function routerParam<T extends IdResource>(
 export function linkList<T extends IdResource>(
   router: Router,
   resource: ResourceDef<T>,
-  resources: IdName[],
+  resources: IdResource[],
   urlParams: Record<string, string> = {},
 ): string {
   // console.log(`linkList(router, ${resource.paramName}, ${resource.singular}, ${resources.length})`);
@@ -161,7 +164,11 @@ export function linkList<T extends IdResource>(
       ...urlParams,
     });
     // console.log(`<p><a href="${href}">${r.name} - ${r.id}</a></p>`);
-    result += `<li><a href="${href}">${r.name} - ${r.id}</a></li>\n`;
+    if (r.name) {
+      result += `<li><a href="${href}">${r.name} - ${r.id}</a></li>\n`;
+    } else {
+      result += `<li><a href="${href}">${r.id}</a></li>\n`;
+    }
   }
   return result + "</ul></div>";
 }
@@ -185,7 +192,7 @@ export interface RestOptions<T extends IdResource> {
     ctx: Context,
     data: T,
     resource: ResourceDef<T>,
-  ) => Promise<T | undefined>;
+  ) => Promise<any | undefined>;
 }
 
 export function getCollection<T extends IdResource>(
@@ -252,7 +259,11 @@ export function getResource<T extends IdResource>(
       `${resource_name}-html`,
       `/${resource_url}.html`,
       async (ctx: Context) => {
-        const item = ctx.state[resource.singular];
+        let item = ctx.state[resource.singular];
+        if (options?.postProcess) {
+          const ref = refWithId(resource, item.id);
+          item = await options.postProcess(ctx, item, ref);
+        }
         let body = "";
         body += `<!DOCTYPE html>\n<html><head><title>${capitalize(
           resource.singular,
@@ -343,7 +354,7 @@ export function postResource<T extends IdResource>(
       }
       const filename = await writeResource(ref, newResource);
       if (options?.postProcess) {
-        await options.postProcess(ctx, newResource, ref);
+        newResource = await options.postProcess(ctx, newResource, ref);
       }
       console.log(
         `POST written to ${filename} ${resource.singular}:`,

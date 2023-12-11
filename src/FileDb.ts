@@ -20,7 +20,7 @@ const execFileP = util.promisify(execFile);
 
 export interface IdResource {
   id: string;
-  name: string;
+  name?: string;
   createdAt?: string;
   updatedAt?: string;
 }
