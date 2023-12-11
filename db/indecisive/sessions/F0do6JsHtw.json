@@ -1,0 +1,30 @@
+{
+  "id": "F0do6JsHtw",
+  "name": "Acceptance Tests",
+  "ownerId": "test-2",
+  "invitations": [
+    {
+      "userId": "test-2",
+      "accepted": false,
+      "attending": "undecided"
+    },
+    {
+      "userId": "test-2",
+      "accepted": true,
+      "attending": "yes"
+    },
+    {
+      "userId": "test",
+      "accepted": false,
+      "attending": "undecided"
+    },
+    {
+      "userId": "brahbrah",
+      "accepted": false,
+      "attending": "undecided"
+    }
+  ],
+  "suggestions": [],
+  "updatedAt": "2023-12-11T15:23:22.940Z",
+  "createdAt": "2023-12-11T15:04:54.941Z"
+}

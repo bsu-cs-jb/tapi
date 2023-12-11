@@ -1,0 +1,21 @@
+{
+  "secret": "pNNM2hI8jIy6ZQR39g7NNjU7yVPLZh0lZmkTWc8pYNg",
+  "client": {
+    "id": "test-2",
+    "grants": [
+      "client_credentials"
+    ]
+  },
+  "user": {
+    "currentSessionId": "FhmzKh_kDQ",
+    "scopes": [
+      "read",
+      "write"
+    ],
+    "userId": "test-2"
+  },
+  "id": "test-2",
+  "name": "Auth for test-2",
+  "updatedAt": "2023-12-11T15:02:59.534Z",
+  "createdAt": "2023-12-11T15:02:59.534Z"
+}
