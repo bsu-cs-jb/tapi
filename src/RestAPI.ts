@@ -323,10 +323,9 @@ export function postResource<T extends IdResource>(
     `/${collection_url}`,
     async (ctx: Context, next: Next) => {
       const origBody = cloneDeep(ctx.request.body);
-      const data = ctx.request.body;
-      let newResource = data;
+      let newResource = ctx.request.body;
       if (resource.builder) {
-        newResource = resource.builder(data);
+        newResource = resource.builder(newResource);
       }
       if (options?.preProcess) {
         newResource = await options.preProcess(
@@ -353,13 +352,13 @@ export function postResource<T extends IdResource>(
         return await next();
       }
       const filename = await writeResource(ref, newResource);
-      if (options?.postProcess) {
-        newResource = await options.postProcess(ctx, newResource, ref);
-      }
       console.log(
         `POST written to ${filename} ${resource.singular}:`,
         newResource,
       );
+      if (options?.postProcess) {
+        newResource = await options.postProcess(ctx, newResource, ref);
+      }
       ctx.body = newResource;
     },
   );

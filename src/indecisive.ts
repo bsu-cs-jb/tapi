@@ -38,7 +38,6 @@ export interface UserInvitationDb {
 }
 
 export interface SuggestionDb {
-  userId: string;
   id: string;
   name: string;
   upVoteUserIds: string[];
@@ -59,22 +58,39 @@ export interface SessionDb extends IdResource {
   suggestions: SuggestionDb[];
 }
 
-// function toInvitationDb(invite: Invitation): InvitationDb {
-//   return {
-//     userId: invite.user.id,
-//     accepted: invite.accepted,
-//     attending: invite.attending,
-//   };
-// }
-//
-// async function toSessionDb(session: Session): Promise<SessionDb> {
-//   return {
-//     id: session.id,
-//     name: session.description,
-//     ownerId: session.owner.id,
-//     invitations: session.invitations.map(toInvitationDb);
-//   };
-// }
+function toInvitationDb(invite: Invitation): InvitationDb {
+  return {
+    userId: invite.user.id,
+    accepted: invite.accepted || false,
+    attending: invite.attending || "undecided",
+  };
+}
+
+function toSuggestionDb(suggest: Suggestion): SuggestionDb {
+  return {
+    id: suggest.id,
+    name: suggest.name,
+    upVoteUserIds: suggest.upVoteUserIds || [] ,
+    downVoteUserIds: suggest.downVoteUserIds || [] ,
+  };
+}
+
+function toSessionDb(session: Session, selfUserId: string): SessionDb {
+  const selfInvite = {
+    userId: selfUserId,
+    accepted: session.accepted || false,
+    attending: session.attending || "undecided",
+  };
+  const invitations = session.invitations ? session.invitations.map(toInvitationDb) : [];
+  invitations.push(selfInvite);
+  return {
+    id: session.id,
+    name: session.description,
+    ownerId: session.owner?.id || "",
+    invitations,
+    suggestions: session.suggestions ? session.suggestions.map(toSuggestionDb) : [],
+  };
+}
 
 function toIdName(item: IdResource): IdName {
   return {
@@ -183,10 +199,9 @@ function updateResponse(
   return session;
 }
 
-function makeSuggestionDb(name: string, userId: string): SuggestionDb {
+function makeSuggestionDb(name: string): SuggestionDb {
   return {
     id: urlid(),
-    userId,
     name,
     upVoteUserIds: [],
     downVoteUserIds: [],
@@ -207,7 +222,7 @@ function addSuggestion(
   if (existingSuggestion) {
     return session;
   }
-  session.suggestions.push(makeSuggestionDb(name, userId));
+  session.suggestions.push(makeSuggestionDb(name));
   return session;
 }
 
@@ -482,13 +497,18 @@ function indecisiveAuth(
 async function preCreateSession(
   ctx: Context,
   session: SessionDb,
+  body: Session,
 ): Promise<SessionDb> {
   const { self } = ctx.state;
-  log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
-  session.ownerId = self.id;
-  session.invitations = [];
-  session.suggestions = [];
-  return session;
+  // log(`Assigning ownerId ${self.id} to new session ${session.name}`);
+  const newSessionDb = toSessionDb(body, self.id);
+  newSessionDb.ownerId = self.id;
+  newSessionDb.invitations.push({
+    userId: self.id,
+    accepted: true,
+    attending: "yes",
+  });
+  return newSessionDb;
 }
 
 async function postCreateSession(
@@ -496,10 +516,19 @@ async function postCreateSession(
   session: SessionDb,
 ): Promise<Session> {
   const { self } = ctx.state;
-  log(`Assigning ownerId ${self.id} to new session  ${session.name}`);
+  // log(`Persisting ownerId ${self.id} to new session  ${session.name}`);
   await addUserSessionRef("ownership", session.id, self.id, self);
   // TODO: Make new session the current session
   return await toSession(session, self.id);
+}
+
+async function ppSessionToDb(
+  ctx: Context,
+  session: SessionDb,
+  body: Session,
+): Promise<SessionDb> {
+  const { self } = ctx.state;
+  return toSessionDb(body, self.id);
 }
 
 async function ppSessionDbToSession(
@@ -720,7 +749,9 @@ export function indecisiveRoutes(router: Router) {
     ]),
   );
   // Put to session updates session (if owned by me)
-  putResource(sessionOwnerRoutes, SESSION);
+  putResource(sessionOwnerRoutes, SESSION, {
+    preProcess: ppSessionToDb,
+  });
   deleteResource(sessionOwnerRoutes, SESSION, {
     postProcess: postDeleteSession,
   });
