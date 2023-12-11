@@ -1,0 +1,29 @@
+{
+  "id": "88886e15d95eb7b90da084fa0ab666b1c6a67da4",
+  "name": "Token for brahbrah",
+  "token": {
+    "accessToken": "88886e15d95eb7b90da084fa0ab666b1c6a67da4",
+    "accessTokenExpiresAt": "2023-12-11T07:26:21.275Z",
+    "scope": [
+      "read",
+      "write"
+    ],
+    "clientId": "brahbrah",
+    "client": {
+      "id": "brahbrah",
+      "grants": [
+        "client_credentials"
+      ]
+    },
+    "user": {
+      "currentSessionId": "DI-3yq0b4g",
+      "scopes": [
+        "read",
+        "write"
+      ],
+      "userId": "brahbrah"
+    }
+  },
+  "updatedAt": "2023-12-11T06:26:21.276Z",
+  "createdAt": "2023-12-11T06:26:21.276Z"
+}

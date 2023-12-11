@@ -3,19 +3,14 @@
   "ownerId": "tamatoa",
   "invitations": [
     {
-      "userId": "brahbrah",
-      "accepted": false,
-      "attending": "undecided"
-    },
-    {
       "userId": "prof-jb",
       "accepted": false,
       "attending": "undecided"
     },
     {
       "userId": "tamatoa",
-      "accepted": true,
-      "attending": "no"
+      "accepted": false,
+      "attending": "undecided"
     }
   ],
   "suggestions": [
@@ -37,6 +32,6 @@
     }
   ],
   "id": "FhmzKh_kDQ",
-  "updatedAt": "2023-12-10T19:52:02.699Z",
+  "updatedAt": "2023-12-11T03:24:24.257Z",
   "createdAt": "2023-12-10T17:20:23.461Z"
 }

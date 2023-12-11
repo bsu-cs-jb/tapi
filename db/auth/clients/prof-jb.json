@@ -1,0 +1,21 @@
+{
+  "secret": "2P5StpyHhsMcWIgCUkIQTi-uzf6gilrAe2QOMY9-AJE",
+  "client": {
+    "id": "prof-jb",
+    "grants": [
+      "client_credentials"
+    ]
+  },
+  "user": {
+    "currentSessionId": "FhmzKh_kDQ",
+    "scopes": [
+      "read",
+      "write"
+    ],
+    "userId": "prof-jb"
+  },
+  "id": "prof-jb",
+  "name": "Auth for prof-jb",
+  "updatedAt": "2023-12-10T23:07:55.194Z",
+  "createdAt": "2023-12-10T23:07:55.194Z"
+}

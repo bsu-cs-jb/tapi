@@ -1,0 +1,49 @@
+{
+  "id": "DI-3yq0b4g",
+  "owner": {
+    "id": "brahbrah",
+    "name": "Brahbrah"
+  },
+  "description": "Admin Session",
+  "accepted": false,
+  "attending": "undecided",
+  "invitations": [
+    {
+      "user": {
+        "id": "tamatoa",
+        "name": "Jemaine"
+      },
+      "accepted": true,
+      "attending": "yes"
+    },
+    {
+      "user": {
+        "id": "prof-jb",
+        "name": "Jonathan Branam"
+      },
+      "accepted": true,
+      "attending": "undecided"
+    }
+  ],
+  "suggestions": [
+    {
+      "id": "CLtjNt47XA",
+      "name": "Bricklayers",
+      "upVoteUserIds": [],
+      "downVoteUserIds": [
+        "brahbrah",
+        "tamatoa"
+      ]
+    },
+    {
+      "id": "AqeQSwZEjQ",
+      "name": "Marc Rober",
+      "upVoteUserIds": [
+        "tamatoa"
+      ],
+      "downVoteUserIds": []
+    }
+  ],
+  "createdAt": "2023-12-11T03:26:08.265Z",
+  "updatedAt": "2023-12-11T06:27:16.450Z"
+}

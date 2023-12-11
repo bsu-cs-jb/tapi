@@ -1,0 +1,21 @@
+{
+  "secret": "2P5StpyHhsMcWIgCUkIQTi-uzf6gilrAe2QOMY9-AJE",
+  "client": {
+    "id": "brahbrah",
+    "grants": [
+      "client_credentials"
+    ]
+  },
+  "user": {
+    "currentSessionId": "DI-3yq0b4g",
+    "scopes": [
+      "read",
+      "write"
+    ],
+    "userId": "brahbrah"
+  },
+  "id": "brahbrah",
+  "name": "Auth for brahbrah",
+  "updatedAt": "2023-12-11T05:44:50.439Z",
+  "createdAt": "2023-12-10T23:07:10.712Z"
+}

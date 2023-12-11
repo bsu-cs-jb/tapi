@@ -1,0 +1,29 @@
+{
+  "id": "4038d8a2a9961f31dd78bba6dc017c2bff01bbf1",
+  "name": "Token for tamatoa",
+  "token": {
+    "accessToken": "4038d8a2a9961f31dd78bba6dc017c2bff01bbf1",
+    "accessTokenExpiresAt": "2023-12-11T06:43:19.757Z",
+    "scope": [
+      "read",
+      "write"
+    ],
+    "clientId": "tamatoa",
+    "client": {
+      "id": "tamatoa",
+      "grants": [
+        "client_credentials"
+      ]
+    },
+    "user": {
+      "currentSessionId": "FhmzKh_kDQ",
+      "scopes": [
+        "read",
+        "write"
+      ],
+      "userId": "tamatoa"
+    }
+  },
+  "updatedAt": "2023-12-11T05:43:19.757Z",
+  "createdAt": "2023-12-11T05:43:19.757Z"
+}

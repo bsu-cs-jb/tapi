@@ -1,0 +1,22 @@
+{
+  "name": "Auth for admin",
+  "secret": "2P5StpyHhsMcWIgCUkIQTi-uzf6gilrAe2QOMY9-AJE",
+  "client": {
+    "id": "admin",
+    "grants": [
+      "client_credentials"
+    ]
+  },
+  "user": {
+    "currentSessionId": "FhmzKh_kDQ",
+    "scopes": [
+      "read",
+      "write",
+      "admin"
+    ],
+    "userId": "admin"
+  },
+  "id": "admin",
+  "updatedAt": "2023-12-10T21:18:06.158Z",
+  "createdAt": "2023-12-10T21:07:54.069Z"
+}
