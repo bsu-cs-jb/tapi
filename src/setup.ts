@@ -87,10 +87,11 @@ async function updateCreateClient(user: UserDef): Promise<AuthDb> {
 
 async function users() {
   // need session id
-  const rawUsers = await readFileAsJson(".users.env");
+  const rawUsers = await readFileAsJson("users.private.json");
   const userDef = rawUsers as unknown as UserDef[];
   const token = await fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
   let createdUsers = 0;
+  const MAX_USERS = -1;
   for (const user of userDef) {
     log(`User: ${user.id} ${user.name}`);
     await updateCreateClient(user);
@@ -101,10 +102,10 @@ async function users() {
     } else {
       log(`  - DO NOT invite user ${user.id} to session`);
     }
-    if (createdUsers > 5) {
+    createdUsers += 1;
+    if (MAX_USERS > 0 && createdUsers > MAX_USERS) {
       break;
     }
-    createdUsers += 1;
   }
 }
 

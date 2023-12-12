@@ -61,18 +61,16 @@ function authSessionOwner(paths: PathDef[]) {
       auth: { scope },
     } = ctx.state;
 
-    if (scope?.includes("admin")) {
-      log(`authSessionOwner() allowing admin auth ${scope}`);
-      await next();
-      return;
-    }
-
     // log("ctx.request.method:", ctx.request.method);
     // log("ctx._matchedRoute:", ctx._matchedRoute);
     if (pathDefsMatch(ctx, paths)) {
       // log("authOwnerInvite() matches spec");
 
-      if (self.id !== session.ownerId) {
+      if (scope?.includes("admin")) {
+        log(`authSessionOwner() allowing admin auth ${scope}`);
+        await next();
+        return;
+      } else if (self.id !== session.ownerId) {
         const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they are not the owner (name: ${session.name}).`;
         logger.error(message);
         ctx.status = 403;
@@ -96,18 +94,14 @@ function authOwnerInvite(paths: PathDef[]) {
       auth: { scope },
     } = ctx.state;
 
-    if (scope?.includes("admin")) {
-      log(`authSessionOwner() allowing admin auth ${scope}`);
-      await next();
-      return;
-    }
-
     // log("ctx.request.method:", ctx.request.method);
     // log("ctx._matchedRoute:", ctx._matchedRoute);
     if (pathDefsMatch(ctx, paths)) {
       // log("authOwnerInvite() matches spec");
 
-      if (!canViewSession(session, self.id)) {
+      if (scope?.includes("admin")) {
+        log(`authOwnerInvite() allowing admin auth ${scope}`);
+      } else if (!canViewSession(session, self.id)) {
         const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
         logger.error(message);
         ctx.status = 403;
