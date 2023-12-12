@@ -356,10 +356,7 @@ export function postResource<T extends IdResource>(
         return await next();
       }
       const filename = await writeResource(ref, newResource);
-      log(
-        `POST written to ${filename} ${resource.singular}:`,
-        newResource,
-      );
+      log(`POST written to ${filename} ${resource.singular}:`, newResource);
       if (options?.postProcess) {
         newResource = await options.postProcess(ctx, newResource, ref);
       }

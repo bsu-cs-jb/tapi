@@ -1,5 +1,5 @@
 import { createLogger, format, transports } from "winston";
-import 'winston-daily-rotate-file';
+import "winston-daily-rotate-file";
 import TransportStream from "winston-transport";
 
 import { config } from "./config.js";
@@ -24,12 +24,12 @@ const TRANSPORTS: TransportStream[] = [
 
 if (config.LOG_TO_FILE) {
   const rotateTransport = new transports.DailyRotateFile({
-    filename: 'tapi-%DATE%.log',
-    dirname: 'logs',
-    datePattern: 'YYYY-MM-DD-HH',
+    filename: "tapi-%DATE%.log",
+    dirname: "logs",
+    datePattern: "YYYY-MM-DD-HH",
     zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d',
+    maxSize: "20m",
+    maxFiles: "14d",
   });
 
   // TRANSPORTS.push(new transports.File({ filename: "logs/combined.log" }));

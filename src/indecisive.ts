@@ -204,23 +204,23 @@ function indecisiveAuth(
   };
 }
 
-async function preCreateSession(
+const preCreateSession = async (
   ctx: Context,
   session: SessionDb,
   body: Session,
-): Promise<SessionDb> {
+): Promise<SessionDb> => {
   const { self } = ctx.state;
   // log(`Assigning ownerId ${self.id} to new session ${session.name}`);
+  if (body.accepted === undefined) {
+    body.accepted = true;
+  }
+  if (body.attending === undefined) {
+    body.attending = "yes";
+  }
   const newSessionDb = toSessionDb(body, self.id);
   newSessionDb.ownerId = self.id;
-  newSessionDb.invitations.push({
-    userId: self.id,
-    accepted: true,
-    attending: "yes",
-  });
-  addInvitation(newSessionDb, self.id);
   return newSessionDb;
-}
+};
 
 async function postCreateSession(
   ctx: Context,
@@ -506,7 +506,9 @@ export function indecisiveRoutes(router: Router) {
 
       const { userId } = ctx.request.body;
       assert(userId, "userId");
-      log(`User ${self.id} inviting ${userId} to session ${session.id} (name: ${session.name})`);
+      log(
+        `User ${self.id} inviting ${userId} to session ${session.id} (name: ${session.name})`,
+      );
       const invitedUser = await fetchUser(userId);
       if (invitedUser === undefined) {
         ctx.status = 400;
@@ -594,7 +596,9 @@ export function indecisiveRoutes(router: Router) {
 
       // TODO: validate parameters
       const { name } = ctx.request.body;
-      log(`User ${self.id} adding suggestion '${name}  to ${session.id} (name: ${session.name})`);
+      log(
+        `User ${self.id} adding suggestion '${name}  to ${session.id} (name: ${session.name})`,
+      );
 
       // add suggestion
       addSuggestion(session, self.id, name);
@@ -634,6 +638,10 @@ export function indecisiveRoutes(router: Router) {
       const suggestion = getSuggestion(session, suggestionId);
       if (!suggestion) {
         ctx.status = 404;
+        ctx.body = {
+          status: "error",
+          message: `Suggestion id '${suggestionId}' not found in session ${session.id} (name: ${session.name}).`,
+        };
         return;
       }
 
@@ -692,3 +700,7 @@ export function indecisiveRoutes(router: Router) {
   router.use(sessionOwnerInviteRoutes.routes());
   router.use(sessionOwnerInviteRoutes.allowedMethods());
 }
+
+export const FOR_TESTING = {
+  preCreateSession,
+};

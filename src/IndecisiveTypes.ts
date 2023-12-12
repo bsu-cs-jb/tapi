@@ -254,7 +254,7 @@ export function addInvitation(
   const existingInvite = session.invitations.find(
     (invite) => invite.userId === userId,
   );
-  if (!existingInvite) {
+  if (existingInvite === undefined) {
     session.invitations.push({
       userId,
       accepted,

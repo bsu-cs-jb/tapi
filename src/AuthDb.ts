@@ -7,6 +7,7 @@ import {
   ResourceDef,
   writeResource,
 } from "./FileDb.js";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
 
 export interface FileModelToken extends Token {
@@ -80,7 +81,7 @@ export async function isInvalid(dbToken: TokenDb): Promise<boolean> {
 }
 
 export async function fetchToken(id: string): Promise<TokenDb | undefined> {
-  log(`fetchToken(${id})`);
+  // log(`fetchToken(${id})`);
   return readResource<TokenDb>(refWithId(TOKEN, id));
 }
 

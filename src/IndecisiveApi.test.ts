@@ -1,6 +1,21 @@
-import { expect, test, describe, beforeAll } from "@jest/globals";
+import {
+  expect,
+  test,
+  describe,
+  beforeAll,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 
 import request from "supertest";
+
+import {
+  Session,
+  Attending,
+  Vote,
+  Invitation,
+  Suggestion,
+} from "./indecisive_rn_types.js";
 
 import { base64 } from "./utils.js";
 
@@ -19,6 +34,45 @@ interface TokenResponse {
   token_type: string;
   expires_in: number;
   scope: string[];
+}
+
+async function deleteSession(
+  token: string,
+  sessionId: string,
+): Promise<object> {
+  const result = await fetch(`${URL}/indecisive/sessions/${sessionId}`, {
+    method: "DELETE",
+    headers: new Headers({
+      Authorization: `Bearer ${token}`,
+    }),
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((json) => {
+      return json as object;
+    });
+  return result;
+}
+
+async function createSession(token: string): Promise<Session> {
+  const result = await fetch(`${URL}/indecisive/sessions`, {
+    method: "POST",
+    body: JSON.stringify({
+      description: "UAT Session",
+    }),
+    headers: new Headers({
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    }),
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((json) => {
+      return json as Session;
+    });
+  return result;
 }
 
 async function fetchToken(
@@ -176,5 +230,45 @@ describe("/session/invite", () => {
       accepted: false,
       attending: "undecided",
     });
+  });
+});
+
+describe("/session/invite", () => {
+  let token = "EMPTY";
+  let sessionId = "";
+
+  beforeAll(async () => {
+    token = await fetchToken();
+  });
+
+  beforeEach(async () => {
+    const session = await createSession(token);
+    sessionId = session.id;
+  });
+
+  afterEach(async () => {
+    await deleteSession(token, sessionId);
+  });
+
+  test("works", async () => {
+    const req = request(URL);
+    const result = await req
+      .post(`/indecisive/sessions/${sessionId}/invite`)
+      .auth(token, { type: "bearer" })
+      .send({ userId: "brahbrah" })
+      .expect(200)
+      .expect("Content-Type", /json/);
+    expect(result.body).toBeDefined();
+    expect(result.body).toHaveProperty("id", sessionId);
+    expect(result.body.invitations).toContainEqual({
+      user: {
+        id: "brahbrah",
+        name: "Brahbrah",
+      },
+      accepted: false,
+      attending: "undecided",
+    });
+    expect(result.body).toHaveProperty("accepted", true);
+    expect(result.body).toHaveProperty("attending", "yes");
   });
 });

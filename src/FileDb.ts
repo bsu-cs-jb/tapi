@@ -248,9 +248,7 @@ export async function deleteResourceDb<T extends IdResource>(
     );
     return undefined;
   }
-  log(
-    `deleteResource(${resource.singular} ${resource.id}) from ${filename}.`,
-  );
+  log(`deleteResource(${resource.singular} ${resource.id}) from ${filename}.`);
   await unlink(filename);
   // log(`DONE deleting ${filename}.`);
   if (config.DB_GIT_COMMIT) {
@@ -274,9 +272,7 @@ export async function writeResource<T extends IdResource>(
   }
   const buffer = jsonToBuffer(data);
   const filename = resourceFilename(resource);
-  log(
-    `writeResource(${resource.singular} ${resource.id}) to ${filename}.`,
-  );
+  log(`writeResource(${resource.singular} ${resource.id}) to ${filename}.`);
   await writeFile(filename, buffer);
   // log(`DONE writing to ${filename}.`);
   if (config.DB_GIT_COMMIT) {
