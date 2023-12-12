@@ -14,6 +14,7 @@ import {
   deleteToken,
   isInvalid,
 } from "../AuthDb.js";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "../logging.js";
 import { hash } from "../hash.js";
 
@@ -64,7 +65,7 @@ export function FileModel(): ClientCredentialsModel {
       user: User,
       // callback?: Callback<Token>
     ): Promise<FileModelToken | Falsey> => {
-      log(`saveToken(${token}, ${client.id}, ${user.userId})`, token);
+      // log(`saveToken(${token}, ${client.id}, ${user.userId})`, token);
       token.clientId = client.id;
       const dbToken = {
         id: token.accessToken,
@@ -87,7 +88,7 @@ export function FileModel(): ClientCredentialsModel {
       accessToken: string,
       // callback?: Callback<Token>,
     ): Promise<Token | Falsey> => {
-      log(`getAccessToken(${accessToken})`);
+      // log(`getAccessToken(${accessToken})`);
       const dbToken = await fetchToken(accessToken);
       if (dbToken) {
         // log(`Found token:`, dbToken);

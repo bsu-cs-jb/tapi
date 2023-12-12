@@ -14,6 +14,7 @@ import { execFile } from "node:child_process";
 import { cloneDeep, throttle } from "lodash-es";
 
 import { config } from "./config.js";
+import { log, logger } from "./logging.js";
 import { toJson, fromJson } from "./utils.js";
 
 const execFileP = util.promisify(execFile);
@@ -68,14 +69,14 @@ async function fileExists(filename: string): Promise<boolean> {
     await access(filename, constants.R_OK);
     return true;
   } catch {
-    console.log(`File ${filename} does not exist.`);
+    log(`File ${filename} does not exist.`);
     // cannot read file or it doesn't exist
     return false;
   }
 }
 
 async function ensureDir(dirpath: string) {
-  // console.log(`ensureDir(${dirpath})`);
+  // log(`ensureDir(${dirpath})`);
   if (!(await dirExists(dirpath))) {
     await mkdir(dirpath, { recursive: true });
   }
@@ -154,7 +155,7 @@ export async function getAll<T extends IdResource>(
 ): Promise<T[] | undefined> {
   const dirpath = resourceDir(resource);
   if (!(await dirExists(dirpath))) {
-    console.log(`Directory ${dirpath} for ${resource} does not exist.`);
+    log(`Directory ${dirpath} for ${resource} does not exist.`);
     return undefined;
   }
   try {
@@ -162,11 +163,11 @@ export async function getAll<T extends IdResource>(
     const resources = await Promise.all(
       files.map((file) => readFileAsJson<T>(`${file.path}/${file.name}`)),
     );
-    // console.log(`Found ${resources.length} ${resource} resources.`);
+    // log(`Found ${resources.length} ${resource} resources.`);
     // return resources.filter(defd);
     return resources;
   } catch (err) {
-    console.error(
+    logger.error(
       `Error reading directory ${resource.name} resources from ${dirpath}.`,
       err,
     );
@@ -194,9 +195,9 @@ async function readFileAsJson<T extends IdResource>(
   filename: string,
 ): Promise<T> {
   const buffer = await readFile(filename, "utf8");
-  // console.log(`DONE reading from ${filename}.`);
+  // log(`DONE reading from ${filename}.`);
   const data = fromJson<T>(buffer);
-  // console.log(data);
+  // log(data);
   return data;
 }
 
@@ -205,30 +206,30 @@ export async function readResource<T extends IdResource>(
 ): Promise<T | undefined> {
   const filename = resourceFilename(resource);
   if (!(await fileExists(filename))) {
-    console.log(
+    log(
       `readResource(${resource.name}, ${resource.id}) ${filename} does not exist.`,
     );
     return undefined;
   }
-  // console.log(`readResource(${resource}) to ${filename}.`);
+  // log(`readResource(${resource}) to ${filename}.`);
   const data = readFileAsJson<T>(filename);
   return data;
 }
 
 async function gitCommit() {
   if (!config.DB_GIT_COMMIT_SCRIPT) {
-    console.error("gitCommit called but no commit script specified.");
+    logger.error("gitCommit called but no commit script specified.");
     return;
   }
   try {
     const { stdout, stderr } = await execFileP(config.DB_GIT_COMMIT_SCRIPT);
-    console.log(`execFile stdout:\n${stdout}`);
-    console.log(`execFile stderr:\n${stderr}`);
+    log(`execFile stdout:\n${stdout}`);
+    log(`execFile stderr:\n${stderr}`);
     // await execFileP('git', ['add', '-A', 'db/']);
     // await execFileP('git', ['commit', '-m', 'Update db']);
-    // console.log('DONE committing to git.');
+    // log('DONE committing to git.');
   } catch (err) {
-    console.error("Error using git", err);
+    logger.error("Error using git", err);
   }
 }
 
@@ -242,16 +243,16 @@ export async function deleteResourceDb<T extends IdResource>(
 ): Promise<string | undefined> {
   const filename = resourceFilename(resource);
   if (!(await fileExists(filename))) {
-    console.log(
+    log(
       `deleteResourceDb(${resource.name}, ${resource.id}) ${filename} does not exist.`,
     );
     return undefined;
   }
-  console.log(
+  log(
     `deleteResource(${resource.singular} ${resource.id}) from ${filename}.`,
   );
   await unlink(filename);
-  // console.log(`DONE writing to ${filename}.`);
+  // log(`DONE writing to ${filename}.`);
   if (config.DB_GIT_COMMIT) {
     throttleGitCommit();
   }
@@ -273,11 +274,11 @@ export async function writeResource<T extends IdResource>(
   }
   const buffer = jsonToBuffer(data);
   const filename = resourceFilename(resource);
-  console.log(
+  log(
     `writeResource(${resource.singular} ${resource.id}) to ${filename}.`,
   );
   await writeFile(filename, buffer);
-  // console.log(`DONE writing to ${filename}.`);
+  // log(`DONE writing to ${filename}.`);
   if (config.DB_GIT_COMMIT) {
     throttleGitCommit();
   }

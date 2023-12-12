@@ -30,11 +30,11 @@ const oauthAccessTokens: Token[] = [],
 const model:RefreshTokenModel = {
   // Debug function to dump the state of the data stores
   dump: function() {
-    console.log("oauthAccessTokens", oauthAccessTokens);
-    console.log("oauthClients", oauthClients);
-    console.log("authorizedClientIds", authorizedClientIds);
-    console.log("oauthRefreshTokens", oauthRefreshTokens);
-    console.log("users", users);
+    log("oauthAccessTokens", oauthAccessTokens);
+    log("oauthClients", oauthClients);
+    log("authorizedClientIds", authorizedClientIds);
+    log("oauthRefreshTokens", oauthRefreshTokens);
+    log("users", users);
   }
 
 

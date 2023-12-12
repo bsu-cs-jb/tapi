@@ -57,7 +57,7 @@ async function auth_impl(ctx: Context, scope?: string[] | string) {
 export function authenticate(scope?: string | string[]) {
   return async (ctx: Context, next: Next) => {
     const result = await auth_impl(ctx, scope);
-    console.log(`oauth2/koa/authenticate(${scope})`, result);
+    log(`oauth2/koa/authenticate(${scope})`, result);
 
     // if result failed then don't forward
     if (result) {

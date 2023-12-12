@@ -34,7 +34,7 @@ export function encodeNumber(
   const DICT_LENGTH = dictionary.length;
   if (length === undefined) {
     length = Math.ceil(Math.log10(n) / Math.log10(DICT_LENGTH));
-    console.log(`Calculated length: ${length}`);
+    // console.log(`Calculated length: ${length}`);
   }
   let c = n;
   let id = "";

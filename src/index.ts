@@ -123,6 +123,7 @@ log(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
 log(`LOG_LEVEL: ${config.LOG_LEVEL}`);
 
 log(`DB_GRADING_DIR: ${config.DB_GRADING_DIR}`);
+log(`DB_INDECISIVE_DIR: ${config.DB_INDECISIVE_DIR}`);
 log(`DB_GIT_COMMIT: ${config.DB_GIT_COMMIT}`);
 log(`DB_GIT_COMMIT_SCRIPT: ${config.DB_GIT_COMMIT_SCRIPT}`);
 

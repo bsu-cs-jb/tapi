@@ -4,7 +4,7 @@ import { merge, cloneDeep, sortBy, capitalize } from "lodash-es";
 
 import { urlid } from "./genid.js";
 import { jsonhtml, shallowJson, assert } from "./utils.js";
-import { log } from "./logging.js";
+import { log, logger } from "./logging.js";
 import {
   deleteResourceDb,
   getAll,
@@ -136,7 +136,7 @@ export function routerParam<T extends IdResource>(
       ctx.state[resource.singular] = obj;
       if (!ctx.state[resource.singular]) {
         ctx.status = 404;
-        console.error(`${resource.singular} id '${id}' not found.`);
+        logger.error(`${resource.singular} id '${id}' not found.`);
         return;
       }
       await next();
@@ -150,7 +150,7 @@ export function linkList<T extends IdResource>(
   resources: IdResource[],
   urlParams: Record<string, string> = {},
 ): string {
-  // console.log(`linkList(router, ${resource.paramName}, ${resource.singular}, ${resources.length})`);
+  // log(`linkList(router, ${resource.paramName}, ${resource.singular}, ${resources.length})`);
   if (!resources) {
     return `<div><p>${capitalize(
       resource.name,
@@ -166,7 +166,7 @@ export function linkList<T extends IdResource>(
       [resource.paramName]: r.id,
       ...urlParams,
     });
-    // console.log(`<p><a href="${href}">${r.name} - ${r.id}</a></p>`);
+    // log(`<p><a href="${href}">${r.name} - ${r.id}</a></p>`);
     if (r.name) {
       result += `<li><a href="${href}">${r.name} - ${r.id}</a></li>\n`;
     } else {
@@ -348,7 +348,7 @@ export function postResource<T extends IdResource>(
         const message = `${capitalize(resource.singular)} with id '${
           newResource.id
         }' already exists.`;
-        console.error(message);
+        logger.error(message);
         ctx.body = {
           status: "error",
           message,
@@ -356,7 +356,7 @@ export function postResource<T extends IdResource>(
         return await next();
       }
       const filename = await writeResource(ref, newResource);
-      console.log(
+      log(
         `POST written to ${filename} ${resource.singular}:`,
         newResource,
       );
@@ -460,7 +460,7 @@ export function putResource<T extends IdResource>(
         data = await options.postProcess(ctx, data, ref);
       }
 
-      console.log(
+      log(
         `PUT written to ${filename} ${resource.singular}:`,
         shallowJson(data),
       );
@@ -516,7 +516,7 @@ export function patchResource<T extends IdResource>(
         data = await options.postProcess(ctx, data, ref);
       }
 
-      console.log(
+      log(
         `PUT written to ${filename} ${resource.singular}:`,
         shallowJson(data),
       );

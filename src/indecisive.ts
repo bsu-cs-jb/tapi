@@ -649,7 +649,7 @@ export function indecisiveRoutes(router: Router) {
       // persist session
       const ref = refWithId(SESSION, session.id);
       const _filename = await writeResource(ref, session);
-      // console.log(`POST written to ${filename} session:`, session);
+      // log(`POST written to ${filename} session:`, session);
 
       ctx.body = await toSession(session, self.id);
       await next();
@@ -671,7 +671,7 @@ export function indecisiveRoutes(router: Router) {
 
   router.get("self", "/self", async (ctx) => {
     const { self } = ctx.state;
-    // console.log("/self auth", auth);
+    // log("/self auth", auth);
     ctx.body = self;
   });
 

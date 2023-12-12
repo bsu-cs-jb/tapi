@@ -51,7 +51,7 @@ export const TOKEN: ResourceDef<TokenDb> = {
 };
 
 export async function fetchClient(id: string): Promise<AuthDb | undefined> {
-  log(`fetchClient(${id})`);
+  // log(`fetchClient(${id})`);
   return readResource<AuthDb>(refWithId(CLIENT, id));
 }
 
