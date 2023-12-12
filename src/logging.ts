@@ -3,6 +3,7 @@ import "winston-daily-rotate-file";
 import TransportStream from "winston-transport";
 
 import { config } from "./config.js";
+import { toJson } from "./utils.js";
 
 const TRANSPORTS: TransportStream[] = [
   new transports.Console({
@@ -50,5 +51,6 @@ export const logger = createLogger({
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function log(message: string, ...data: any[]) {
-  logger.info(message, ...data);
+  const finalMessage = [message, ...data.map((i) => toJson(i))].join(" ");
+  logger.info(finalMessage);
 }

@@ -191,7 +191,7 @@ export async function getResourceIds(
   }
 }
 
-async function readFileAsJson<T extends IdResource>(
+export async function readFileAsJson<T extends IdResource>(
   filename: string,
 ): Promise<T> {
   const buffer = await readFile(filename, "utf8");

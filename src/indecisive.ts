@@ -196,8 +196,13 @@ function indecisiveAuth(
 
     // if self is required, then error on missing self
     if (requireSelf && !ctx.state.self) {
-      ctx.status = 400;
-      logger.error(`No user associated with clientId '${userId}' not found.`);
+      const message = `User '${userId}' associated with your clientId not found.`;
+      ctx.status = 500;
+      ctx.body = {
+        status: "error",
+        message,
+      };
+      logger.error(message);
       return;
     }
     await next();

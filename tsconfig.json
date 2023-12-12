@@ -114,7 +114,8 @@
       "old"
     ],
     "excludeFiles": [
-      "src/**/*.test.*"
+      "src/**/*.test.*",
+      "src/setup.*"
     ]
   },
   "include": [

@@ -17,6 +17,8 @@ import {
   Suggestion,
 } from "./indecisive_rn_types.js";
 
+import { fetchToken } from "./AuthClient.js";
+
 import { base64 } from "./utils.js";
 
 const URL = "http://localhost:3000";
@@ -28,13 +30,6 @@ const USER_ID = "test";
 const USER_NAME = "Test User";
 
 const SESSION_ID = "F0do6JsHtw";
-
-interface TokenResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  scope: string[];
-}
 
 async function deleteSession(
   token: string,
@@ -75,27 +70,6 @@ async function createSession(token: string): Promise<Session> {
   return result;
 }
 
-async function fetchToken(
-  id = CLIENT_ID,
-  secret = CLIENT_SECRET,
-): Promise<string> {
-  const result = await fetch(`${URL}/token`, {
-    method: "POST",
-    body: "grant_type=client_credentials",
-    headers: new Headers({
-      "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${base64(`${id}:${secret}`)}`,
-    }),
-  })
-    .then((response) => {
-      return response.json();
-    })
-    .then((json) => {
-      return (json as TokenResponse).access_token;
-    });
-  return result;
-}
-
 describe("auth", () => {
   test("generates token", async () => {
     const result = await fetch(`${URL}/token`, {
@@ -128,7 +102,7 @@ describe("auth", () => {
   });
 
   test("uses token", async () => {
-    const token = await fetchToken();
+    const token = await fetchToken(CLIENT_ID, CLIENT_SECRET);
     const result = await fetch(`${URL}/indecisive/self`, {
       headers: new Headers({
         Authorization: `Bearer ${token}`,
@@ -147,7 +121,7 @@ describe("/self", () => {
   let token = "EMPTY";
 
   beforeAll(async () => {
-    token = await fetchToken();
+    token = await fetchToken(CLIENT_ID, CLIENT_SECRET);
   });
 
   test("works", async () => {
@@ -182,7 +156,7 @@ describe("/current-session", () => {
   let token = "EMPTY";
 
   beforeAll(async () => {
-    token = await fetchToken();
+    token = await fetchToken(CLIENT_ID, CLIENT_SECRET);
   });
 
   test("works", async () => {
@@ -209,7 +183,7 @@ describe("/session/invite", () => {
   let token = "EMPTY";
 
   beforeAll(async () => {
-    token = await fetchToken();
+    token = await fetchToken(CLIENT_ID, CLIENT_SECRET);
   });
 
   test("works", async () => {
@@ -238,7 +212,7 @@ describe("/session/invite", () => {
   let sessionId = "";
 
   beforeAll(async () => {
-    token = await fetchToken();
+    token = await fetchToken(CLIENT_ID, CLIENT_SECRET);
   });
 
   beforeEach(async () => {

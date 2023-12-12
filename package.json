@@ -10,6 +10,7 @@
     "link-grading": "rm -rf ./node_modules/grading; ln -s $HOME/work/cs411/grading ./node_modules/grading",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src",
+    "setup": "yarn build; yarn node ./dist/setup.js",
     "format:fix": "prettier src .eslintrc.cjs *.ts *.cjs --write",
     "pretest": "yarn tsc",
     "test": "jest",

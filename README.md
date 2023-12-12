@@ -35,3 +35,12 @@ curl -i -X POST http://localhost:3000/indecisive/sessions -H "Content-Type: appl
 
 [Node TypeScript Koa REST](https://github.com/javieraviles/node-typescript-koa-rest/blob/master/src/server.ts)
 - this is older
+
+## Generating passwords
+
+```bash
+openssl rand -hex 12 | tr -d '\n'
+```
+
+
+
