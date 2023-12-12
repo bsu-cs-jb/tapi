@@ -113,6 +113,14 @@ async function users() {
   }
 }
 
+async function printIds() {
+  const rawUsers = await readFileAsJson("users.private.json");
+  const userDef = rawUsers as unknown as UserDef[];
+  for (const user of userDef) {
+    console.log(`clientId: ${user.id}\nclientSecret: ${user.secret}\n`);
+  }
+}
+
 async function fakeUsers() {
   // need session id
   const token = await fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
@@ -134,8 +142,9 @@ async function main() {
   log(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
   log(`LOG_LEVEL: ${config.LOG_LEVEL}`);
 
-  await users();
-  await fakeUsers();
+  // await users();
+  // await fakeUsers();
+  await printIds();
 }
 
 main()
