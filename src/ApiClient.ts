@@ -1,4 +1,5 @@
 import { toJson, base64 } from "./utils.js";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
 
 const SERVER = "http://localhost:3000";
@@ -26,7 +27,7 @@ export async function sendData<T>(
   }
   const headers = new Headers(headersObj);
   const url = `${SERVER}${path}`;
-  log(`sendData(${method}, ${url}) body: ${body}`);
+  // log(`sendData(${method}, ${url}) body: ${body}`);
   const result = await fetch(url, {
     method,
     body,
@@ -51,14 +52,26 @@ export async function sendData<T>(
 export async function fetchToken(
   id: string,
   secret: string,
+  scope?: string | string[],
   server?: string,
 ): Promise<string> {
   if (!server) {
     server = SERVER;
   }
+  const params: Record<string, string> = {
+    grant_type: "client_credentials",
+  };
+  if (scope !== undefined) {
+    if (Array.isArray(scope)) {
+      params["scope"] = scope.join(" ");
+    } else {
+      params["scope"] = scope;
+    }
+  }
+  const body = new URLSearchParams(params);
   const result = await fetch(`${server}/token`, {
     method: "POST",
-    body: "grant_type=client_credentials",
+    body,
     headers: new Headers({
       "Content-Type": "application/x-www-form-urlencoded",
       Authorization: `Basic ${base64(`${id}:${secret}`)}`,

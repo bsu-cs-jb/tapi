@@ -51,6 +51,15 @@ export const logger = createLogger({
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function log(message: string, ...data: any[]) {
-  const finalMessage = [message, ...data.map((i) => toJson(i))].join(" ");
+  const finalMessage = [
+    message,
+    ...data.map((item) => {
+      if (typeof item === "object") {
+        return toJson(item);
+      } else {
+        return item;
+      }
+    }),
+  ].join(" ");
   logger.info(finalMessage);
 }

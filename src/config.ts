@@ -16,6 +16,8 @@ interface Config extends BaseConfig {
   DB_AUTH_DIR: string;
   LOG_CONSOLE_TS: string;
   LOG_TO_FILE: boolean;
+  ADMIN_ID: string;
+  ADMIN_SECRET: string;
 }
 
 class ConfigImpl extends BaseConfigImpl {
@@ -49,6 +51,14 @@ class ConfigImpl extends BaseConfigImpl {
 
   public get LOG_CONSOLE_TS(): string {
     return getConfig("LOG_CONSOLE_TS", "YYYY-MM-DD HH:mm:ss");
+  }
+
+  public get ADMIN_ID(): string {
+    return getConfig("ADMIN_ID", "");
+  }
+
+  public get ADMIN_SECRET(): string {
+    return getConfig("ADMIN_SECRET", "");
   }
 }
 

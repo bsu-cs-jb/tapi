@@ -8,6 +8,7 @@ import {
   deleteResource,
   getCollection,
   getResource,
+  patchResource,
   postResource,
   putResource,
   routerParam,
@@ -15,17 +16,17 @@ import {
 
 import { fetchUser, fetchSession, SESSION, USER } from "./IndecisiveDb.js";
 import {
+  addInvitation,
+  addSuggestion,
+  canViewSession,
+  getInvitation,
+  getSuggestion,
+  SessionDb,
   toSession,
   toSessionDb,
-  addInvitation,
-  getSuggestion,
   updateResponse,
-  getInvitation,
-  addSuggestion,
   updateSuggestion,
-  canViewSession,
   UserDb,
-  SessionDb,
 } from "./IndecisiveTypes.js";
 import { Session } from "./indecisive_rn_types.js";
 import { assert, removeId } from "./utils.js";
@@ -435,6 +436,7 @@ export function indecisiveRoutes(router: Router) {
     preProcess: preCreateUser,
   });
   putResource(router, USER);
+  patchResource(router, USER);
 
   getCollection(router, SESSION, {
     postProcess: filterSessionCollection,
