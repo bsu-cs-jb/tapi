@@ -17,7 +17,7 @@ import {
   Suggestion,
 } from "./indecisive_rn_types.js";
 
-import { fetchToken } from "./AuthClient.js";
+import { fetchToken } from "./ApiClient.js";
 
 import { base64 } from "./utils.js";
 
