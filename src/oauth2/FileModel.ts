@@ -14,7 +14,7 @@ import {
   deleteToken,
   isInvalid,
 } from "../AuthDb.js";
-import { log } from "../utils.js";
+import { log } from "../logging.js";
 import { hash } from "../hash.js";
 
 function toScopeArray(scope: string | string[] | undefined): string[] {

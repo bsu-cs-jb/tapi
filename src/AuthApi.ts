@@ -18,7 +18,7 @@ import {
   TOKEN,
   TokenDb,
 } from "./AuthDb.js";
-import { log } from "./utils.js";
+import { log } from "./logging.js";
 import { hash } from "./hash.js";
 
 async function preUpdateClient(

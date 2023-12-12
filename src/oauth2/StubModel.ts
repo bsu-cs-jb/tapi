@@ -6,7 +6,7 @@ import {
   // Callback,
   Falsey,
 } from "oauth2-server";
-import { log } from "../utils.js";
+import { log } from "../logging.js";
 
 const model: ClientCredentialsModel = {
   // ********** BaseModel  **********

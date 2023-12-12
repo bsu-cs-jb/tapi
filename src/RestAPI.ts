@@ -3,7 +3,8 @@ import { Context, Next } from "koa";
 import { merge, cloneDeep, sortBy, capitalize } from "lodash-es";
 
 import { urlid } from "./genid.js";
-import { log, jsonhtml, shallowJson, assert } from "./utils.js";
+import { jsonhtml, shallowJson, assert } from "./utils.js";
+import { log } from "./logging.js";
 import {
   deleteResourceDb,
   getAll,
@@ -32,11 +33,13 @@ function routeLog<T extends IdResource>(
   name: string,
   url: string,
 ) {
-  log(
-    `${method.padEnd(4)} route for ${type.padEnd(10)} ${resource.name.padStart(
-      8,
-    )} Name: ${name.padEnd(18)} Url: ${url}`,
-  );
+  if (url === "DISABLED") {
+    log(
+      `${method.padEnd(4)} route for ${type.padEnd(
+        10,
+      )} ${resource.name.padStart(8)} Name: ${name.padEnd(18)} Url: ${url}`,
+    );
+  }
 }
 
 export function collectionRoute<T extends IdResource>(
@@ -390,11 +393,11 @@ export function deleteResource<T extends IdResource>(
     async (ctx: Context, next: Next) => {
       // get the existing resource
       const obj = ctx.state[resource.singular];
-      assert(obj !== undefined && obj !== null);
+      assert(obj !== undefined && obj !== null, "delete obj must be defined");
 
       // Make sure the id of the resource matches
       const id = ctx.params[resource.paramName];
-      assert(obj.id !== undefined && obj.id === id);
+      assert(obj.id !== undefined && obj.id === id, "obj.id must match id");
       const ref = refWithId(resource, id);
 
       const filename = await deleteResourceDb(ref);

@@ -28,7 +28,8 @@ import {
   SessionDb,
 } from "./IndecisiveTypes.js";
 import { Session } from "./indecisive_rn_types.js";
-import { log, assert, removeId } from "./utils.js";
+import { assert, removeId } from "./utils.js";
+import { log, logger } from "./logging.js";
 
 interface PathDef {
   method: "POST" | "GET" | "PUT" | "PATCH" | "DELETE";
@@ -65,17 +66,14 @@ function authSessionOwner(paths: PathDef[]) {
       return;
     }
 
-    log("ctx.request.method:", ctx.request.method);
-    log("ctx._matchedRoute:", ctx._matchedRoute);
+    // log("ctx.request.method:", ctx.request.method);
+    // log("ctx._matchedRoute:", ctx._matchedRoute);
     if (pathDefsMatch(ctx, paths)) {
-      log("authOwnerInvite() matches spec");
-      // log("ctx.routerName:", ctx.routerName);
-      // log("ctx._matchedRoute:", ctx._matchedRoute);
-      // log("ctx._matchedRouteName:", ctx._matchedRouteName);
+      // log("authOwnerInvite() matches spec");
 
       if (self.id !== session.ownerId) {
         const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they are not the owner (name: ${session.name}).`;
-        console.error(message);
+        logger.error(message);
         ctx.status = 403;
         ctx.body = {
           status: "Forbidden",
@@ -103,17 +101,14 @@ function authOwnerInvite(paths: PathDef[]) {
       return;
     }
 
-    log("ctx.request.method:", ctx.request.method);
-    log("ctx._matchedRoute:", ctx._matchedRoute);
+    // log("ctx.request.method:", ctx.request.method);
+    // log("ctx._matchedRoute:", ctx._matchedRoute);
     if (pathDefsMatch(ctx, paths)) {
-      log("authOwnerInvite() matches spec");
-      // log("ctx.routerName:", ctx.routerName);
-      // log("ctx._matchedRoute:", ctx._matchedRoute);
-      // log("ctx._matchedRouteName:", ctx._matchedRouteName);
+      // log("authOwnerInvite() matches spec");
 
       if (!canViewSession(session, self.id)) {
         const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
-        console.error(message);
+        logger.error(message);
         ctx.status = 403;
         ctx.body = {
           status: "Forbidden",
@@ -133,7 +128,7 @@ function _authOwnerInvite_2() {
 
     if (!canViewSession(session, self.id)) {
       const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
-      console.error(message);
+      logger.error(message);
       ctx.status = 403;
       ctx.body = {
         status: "Forbidden",
@@ -156,7 +151,7 @@ function fetchCurrentSession(errorIfMissing: boolean = true) {
     if (currentSessionId) {
       ctx.state.currentSession = await fetchSession(currentSessionId);
     } else {
-      console.error(`No current session associated with clientId.`);
+      logger.error(`No current session associated with clientId.`);
       if (errorIfMissing) {
         ctx.status = 400;
         ctx.body = {
@@ -167,7 +162,7 @@ function fetchCurrentSession(errorIfMissing: boolean = true) {
       }
     }
     if (!ctx.state.currentSession) {
-      console.error(`Current session id '${currentSessionId}' is missing.`);
+      logger.error(`Current session id '${currentSessionId}' is missing.`);
       if (errorIfMissing) {
         ctx.status = 400;
         ctx.body = {
@@ -196,13 +191,13 @@ function indecisiveAuth(
       // log(`Fetching self for userId: ${userId}`);
       ctx.state.self = await fetchUser(userId);
     } else {
-      log("No userId find in ctx.state.auth");
+      logger.error("No userId found in ctx.state.auth");
     }
 
     // if self is required, then error on missing self
     if (requireSelf && !ctx.state.self) {
       ctx.status = 400;
-      console.error(`No user associated with clientId '${userId}' not found.`);
+      logger.error(`No user associated with clientId '${userId}' not found.`);
       return;
     }
     await next();
@@ -260,7 +255,7 @@ async function filterSessionCollection(
   session: SessionDb,
 ): Promise<Session | undefined> {
   const { self } = ctx.state;
-  log(`Filtering for ${self.id}`, session);
+  // log(`Filtering for ${self.id}`, session);
   if (!canViewSession(session, self.id)) {
     return undefined;
   }
@@ -289,7 +284,7 @@ async function addUserSessionRef(
       user.ownsSessions = updated;
     }
     const ref = refWithId(USER, user.id);
-    log(`Adding session ${refType} ${sessionId} to user ${user.id}`, user);
+    // log(`Adding session ${refType} ${sessionId} to user ${user.id}`, user);
     await writeResource(ref, user);
     return user;
   }
@@ -311,7 +306,7 @@ async function removeUserSessionRef(
       user.ownsSessions = removeId(sessionId, user.ownsSessions);
     }
     const ref = refWithId(USER, user.id);
-    log(`Removing session ${refType} ${sessionId} from user ${user.id}`, user);
+    // log(`Removing session ${refType} ${sessionId} from user ${user.id}`, user);
     await writeResource(ref, user);
     return user;
   }
@@ -354,9 +349,9 @@ async function postDeleteSession(
   const {
     state: { self },
   } = ctx;
-  log(
-    `Remove session ${session.id} from ${session.invitations.length} invited users' lists (name: ${session.name})`,
-  );
+  // log(
+  //   `Remove session ${session.id} from ${session.invitations.length} invited users' lists (name: ${session.name})`,
+  // );
 
   const results = await Promise.allSettled(
     session.invitations.map(async (invitation) =>
@@ -365,20 +360,20 @@ async function postDeleteSession(
   );
   for (const result of results) {
     if (result.status === "rejected") {
-      console.error(
+      logger.error(
         "Promise rejected removing invitation from user:",
         result.reason,
       );
     }
   }
 
-  log(
-    `Remove session ${session.id} from ownerId ${self.id} named ${session.name}`,
-  );
+  // log(
+  //   `Remove session ${session.id} from ownerId ${self.id} named ${session.name}`,
+  // );
   if (self.id === session.ownerId) {
     await removeUserSessionRef("ownership", session.id, session.ownerId, self);
   } else {
-    console.error(
+    logger.error(
       `Session ${session.id} ownerId ${session.ownerId} !== ${self.id} named ${session.name}`,
     );
   }
@@ -468,7 +463,6 @@ export function indecisiveRoutes(router: Router) {
     postProcess: postDeleteSession,
   });
 
-  // TODO: create middleware that enforces session owner or admin
   const sessionOwnerInviteRoutes = new Router();
   routerParam(sessionOwnerInviteRoutes, SESSION);
   sessionOwnerInviteRoutes.use(
@@ -508,13 +502,11 @@ export function indecisiveRoutes(router: Router) {
     async (ctx: Context, next: Next) => {
       const { self, session } = ctx.state;
 
-      assert(session);
-      // only allow owner to do this
-      // TODO: or if has admin scope
-      assert(self.id === session.ownerId);
+      assert(session, "session");
 
       const { userId } = ctx.request.body;
-      assert(userId);
+      assert(userId, "userId");
+      log(`User ${self.id} inviting ${userId} to session ${session.id} (name: ${session.name})`);
       const invitedUser = await fetchUser(userId);
       if (invitedUser === undefined) {
         ctx.status = 400;
@@ -529,8 +521,8 @@ export function indecisiveRoutes(router: Router) {
 
       // add invitation to session
       const ref = refWithId(SESSION, session.id);
-      const filename = await writeResource(ref, session);
-      console.log(`POST written to ${filename} session:`, session);
+      const _filename = await writeResource(ref, session);
+      // log(`POST written to ${filename} session:`, session);
 
       // add invitation to user
       await addUserSessionRef("invitation", session.id, userId);
@@ -550,7 +542,7 @@ export function indecisiveRoutes(router: Router) {
       assert(session, "Session must be defined");
 
       if (!getInvitation(session, self.id)) {
-        console.error(
+        logger.error(
           `User '${self.id}' cannot respond to '${session.id}' because they were not invited to the session (name: ${session.name}).`,
         );
         ctx.status = 400;
@@ -564,7 +556,7 @@ export function indecisiveRoutes(router: Router) {
       // TODO: validate parameters
       const { accepted, attending } = ctx.request.body;
       log(
-        `Updating ${self.id} response to ${session.id} to accepted: ${accepted} attending: '${attending}'`,
+        `Updating ${self.id} response to ${session.id} to accepted: ${accepted} attending: '${attending}' (name: ${session.name})`,
       );
 
       // update self response
@@ -572,8 +564,8 @@ export function indecisiveRoutes(router: Router) {
 
       // persist session
       const ref = refWithId(SESSION, session.id);
-      const filename = await writeResource(ref, session);
-      console.log(`POST written to ${filename} session:`, session);
+      const _filename = await writeResource(ref, session);
+      // log(`POST written to ${filename} session:`, session);
 
       ctx.body = await toSession(session, self.id);
       await next();
@@ -591,7 +583,7 @@ export function indecisiveRoutes(router: Router) {
 
       // if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
       //   const message = `User '${self.id}' cannot respond to '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
-      //   console.error(message);
+      //   logger.error(message);
       //   ctx.status = 400;
       //   ctx.body = {
       //     status: "error",
@@ -602,15 +594,15 @@ export function indecisiveRoutes(router: Router) {
 
       // TODO: validate parameters
       const { name } = ctx.request.body;
-      log(`User ${self.id} adding suggestion to ${session.id}: ${name}`);
+      log(`User ${self.id} adding suggestion '${name}  to ${session.id} (name: ${session.name})`);
 
       // add suggestion
       addSuggestion(session, self.id, name);
 
       // persist session
       const ref = refWithId(SESSION, session.id);
-      const filename = await writeResource(ref, session);
-      console.log(`POST written to ${filename} session:`, session);
+      const _filename = await writeResource(ref, session);
+      // log(`POST written to ${filename} session:`, session);
 
       ctx.body = await toSession(session, self.id);
       await next();
@@ -628,7 +620,7 @@ export function indecisiveRoutes(router: Router) {
 
       // if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
       //   const message = `User '${self.id}' cannot vote on '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
-      //   console.error(message);
+      //   logger.error(message);
       //   ctx.status = 400;
       //   ctx.body = {
       //     status: "error",
@@ -648,7 +640,7 @@ export function indecisiveRoutes(router: Router) {
       // TODO: validate parameters
       const { vote } = ctx.request.body;
       log(
-        `User ${self.id} voting ${vote} for ${suggestionId} on ${session.id}`,
+        `User ${self.id} voting ${vote} for ${suggestionId} on ${session.id} (name: ${session.name})`,
       );
 
       // update suggestion
@@ -656,8 +648,8 @@ export function indecisiveRoutes(router: Router) {
 
       // persist session
       const ref = refWithId(SESSION, session.id);
-      const filename = await writeResource(ref, session);
-      console.log(`POST written to ${filename} session:`, session);
+      const _filename = await writeResource(ref, session);
+      // console.log(`POST written to ${filename} session:`, session);
 
       ctx.body = await toSession(session, self.id);
       await next();
@@ -678,8 +670,8 @@ export function indecisiveRoutes(router: Router) {
   });
 
   router.get("self", "/self", async (ctx) => {
-    const { self, auth } = ctx.state;
-    console.log("/self auth", auth);
+    const { self } = ctx.state;
+    // console.log("/self auth", auth);
     ctx.body = self;
   });
 

@@ -7,7 +7,7 @@ import {
   ResourceDef,
   writeResource,
 } from "./FileDb.js";
-import { log } from "./utils.js";
+import { log } from "./logging.js";
 
 export interface FileModelToken extends Token {
   clientId?: string;

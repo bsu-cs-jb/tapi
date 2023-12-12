@@ -3,3 +3,5 @@
 *.pem
 dist/
 node_modules/
+
+logs/

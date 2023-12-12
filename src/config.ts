@@ -14,6 +14,8 @@ interface Config extends BaseConfig {
   DB_GRADING_DIR: string;
   DB_INDECISIVE_DIR: string;
   DB_AUTH_DIR: string;
+  LOG_CONSOLE_TS: string;
+  LOG_TO_FILE: boolean;
 }
 
 class ConfigImpl extends BaseConfigImpl {
@@ -39,6 +41,14 @@ class ConfigImpl extends BaseConfigImpl {
 
   public get DB_GIT_COMMIT_SCRIPT(): string {
     return getConfig("DB_GIT_COMMIT_SCRIPT", "");
+  }
+
+  public get LOG_TO_FILE(): boolean {
+    return getConfigBoolean("LOG_TO_FILE", false);
+  }
+
+  public get LOG_CONSOLE_TS(): string {
+    return getConfig("LOG_CONSOLE_TS", "YYYY-MM-DD HH:mm:ss");
   }
 }
 

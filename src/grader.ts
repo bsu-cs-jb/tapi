@@ -3,7 +3,8 @@ import { Context, Next } from "koa";
 import * as _ from "lodash-es";
 import { standardDeviation, quantile, median } from "simple-statistics";
 
-import { jsonhtml, log } from "./utils.js";
+import { jsonhtml } from "./utils.js";
+import { log } from "./logging.js";
 import {
   readResource,
   refWithId,

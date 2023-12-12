@@ -6,7 +6,7 @@ import {
   Falsey,
 } from "oauth2-server";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { log } from "../utils.js";
+import { log } from "../logging.js";
 import { hash } from "../hash.js";
 
 function toScopeArray(scope: string | string[] | undefined): string[] {

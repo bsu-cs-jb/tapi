@@ -1,6 +1,6 @@
 import { Context, Next } from "koa";
 import { Request, Response, OAuthError } from "oauth2-server";
-import { log } from "../utils.js";
+import { log } from "../logging.js";
 
 function oauthResponse(ctx: Context, response: Response) {
   ctx.response.status = response.status || 500;

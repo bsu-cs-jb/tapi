@@ -1,4 +1,5 @@
 import { Buffer } from "buffer";
+import nodeAssert from "node:assert/strict";
 
 export function base64(input: string): string {
   return Buffer.from(input, "utf8").toString("base64");
@@ -82,8 +83,8 @@ export function range(startOrEnd: number, end?: number): number[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function assert(assertion: boolean, msg?: any, ...args: any[]) {
-  console.assert(assertion, msg, ...args);
+export function assert(assertion: boolean, msg?: any) {
+  nodeAssert(assertion, msg);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
