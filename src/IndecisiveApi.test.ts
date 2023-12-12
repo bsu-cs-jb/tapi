@@ -15,8 +15,8 @@ import { fetchToken } from "./ApiClient.js";
 
 import { base64 } from "./utils.js";
 
-const URL = "http://localhost:3000";
-// const URL = "http://cs411.duckdns.org";
+const SERVER = "http://localhost:3000";
+// const SERVER = "http://cs411.duckdns.org";
 const CLIENT_ID = "test";
 const CLIENT_SECRET = "test";
 
@@ -29,7 +29,7 @@ async function deleteSession(
   token: string,
   sessionId: string,
 ): Promise<object> {
-  const result = await fetch(`${URL}/indecisive/sessions/${sessionId}`, {
+  const result = await fetch(`${SERVER}/indecisive/sessions/${sessionId}`, {
     method: "DELETE",
     headers: new Headers({
       Authorization: `Bearer ${token}`,
@@ -45,7 +45,7 @@ async function deleteSession(
 }
 
 async function createSession(token: string): Promise<Session> {
-  const result = await fetch(`${URL}/indecisive/sessions`, {
+  const result = await fetch(`${SERVER}/indecisive/sessions`, {
     method: "POST",
     body: JSON.stringify({
       description: "UAT Session",
@@ -66,7 +66,7 @@ async function createSession(token: string): Promise<Session> {
 
 describe("auth", () => {
   test("generates token", async () => {
-    const result = await fetch(`${URL}/token`, {
+    const result = await fetch(`${SERVER}/token`, {
       method: "POST",
       body: "grant_type=client_credentials",
       headers: new Headers({
@@ -85,19 +85,19 @@ describe("auth", () => {
   });
 
   test("supertest fails without token", async () => {
-    const req = request(URL);
+    const req = request(SERVER);
     await req.get("/indecisive/self").expect(401);
   });
 
   test("fails without token", async () => {
-    await fetch(`${URL}/indecisive/self`, {}).then((response) => {
+    await fetch(`${SERVER}/indecisive/self`, {}).then((response) => {
       expect(response).toHaveProperty("status", 401);
     });
   });
 
   test("uses token", async () => {
-    const token = await fetchToken(CLIENT_ID, CLIENT_SECRET);
-    const result = await fetch(`${URL}/indecisive/self`, {
+    const token = await fetchToken(CLIENT_ID, CLIENT_SECRET, undefined, SERVER);
+    const result = await fetch(`${SERVER}/indecisive/self`, {
       headers: new Headers({
         Authorization: `Bearer ${token}`,
       }),
@@ -115,11 +115,11 @@ describe("/self", () => {
   let token = "EMPTY";
 
   beforeAll(async () => {
-    token = await fetchToken(CLIENT_ID, CLIENT_SECRET);
+    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, undefined, SERVER);
   });
 
-  test("works", async () => {
-    const result = await fetch(`${URL}/indecisive/self`, {
+  test("responds with self", async () => {
+    const result = await fetch(`${SERVER}/indecisive/self`, {
       headers: new Headers({
         Authorization: `Bearer ${token}`,
       }),
@@ -134,7 +134,7 @@ describe("/self", () => {
   });
 
   test("supertest works", async () => {
-    const req = request(URL);
+    const req = request(SERVER);
     const result = await req
       .get("/indecisive/self")
       .auth(token, { type: "bearer" })
@@ -150,11 +150,11 @@ describe("/current-session", () => {
   let token = "EMPTY";
 
   beforeAll(async () => {
-    token = await fetchToken(CLIENT_ID, CLIENT_SECRET);
+    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, undefined, SERVER);
   });
 
   test("works", async () => {
-    const result = await fetch(`${URL}/indecisive/current-session`, {
+    const result = await fetch(`${SERVER}/indecisive/current-session`, {
       headers: new Headers({
         Authorization: `Bearer ${token}`,
       }),
@@ -177,11 +177,11 @@ describe("/session/invite", () => {
   let token = "EMPTY";
 
   beforeAll(async () => {
-    token = await fetchToken(CLIENT_ID, CLIENT_SECRET);
+    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, undefined, SERVER);
   });
 
   test("works", async () => {
-    const req = request(URL);
+    const req = request(SERVER);
     const result = await req
       .post(`/indecisive/sessions/${SESSION_ID}/invite`)
       .auth(token, { type: "bearer" })
@@ -206,7 +206,7 @@ describe("/session/invite", () => {
   let sessionId = "";
 
   beforeAll(async () => {
-    token = await fetchToken(CLIENT_ID, CLIENT_SECRET);
+    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, undefined, SERVER);
   });
 
   beforeEach(async () => {
@@ -219,7 +219,7 @@ describe("/session/invite", () => {
   });
 
   test("works", async () => {
-    const req = request(URL);
+    const req = request(SERVER);
     const result = await req
       .post(`/indecisive/sessions/${sessionId}/invite`)
       .auth(token, { type: "bearer" })

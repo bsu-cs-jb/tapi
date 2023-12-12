@@ -400,7 +400,7 @@ export function indecisiveRoutes(router: Router) {
 
   router.use(["/current-session"], fetchCurrentSession());
 
-  router.get("/", async (ctx) => {
+  router.get("/", async (ctx: Context, next: Next) => {
     let body = "";
     body +=
       "<!DOCTYPE html>\n<html><head><title>Indecisive Root</title></head><body>";
@@ -415,6 +415,7 @@ export function indecisiveRoutes(router: Router) {
     body += '<li><a href="http://google.com">Google</a></li>\n';
     body += "</ul></div>\n";
     ctx.body = body;
+    await next();
   });
 
   routerParam(router, USER);

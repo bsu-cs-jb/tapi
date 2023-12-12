@@ -1,6 +1,6 @@
 import sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
-import Koa, { Context } from "koa";
+import Koa, { Context, Next } from "koa";
 import Router from "@koa/router";
 import cors from "@koa/cors";
 import { bodyParser } from "@koa/bodyparser";
@@ -38,28 +38,34 @@ router.use("/admin", authenticate("admin"));
 router.use("/test", authenticate("read"));
 
 router
-  .get("/", (ctx: Context) => {
+  .get("/", async (ctx: Context, next: Next) => {
     ctx.body =
       '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
+    await next();
   })
-  .get("/test", async (ctx) => {
+  .get("/test", async (ctx: Context, next: Next) => {
     // if (!(await authenticate(ctx, "read"))) {
     //   return;
     // }
     ctx.body =
       '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
+    await next();
   })
-  .get("/admin", async (ctx) => {
+  .get("/admin", async (ctx: Context, next: Next) => {
     // if (!(await authenticate(ctx, "admin"))) {
     //   return;
     // }
     ctx.body =
       '<p>Nice to meet you, are you looking for my <a href="/cats">Cats</a> or <a href="/grader">Grader</a>?</p>';
+    await next();
   })
-  .post("/token", async (ctx) => {
+  .post("/token", async (ctx: Context, next: Next) => {
     await token(ctx);
+    log(`/token finished, calling next()`);
+    await next();
+    log(`/token finished, next() finished`);
   })
-  .get("/cats", (ctx) => {
+  .get("/cats", async (ctx: Context, next: Next) => {
     const cats = allCats();
     log(`Found ${cats.length} cats.`);
     let body = "<!DOCTYPE html>\n<html><body>";
@@ -69,12 +75,13 @@ router
     }
     body += "\n</body></html>";
     ctx.body = body;
+    await next();
   })
   .param("catId", async (id, ctx, next) => {
     ctx.cat = getCat(id);
     await next();
   })
-  .get("/cats/:catId", (ctx) => {
+  .get("/cats/:catId", async (ctx: Context, next: Next) => {
     const {
       cat,
       params: { catId },
@@ -90,6 +97,7 @@ router
     }
 
     ctx.body = body;
+    await next();
   });
 
 const graderRouter = new Router({

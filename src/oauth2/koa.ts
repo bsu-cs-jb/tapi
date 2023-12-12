@@ -1,26 +1,39 @@
 import { Context, Next } from "koa";
 import { Request, Response, OAuthError } from "oauth2-server";
-import { log, logger } from "../logging.js";
+import { logger } from "../logging.js";
 
 function oauthResponse(ctx: Context, response: Response) {
   ctx.response.status = response.status || 500;
   ctx.response.body = response.body;
   for (const header in response.headers) {
+    if (header === "www-authenticate") {
+      logger.http(
+        `Skipping OAuth2 Header ${header}: ${response.get(
+          header,
+        )} due to iOS React Native issue.`,
+      );
+      // This is the offending header
+      // ctx.response.set("www-authenticate", 'Basic realm="Service"');
+      continue;
+    }
     ctx.response.set(header, response.get(header));
   }
 }
 
 function oauthError(ctx: Context, error: OAuthError) {
-  logger.error(`OAuthError authenticating ${error.code} ${error.name} ${error.message}`, {
-    code: error.code,
-    name: error.name,
-    message: error.message,
-    request: {
-      ip: ctx.request.ip,
-      headers: ctx.request.headers,
-      body: ctx.request.body,
+  logger.error(
+    `OAuthError authenticating ${error.code} ${error.name} ${error.message}`,
+    {
+      code: error.code,
+      name: error.name,
+      message: error.message,
+      request: {
+        ip: ctx.request.ip,
+        headers: ctx.request.headers,
+        body: ctx.request.body,
+      },
     },
-  });
+  );
   ctx.response.status = error.code || 500;
   ctx.response.body = {
     error: error.name,
@@ -46,7 +59,18 @@ export async function token(ctx: Context) {
         },
       });
       oauthResponse(ctx, response);
+      return;
+    } else {
+      const err = error as Error;
+      logger.error(`Non-OAuthError: ${err.message}`);
+      ctx.response.status = 500;
+      ctx.response.body = {
+        status: "error",
+        message: "Unexpected error during authentication",
+        error: err.message,
+      };
     }
+    return;
   }
 }
 
@@ -64,6 +88,12 @@ async function auth_impl(ctx: Context, scope?: string[] | string) {
     } else {
       const err = error as Error;
       logger.error(`Non-OAuthError: ${err.message}`);
+      ctx.response.status = 500;
+      ctx.response.body = {
+        status: "error",
+        message: "Unexpected error during authentication",
+        error: err.message,
+      };
     }
     return null;
   }
