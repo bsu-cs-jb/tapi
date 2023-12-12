@@ -9,12 +9,14 @@ import { readFileAsJson } from "./FileDb.js";
 import { config } from "./config.js";
 import { log, logger } from "./logging.js";
 // import { hash } from "./hash.js";
+import { range } from "./utils.js";
+import { faker } from "@faker-js/faker";
 
 interface UserDef {
   id: string;
   name: string;
-  realname: string;
-  secret: string;
+  realname?: string;
+  secret?: string;
   scopes?: string[];
   invite?: boolean;
 }
@@ -27,7 +29,7 @@ function authDbfromUser(user: UserDef, sessionId: string): AuthDb {
   return {
     id: user.id,
     name: user.name,
-    secret: user.secret,
+    secret: user.secret || "",
     client: {
       id: user.id,
       grants: ["client_credentials"],
@@ -90,6 +92,8 @@ async function users() {
   const rawUsers = await readFileAsJson("users.private.json");
   const userDef = rawUsers as unknown as UserDef[];
   const token = await fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
+  log(`Setup token ${token}`);
+
   let createdUsers = 0;
   const MAX_USERS = -1;
   for (const user of userDef) {
@@ -109,14 +113,29 @@ async function users() {
   }
 }
 
+async function fakeUsers() {
+  // need session id
+  const token = await fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
+  log(`Setup token ${token}`);
+
+  const MAX_USERS = 99;
+  for (const i in range(MAX_USERS)) {
+    const user: UserDef = {
+      id: `test-${i.padStart(3, "0")}`,
+      name: faker.person.firstName(),
+    };
+    log(`Will create user:`, user);
+    await updateCreateUser(user, token);
+  }
+}
+
 async function main() {
   console.log("Doing work");
   log(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
   log(`LOG_LEVEL: ${config.LOG_LEVEL}`);
 
-  log(`DB_GRADING_DIR: ${config.DB_GRADING_DIR}`);
-  log(`DB_INDECISIVE_DIR: ${config.DB_INDECISIVE_DIR}`);
   await users();
+  await fakeUsers();
 }
 
 main()

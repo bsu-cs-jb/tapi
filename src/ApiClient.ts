@@ -2,7 +2,8 @@ import { toJson, base64 } from "./utils.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
 
-const SERVER = "http://localhost:3000";
+const SERVER = "http://cs411.duckdns.org";
+// const SERVER = "http://localhost:3000";
 
 export interface TokenResponse {
   access_token: string;
@@ -16,7 +17,11 @@ export async function sendData<T>(
   path: string,
   body: string | object,
   token?: string,
+  server?: string,
 ): Promise<T> {
+  if (!server) {
+    server = SERVER;
+  }
   const headersObj: Record<string, string> = {};
   if (typeof body !== "string") {
     body = toJson(body);
@@ -26,7 +31,7 @@ export async function sendData<T>(
     headersObj["Authorization"] = `Bearer ${token}`;
   }
   const headers = new Headers(headersObj);
-  const url = `${SERVER}${path}`;
+  const url = `${server}${path}`;
   // log(`sendData(${method}, ${url}) body: ${body}`);
   const result = await fetch(url, {
     method,
