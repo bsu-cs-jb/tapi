@@ -1,26 +1,8 @@
 import { expect, test, describe } from "@jest/globals";
-import { Context, Next } from "koa";
+import { Context } from "koa";
 
-import {
-  Session,
-  Attending,
-  Vote,
-  Invitation,
-  Suggestion,
-} from "./indecisive_rn_types.js";
-import {
-  toSession,
-  toSessionDb,
-  addInvitation,
-  getSuggestion,
-  updateResponse,
-  getInvitation,
-  addSuggestion,
-  updateSuggestion,
-  canViewSession,
-  UserDb,
-  SessionDb,
-} from "./IndecisiveTypes.js";
+import { Session } from "./indecisive_rn_types.js";
+import { addInvitation, SessionDb } from "./IndecisiveTypes.js";
 import { FOR_TESTING } from "./indecisive.js";
 
 describe("preCreateSession", () => {

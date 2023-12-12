@@ -67,8 +67,10 @@ async function main() {
   await users();
 }
 
-main().then(() => {
-  console.log("main finished");
-}).catch((err) => {
-  logger.error("Error running setup:main()");
-});
+main()
+  .then(() => {
+    console.log("main finished");
+  })
+  .catch((err) => {
+    logger.error("Error running setup:main()");
+  });

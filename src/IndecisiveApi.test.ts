@@ -9,13 +9,7 @@ import {
 
 import request from "supertest";
 
-import {
-  Session,
-  Attending,
-  Vote,
-  Invitation,
-  Suggestion,
-} from "./indecisive_rn_types.js";
+import { Session } from "./indecisive_rn_types.js";
 
 import { fetchToken } from "./ApiClient.js";
 
