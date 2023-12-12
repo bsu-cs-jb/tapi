@@ -214,7 +214,7 @@ export function getCollection<T extends IdResource>(
       `/${collection_url}.html`,
       async (ctx: Context) => {
         const collection = await getAll(resource);
-        log(`Found ${collection?.length} ${resource.name}.`);
+        // log(`Found ${collection?.length} ${resource.name}.`);
         let body = `<!DOCTYPE html>\n<html><head><title>${capitalize(
           resource.name,
         )}</title></head><body>`;
@@ -517,7 +517,7 @@ export function patchResource<T extends IdResource>(
       }
 
       log(
-        `PUT written to ${filename} ${resource.singular}:`,
+        `PATCH written to ${filename} ${resource.singular}:`,
         shallowJson(data),
       );
       ctx.body = data;

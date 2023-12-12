@@ -243,7 +243,7 @@ export async function deleteResourceDb<T extends IdResource>(
 ): Promise<string | undefined> {
   const filename = resourceFilename(resource);
   if (!(await fileExists(filename))) {
-    log(
+    logger.error(
       `deleteResourceDb(${resource.name}, ${resource.id}) ${filename} does not exist.`,
     );
     return undefined;
@@ -252,7 +252,7 @@ export async function deleteResourceDb<T extends IdResource>(
     `deleteResource(${resource.singular} ${resource.id}) from ${filename}.`,
   );
   await unlink(filename);
-  // log(`DONE writing to ${filename}.`);
+  // log(`DONE deleting ${filename}.`);
   if (config.DB_GIT_COMMIT) {
     throttleGitCommit();
   }
