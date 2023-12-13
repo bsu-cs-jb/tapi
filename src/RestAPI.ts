@@ -237,18 +237,37 @@ export function getCollection<T extends IdResource>(
       collection_name,
       `/${collection_url}`,
       async (ctx: Context, next: Next) => {
+
+        const contentType = ctx.accepts('json', 'html');
         let collection = await getAll(resource);
-        if (collection && options?.postProcess) {
-          const postProcess = options.postProcess;
-          const processed: (T | undefined)[] = await Promise.all(
-            collection.map(async (item): Promise<T | undefined> => {
-              const ref = refWithId(resource, item.id);
-              return await postProcess(ctx, item, ref);
-            }),
-          );
-          collection = processed.filter((s): s is T => s !== undefined);
+
+        if (contentType === 'json') {
+          if (collection && options?.postProcess) {
+            const postProcess = options.postProcess;
+            const processed: (T | undefined)[] = await Promise.all(
+              collection.map(async (item): Promise<T | undefined> => {
+                const ref = refWithId(resource, item.id);
+                return await postProcess(ctx, item, ref);
+              }),
+            );
+            collection = processed.filter((s): s is T => s !== undefined);
+          }
+          ctx.body = collection;
+        } else {
+          // log(`Found ${collection?.length} ${resource.name}.`);
+          let body = `<!DOCTYPE html>\n<html><head><title>${capitalize(
+            resource.name,
+          )}</title></head><body>`;
+          body += `<p>${collection?.length || 0} ${capitalize(
+            resource.name,
+          )}:<p>\n`;
+          if (collection) {
+            body += linkList(router, resource, collection);
+          }
+          body += "\n</body></html>";
+          ctx.body = body;
         }
-        ctx.body = collection;
+
         await next();
       },
     );

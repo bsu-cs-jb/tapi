@@ -71,23 +71,32 @@ export function authRoutes(router: Router) {
   });
 
   router.get("/clean-tokens", async (ctx: Context, next: Next) => {
-    let body = "";
     const tokens = await fetchTokens();
     const deletedTokens: TokenDb[] = [];
 
-    body +=
-      "<!DOCTYPE html>\n<html><head><title>Cleaned Tokens</title></head><body>";
-    body += "<div><p>Deleted Tokens</p><ul>\n";
     for (const token of tokens) {
       if (await isInvalid(token)) {
         deletedTokens.push(token);
         await deleteToken(token.id);
-        body += `<li>${token.id} - ${token.name}</li>\n`;
       }
     }
-    body += "</ul></div>\n";
 
-    ctx.body = body;
+    const contentType = ctx.accepts('json', 'html');
+
+    if (contentType === 'json') {
+      ctx.body = deletedTokens;
+    } else {
+      let body = "";
+      body +=
+        "<!DOCTYPE html>\n<html><head><title>Cleaned Tokens</title></head><body>";
+      body += "<div><p>Deleted Tokens</p><ul>\n";
+      for (const token of deletedTokens) {
+        body += `<li>${token.id} - ${token.name}</li>\n`;
+      }
+      body += "</ul></div>\n";
+      ctx.body = body;
+    }
+
     await next();
   });
 
