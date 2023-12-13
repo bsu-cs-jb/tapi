@@ -1,16 +1,17 @@
 import { expect, test, describe, beforeEach, afterEach } from "@jest/globals";
 
+import { config } from "./config.js";
 import { makeUserDb } from "./IndecisiveTypes.js";
 import { AuthDb } from "./AuthDb.js";
 import { IndecisiveClient } from "./IndecisiveClient.js";
 
-const SERVER = "http://localhost:3000";
-// const SERVER = "http://cs411.duckdns.org";
+const SERVER = config.TEST_SERVER;
+
 const CLIENT_ID = "test";
 const CLIENT_SECRET = "test";
 
-const ADMIN_ID = "admin";
-const ADMIN_SECRET = "admin";
+const ADMIN_ID = config.ADMIN_ID;
+const ADMIN_SECRET = config.ADMIN_SECRET;
 
 const SESSION_ID = "F0do6JsHtw";
 

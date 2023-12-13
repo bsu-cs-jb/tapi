@@ -12,8 +12,7 @@ import { log, logger } from "./logging.js";
 import { range } from "./utils.js";
 import { faker } from "@faker-js/faker";
 
-const SERVER = "http://localhost:3000";
-// const SERVER = "http://cs411.duckdns.org";
+const SERVER = config.TEST_SERVER;
 
 interface UserDef {
   id: string;

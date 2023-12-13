@@ -18,6 +18,7 @@ interface Config extends BaseConfig {
   LOG_TO_FILE: boolean;
   ADMIN_ID: string;
   ADMIN_SECRET: string;
+  TEST_SERVER: string;
 }
 
 class ConfigImpl extends BaseConfigImpl {
@@ -59,6 +60,10 @@ class ConfigImpl extends BaseConfigImpl {
 
   public get ADMIN_SECRET(): string {
     return getConfig("ADMIN_SECRET", "");
+  }
+
+  public get TEST_SERVER(): string {
+    return getConfig("TEST_SERVER", "http://localhost:3000");
   }
 }
 

@@ -14,8 +14,9 @@ import { IndecisiveClient } from "./IndecisiveClient.js";
 
 import { base64 } from "./utils.js";
 
-const SERVER = "http://localhost:3000";
-// const SERVER = "http://cs411.duckdns.org";
+import { config } from "./config.js";
+const SERVER = config.TEST_SERVER;
+
 const CLIENT_ID = "test";
 const CLIENT_SECRET = "test";
 
