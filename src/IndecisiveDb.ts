@@ -19,9 +19,15 @@ export const SESSION: ResourceDef<SessionDb> = {
 };
 
 export async function fetchUser(id: string): Promise<UserDb | undefined> {
+  if (id === undefined) {
+    return undefined;
+  }
   return readResource<UserDb>(refWithId(USER, id));
 }
 
 export async function fetchSession(id: string): Promise<SessionDb | undefined> {
+  if (id === undefined) {
+    return undefined;
+  }
   return readResource<SessionDb>(refWithId(SESSION, id));
 }

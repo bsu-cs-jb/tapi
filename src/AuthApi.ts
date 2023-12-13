@@ -81,9 +81,9 @@ export function authRoutes(router: Router) {
       }
     }
 
-    const contentType = ctx.accepts('json', 'html');
+    const contentType = ctx.accepts("json", "html");
 
-    if (contentType === 'json') {
+    if (contentType === "json") {
       ctx.body = deletedTokens;
     } else {
       let body = "";

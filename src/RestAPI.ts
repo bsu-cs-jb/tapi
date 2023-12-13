@@ -237,11 +237,10 @@ export function getCollection<T extends IdResource>(
       collection_name,
       `/${collection_url}`,
       async (ctx: Context, next: Next) => {
-
-        const contentType = ctx.accepts('json', 'html');
+        const contentType = ctx.accepts("json", "html");
         let collection = await getAll(resource);
 
-        if (contentType === 'json') {
+        if (contentType === "json") {
           if (collection && options?.postProcess) {
             const postProcess = options.postProcess;
             const processed: (T | undefined)[] = await Promise.all(

@@ -13,6 +13,10 @@ export interface User {
 export type Vote = "up" | "down" | "none";
 export const VOTES: Vote[] = ["up", "down", "none"];
 
+export function isVote(value: string): value is Vote {
+  return typeof value === "string" && (VOTES as string[]).indexOf(value) != -1;
+}
+
 export interface Suggestion {
   id: string;
   name: string;
@@ -26,6 +30,12 @@ export const ATTENDING: Attending[] = ["yes", "no", "undecided"];
 
 export function nextVote(vote: Vote): Vote {
   return cycle(VOTES, vote);
+}
+
+export function isAttending(value: string): value is Attending {
+  return (
+    typeof value === "string" && (ATTENDING as string[]).indexOf(value) != -1
+  );
 }
 
 export function nextAttending(attending: Attending): Attending {

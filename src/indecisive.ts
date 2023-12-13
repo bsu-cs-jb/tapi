@@ -33,7 +33,13 @@ import {
   updateSuggestion,
   UserDb,
 } from "./IndecisiveTypes.js";
-import { Session } from "./indecisive_rn_types.js";
+import {
+  Session,
+  ATTENDING,
+  isAttending,
+  VOTES,
+  isVote,
+} from "./indecisive_rn_types.js";
 import { assert, removeId } from "./utils.js";
 import { log, logger } from "./logging.js";
 
@@ -436,10 +442,19 @@ export function indecisiveRoutes(router: Router) {
       assert(session, "session");
 
       const { userId } = ctx.request.body;
-      assert(userId, "userId");
       log(
         `User ${self.id} inviting ${userId} to session ${session.id} (name: ${session.name})`,
       );
+      if (userId === undefined) {
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          reason: "validation_error",
+          message:
+            "userId property not found in request body (check that Content-Type is application/json)",
+        };
+        return;
+      }
       const invitedUser = await fetchUser(userId);
       if (invitedUser === undefined) {
         ctx.status = 400;
@@ -486,11 +501,41 @@ export function indecisiveRoutes(router: Router) {
         return;
       }
 
-      // TODO: validate parameters
       const { accepted, attending } = ctx.request.body;
       log(
         `Updating ${self.id} response to ${session.id} to accepted: ${accepted} attending: '${attending}' (name: ${session.name})`,
       );
+      if (accepted === undefined || attending === undefined) {
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          reason: "validation_error",
+          message:
+            "/sessions/:sessionId/respond requires accepted and attending properties request body (check that Content-Type is application/json)",
+        };
+        return;
+      }
+      if (typeof accepted !== "boolean") {
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          reason: "validation_error",
+          message:
+            "/sessions/:sessionId/respond requires accepted property to be boolean",
+        };
+        return;
+      }
+      if (!isAttending(attending)) {
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          reason: "validation_error",
+          message: `/sessions/:sessionId/respond requires attending property to be a string and one of [${ATTENDING.join(
+            ", ",
+          )}]`,
+        };
+        return;
+      }
 
       // update self response
       updateResponse(session, self.id, accepted, attending);
@@ -514,22 +559,20 @@ export function indecisiveRoutes(router: Router) {
       assert(self, "Self must be defined");
       assert(session, "Session must be defined");
 
-      // if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
-      //   const message = `User '${self.id}' cannot respond to '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
-      //   logger.error(message);
-      //   ctx.status = 400;
-      //   ctx.body = {
-      //     status: "error",
-      //     message,
-      //   };
-      //   return;
-      // }
-
-      // TODO: validate parameters
       const { name } = ctx.request.body;
       log(
         `User ${self.id} adding suggestion '${name}  to ${session.id} (name: ${session.name})`,
       );
+      if (!name || typeof name !== "string") {
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          reason: "validation_error",
+          message:
+            "/sessions/:sessionId/suggest requires the name of the suggestion as a string (check that Content-Type is application/json)",
+        };
+        return;
+      }
 
       // add suggestion
       addSuggestion(session, self.id, name);
@@ -553,17 +596,6 @@ export function indecisiveRoutes(router: Router) {
       assert(self, "Self must be defined");
       assert(session, "Session must be defined");
 
-      // if (self.id !== session.ownerId && !getInvitation(session, self.id)) {
-      //   const message = `User '${self.id}' cannot vote on '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
-      //   logger.error(message);
-      //   ctx.status = 400;
-      //   ctx.body = {
-      //     status: "error",
-      //     message,
-      //   };
-      //   return;
-      // }
-
       // find suggestion
       const { suggestionId } = ctx.params;
       const suggestion = getSuggestion(session, suggestionId);
@@ -576,11 +608,31 @@ export function indecisiveRoutes(router: Router) {
         return;
       }
 
-      // TODO: validate parameters
       const { vote } = ctx.request.body;
       log(
         `User ${self.id} voting ${vote} for ${suggestionId} on ${session.id} (name: ${session.name})`,
       );
+      if (vote === undefined) {
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          reason: "validation_error",
+          message:
+            "/sessions/:sessionId/vote requires the vote property in the request body (check that Content-Type is application/json)",
+        };
+        return;
+      }
+      if (!isVote(vote)) {
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          reason: "validation_error",
+          message: `/sessions/:sessionId/vote requires 'vote' property to be a string and one of [${VOTES.join(
+            ", ",
+          )}]`,
+        };
+        return;
+      }
 
       // update suggestion
       updateSuggestion(session, suggestion, self.id, vote);
