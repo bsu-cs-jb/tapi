@@ -7,8 +7,8 @@ import { IndecisiveClient } from "./IndecisiveClient.js";
 
 const SERVER = config.TEST_SERVER;
 
-const CLIENT_ID = "test";
-const CLIENT_SECRET = "test";
+const CLIENT_ID = config.TEST_USER1_ID;
+const CLIENT_SECRET = config.TEST_USER1_SECRET;
 
 const ADMIN_ID = config.ADMIN_ID;
 const ADMIN_SECRET = config.ADMIN_SECRET;

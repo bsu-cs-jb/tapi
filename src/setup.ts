@@ -106,8 +106,11 @@ async function users() {
   log(`Setup token ${client.token}`);
 
   let createdUsers = 0;
-  const MAX_USERS = -1;
+  const MAX_USERS = 3;
   for (const user of userDef) {
+    if (user.id === "jonathan") {
+      break;
+    }
     log(`User: ${user.id} ${user.name}`);
     await updateCreateClient(user, client);
     await updateCreateUser(user, client);
@@ -153,9 +156,9 @@ async function main() {
   log(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
   log(`LOG_LEVEL: ${config.LOG_LEVEL}`);
 
-  // await users();
+  await users();
   // await fakeUsers();
-  await printIds();
+  // await printIds();
 }
 
 main()

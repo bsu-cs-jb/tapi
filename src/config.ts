@@ -19,6 +19,10 @@ interface Config extends BaseConfig {
   ADMIN_ID: string;
   ADMIN_SECRET: string;
   TEST_SERVER: string;
+  TEST_USER1_ID: string;
+  TEST_USER1_SECRET: string;
+  TEST_USER2_ID: string;
+  TEST_USER2_SECRET: string;
 }
 
 class ConfigImpl extends BaseConfigImpl {
@@ -60,6 +64,22 @@ class ConfigImpl extends BaseConfigImpl {
 
   public get ADMIN_SECRET(): string {
     return getConfig("ADMIN_SECRET", "");
+  }
+
+  public get TEST_USER1_ID(): string {
+    return getConfig("TEST_USER1_ID", "");
+  }
+
+  public get TEST_USER1_SECRET(): string {
+    return getConfig("TEST_USER1_SECRET", "");
+  }
+
+  public get TEST_USER2_ID(): string {
+    return getConfig("TEST_USER2_ID", "");
+  }
+
+  public get TEST_USER2_SECRET(): string {
+    return getConfig("TEST_USER2_SECRET", "");
   }
 
   public get TEST_SERVER(): string {

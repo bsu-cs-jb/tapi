@@ -17,11 +17,11 @@ import { base64 } from "./utils.js";
 import { config } from "./config.js";
 const SERVER = config.TEST_SERVER;
 
-const CLIENT_ID = "test";
-const CLIENT_SECRET = "test";
+const CLIENT_ID = config.TEST_USER1_ID;
+const CLIENT_SECRET = config.TEST_USER1_SECRET;
 
-const USER_ID = "test";
-const USER_NAME = "Test User";
+const USER_ID = config.TEST_USER1_ID;
+const USER_NAME = "Unit Test 1";
 
 describe("auth", () => {
   test("generates token", async () => {
