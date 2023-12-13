@@ -1,9 +1,8 @@
+import { clone } from "lodash-es";
+
 import { toJson, base64 } from "./utils.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
-
-const SERVER = "http://cs411.duckdns.org";
-// const SERVER = "http://localhost:3000";
 
 export interface TokenResponse {
   access_token: string;
@@ -12,27 +11,34 @@ export interface TokenResponse {
   scope: string[];
 }
 
-export async function sendData<T>(
-  method: "POST" | "PATCH" | "PUT",
-  path: string,
-  body: string | object,
-  token?: string,
-  server?: string,
+export async function doFetch<T>(
+  method: "POST" | "PATCH" | "PUT" | "GET" | "DELETE",
+  url: string,
+  options?: {
+    body?: string | object;
+    bearerToken?: string;
+    headers?: Record<string, string>;
+  },
 ): Promise<T> {
-  if (!server) {
-    server = SERVER;
+  let headersObj: Record<string, string> = {};
+  if (options && "headers" in options && options.headers) {
+    headersObj = clone(options.headers);
   }
-  const headersObj: Record<string, string> = {};
-  if (typeof body !== "string") {
-    body = toJson(body);
-    headersObj["Content-Type"] = "application/json";
+  let body: string | undefined;
+  if (options && "body" in options) {
+    if (typeof options.body === "string") {
+      body = options.body;
+    } else {
+      body = toJson(options.body);
+      headersObj["Content-Type"] = "application/json";
+    }
   }
-  if (token) {
-    headersObj["Authorization"] = `Bearer ${token}`;
+
+  if (options && "bearerToken" in options) {
+    headersObj["Authorization"] = `Bearer ${options.bearerToken}`;
   }
   const headers = new Headers(headersObj);
-  const url = `${server}${path}`;
-  // log(`sendData(${method}, ${url}) body: ${body}`);
+
   const result = await fetch(url, {
     method,
     body,
@@ -54,15 +60,45 @@ export async function sendData<T>(
   return result;
 }
 
+export async function fDelete<T>(
+  path: string,
+  server: string,
+  bearerToken?: string,
+): Promise<T> {
+  return doFetch<T>("DELETE", `${server}${path}`, {
+    bearerToken,
+  });
+}
+
+export async function fGet<T>(
+  path: string,
+  server: string,
+  bearerToken?: string,
+): Promise<T> {
+  return doFetch<T>("GET", `${server}${path}`, {
+    bearerToken,
+  });
+}
+
+export async function sendData<T>(
+  method: "POST" | "PATCH" | "PUT",
+  path: string,
+  body: string | object,
+  server: string,
+  bearerToken?: string,
+): Promise<T> {
+  return doFetch<T>(method, `${server}${path}`, {
+    body,
+    bearerToken,
+  });
+}
+
 export async function fetchToken(
   id: string,
   secret: string,
+  server: string,
   scope?: string | string[],
-  server?: string,
 ): Promise<string> {
-  if (!server) {
-    server = SERVER;
-  }
   const params: Record<string, string> = {
     grant_type: "client_credentials",
   };
@@ -83,7 +119,14 @@ export async function fetchToken(
     }),
   })
     .then((response) => {
-      return response.json();
+      if (response.ok) {
+        return response.json();
+      } else {
+        return response.text().then((error_body) => {
+          const message = `HTTP Error ${response.status}: ${error_body}`;
+          throw new Error(message);
+        });
+      }
     })
     .then((json) => {
       return (json as TokenResponse).access_token;

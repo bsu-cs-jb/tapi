@@ -9,9 +9,8 @@ import {
 
 import request from "supertest";
 
-import { Session } from "./indecisive_rn_types.js";
-
 import { fetchToken } from "./ApiClient.js";
+import { IndecisiveClient } from "./IndecisiveClient.js";
 
 import { base64 } from "./utils.js";
 
@@ -24,45 +23,6 @@ const USER_ID = "test";
 const USER_NAME = "Test User";
 
 const SESSION_ID = "F0do6JsHtw";
-
-async function deleteSession(
-  token: string,
-  sessionId: string,
-): Promise<object> {
-  const result = await fetch(`${SERVER}/indecisive/sessions/${sessionId}`, {
-    method: "DELETE",
-    headers: new Headers({
-      Authorization: `Bearer ${token}`,
-    }),
-  })
-    .then((response) => {
-      return response.json();
-    })
-    .then((json) => {
-      return json as object;
-    });
-  return result;
-}
-
-async function createSession(token: string): Promise<Session> {
-  const result = await fetch(`${SERVER}/indecisive/sessions`, {
-    method: "POST",
-    body: JSON.stringify({
-      description: "UAT Session",
-    }),
-    headers: new Headers({
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    }),
-  })
-    .then((response) => {
-      return response.json();
-    })
-    .then((json) => {
-      return json as Session;
-    });
-  return result;
-}
 
 describe("auth", () => {
   test("generates token", async () => {
@@ -96,38 +56,24 @@ describe("auth", () => {
   });
 
   test("uses token", async () => {
-    const token = await fetchToken(CLIENT_ID, CLIENT_SECRET, undefined, SERVER);
-    const result = await fetch(`${SERVER}/indecisive/self`, {
-      headers: new Headers({
-        Authorization: `Bearer ${token}`,
-      }),
-    }).then((response) => {
-      expect(response).toHaveProperty("status", 200);
-      expect(response).toHaveProperty("ok", true);
-      return response.json();
-    });
+    const client = new IndecisiveClient(SERVER);
+    await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
+    const result = await client.self();
     expect(result).toBeDefined();
     // more detailed expectations inthe tests below
   });
 });
 
 describe("/self", () => {
-  let token = "EMPTY";
+  let client: IndecisiveClient;
 
   beforeAll(async () => {
-    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, undefined, SERVER);
+    client = new IndecisiveClient(SERVER);
+    await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
   });
 
   test("responds with self", async () => {
-    const result = await fetch(`${SERVER}/indecisive/self`, {
-      headers: new Headers({
-        Authorization: `Bearer ${token}`,
-      }),
-    }).then((response) => {
-      expect(response).toHaveProperty("status", 200);
-      expect(response).toHaveProperty("ok", true);
-      return response.json();
-    });
+    const result = await client.self();
     expect(result).toBeDefined();
     expect(result).toHaveProperty("id", USER_ID);
     expect(result).toHaveProperty("name", USER_NAME);
@@ -137,7 +83,7 @@ describe("/self", () => {
     const req = request(SERVER);
     const result = await req
       .get("/indecisive/self")
-      .auth(token, { type: "bearer" })
+      .auth(client.token || "", { type: "bearer" })
       .expect(200)
       .expect("Content-Type", /json/);
     expect(result.body).toBeDefined();
@@ -147,22 +93,15 @@ describe("/self", () => {
 });
 
 describe("/current-session", () => {
-  let token = "EMPTY";
+  let client: IndecisiveClient;
 
   beforeAll(async () => {
-    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, undefined, SERVER);
+    client = new IndecisiveClient(SERVER);
+    await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
   });
 
   test("works", async () => {
-    const result = await fetch(`${SERVER}/indecisive/current-session`, {
-      headers: new Headers({
-        Authorization: `Bearer ${token}`,
-      }),
-    }).then((response) => {
-      expect(response).toHaveProperty("status", 200);
-      expect(response).toHaveProperty("ok", true);
-      return response.json();
-    });
+    const result = await client.currentSession();
     expect(result).toBeDefined();
     expect(result).toHaveProperty("id");
     expect(result).toHaveProperty("description");
@@ -177,7 +116,7 @@ describe("/session/invite", () => {
   let token = "EMPTY";
 
   beforeAll(async () => {
-    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, undefined, SERVER);
+    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, SERVER);
   });
 
   test("works", async () => {
@@ -204,18 +143,20 @@ describe("/session/invite", () => {
 describe("/session/invite", () => {
   let token = "EMPTY";
   let sessionId = "";
+  let client: IndecisiveClient;
 
   beforeAll(async () => {
-    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, undefined, SERVER);
+    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, SERVER);
+    client = new IndecisiveClient(SERVER, token);
   });
 
   beforeEach(async () => {
-    const session = await createSession(token);
+    const session = await client.createSession("UAT Testing");
     sessionId = session.id;
   });
 
   afterEach(async () => {
-    await deleteSession(token, sessionId);
+    await client.deleteSession(sessionId);
   });
 
   test("works", async () => {

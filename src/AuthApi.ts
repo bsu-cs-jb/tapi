@@ -2,9 +2,11 @@ import { Context, Next } from "koa";
 import Router from "@koa/router";
 import * as _ from "lodash-es";
 
+import { authenticate } from "./oauth2/koa.js";
 import {
   getCollection,
   getResource,
+  deleteResource,
   postResource,
   patchResource,
   routerParam,
@@ -86,10 +88,17 @@ export function authRoutes(router: Router) {
     await next();
   });
 
+  router.use(["/clients", "/tokens"], authenticate("admin"));
+
+  // router.use(["/clients", "/tokens"], authPaths([
+  // ], "admin"));
+
   getCollection(router, CLIENT);
   getResource(router, CLIENT);
+  deleteResource(router, CLIENT);
   getCollection(router, TOKEN);
   getResource(router, TOKEN);
+  deleteResource(router, TOKEN);
 
   postResource<AuthDb>(router, CLIENT, {
     preProcess: preUpdateClient,

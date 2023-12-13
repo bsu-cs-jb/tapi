@@ -2,7 +2,11 @@ import { Context, Next } from "koa";
 import Router from "@koa/router";
 import * as _ from "lodash-es";
 
-import { authenticate } from "./oauth2/koa.js";
+import {
+  authenticate,
+  authSessionOwner,
+  authOwnerInvite,
+} from "./oauth2/koa.js";
 import { refWithId, writeResource } from "./FileDb.js";
 import {
   deleteResource,
@@ -31,110 +35,6 @@ import {
 import { Session } from "./indecisive_rn_types.js";
 import { assert, removeId } from "./utils.js";
 import { log, logger } from "./logging.js";
-
-interface PathDef {
-  method: "POST" | "GET" | "PUT" | "PATCH" | "DELETE";
-  endsWith?: string;
-}
-
-function pathDefsMatch(ctx: Context, paths: PathDef[]): boolean {
-  for (const pathDef of paths) {
-    if (ctx.request.method !== pathDef.method) {
-      continue;
-    }
-    if (pathDef.endsWith !== undefined) {
-      if (!ctx._matchedRoute.endsWith(pathDef.endsWith)) {
-        continue;
-      }
-    }
-    return true;
-  }
-
-  return false;
-}
-
-function authSessionOwner(paths: PathDef[]) {
-  return async (ctx: Context, next: Next) => {
-    const {
-      self,
-      session,
-      auth: { scope },
-    } = ctx.state;
-
-    // log("ctx.request.method:", ctx.request.method);
-    // log("ctx._matchedRoute:", ctx._matchedRoute);
-    if (pathDefsMatch(ctx, paths)) {
-      // log("authOwnerInvite() matches spec");
-
-      if (scope?.includes("admin")) {
-        log(`authSessionOwner() allowing admin auth ${scope}`);
-        await next();
-        return;
-      } else if (self.id !== session.ownerId) {
-        const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they are not the owner (name: ${session.name}).`;
-        logger.error(message);
-        ctx.status = 403;
-        ctx.body = {
-          status: "Forbidden",
-          message,
-        };
-        return;
-      }
-    }
-
-    await next();
-  };
-}
-
-function authOwnerInvite(paths: PathDef[]) {
-  return async (ctx: Context, next: Next) => {
-    const {
-      self,
-      session,
-      auth: { scope },
-    } = ctx.state;
-
-    // log("ctx.request.method:", ctx.request.method);
-    // log("ctx._matchedRoute:", ctx._matchedRoute);
-    if (pathDefsMatch(ctx, paths)) {
-      // log("authOwnerInvite() matches spec");
-
-      if (scope?.includes("admin")) {
-        log(`authOwnerInvite() allowing admin auth ${scope}`);
-      } else if (!canViewSession(session, self.id)) {
-        const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
-        logger.error(message);
-        ctx.status = 403;
-        ctx.body = {
-          status: "Forbidden",
-          message,
-        };
-        return;
-      }
-    }
-
-    await next();
-  };
-}
-
-function _authOwnerInvite_2() {
-  return async (ctx: Context, next: Next) => {
-    const { self, session } = ctx.state;
-
-    if (!canViewSession(session, self.id)) {
-      const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they were not invited to the session and are not the owner (name: ${session.name}).`;
-      logger.error(message);
-      ctx.status = 403;
-      ctx.body = {
-        status: "Forbidden",
-        message,
-      };
-      return;
-    }
-
-    await next();
-  };
-}
 
 function fetchCurrentSession(errorIfMissing: boolean = true) {
   return async (ctx: Context, next: Next) => {

@@ -1,9 +1,9 @@
 import sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
+import assert from "node:assert";
+
 import { AuthDb } from "./AuthDb.js";
-import { createClient, updateClient } from "./AuthClient.js";
-import { fetchToken } from "./ApiClient.js";
-import { createUser, updateUser, invite } from "./IndecisiveClient.js";
+import { IndecisiveClient } from "./IndecisiveClient.js";
 import { UserDb, makeUserDb } from "./IndecisiveTypes.js";
 import { readFileAsJson } from "./FileDb.js";
 import { config } from "./config.js";
@@ -11,6 +11,9 @@ import { log, logger } from "./logging.js";
 // import { hash } from "./hash.js";
 import { range } from "./utils.js";
 import { faker } from "@faker-js/faker";
+
+const SERVER = "http://localhost:3000";
+// const SERVER = "http://cs411.duckdns.org";
 
 interface UserDef {
   id: string;
@@ -42,7 +45,10 @@ function authDbfromUser(user: UserDef, sessionId: string): AuthDb {
   };
 }
 
-async function updateCreateUser(user: UserDef, token: string): Promise<UserDb> {
+async function updateCreateUser(
+  user: UserDef,
+  client: IndecisiveClient,
+): Promise<UserDb> {
   log(`  - creating user for ${user.id}`);
   const userDb = makeUserDb({
     id: user.id,
@@ -50,14 +56,14 @@ async function updateCreateUser(user: UserDef, token: string): Promise<UserDb> {
   });
   // log("Creating User:", userDb);
   try {
-    const user_result = await createUser(userDb, token);
+    const user_result = await client.createUser(userDb);
     // log("User Created:", user_result);
     return user_result;
   } catch (err) {
     const message = (err as Error).message;
     if (message.match(/already exists/)) {
       // log("Client already exists, replacing instead.");
-      const user_result = await updateUser(userDb, token);
+      const user_result = await client.updateUser(userDb);
       // log("User Created:", user_result);
       return user_result;
     } else {
@@ -66,43 +72,49 @@ async function updateCreateUser(user: UserDef, token: string): Promise<UserDb> {
   }
 }
 
-async function updateCreateClient(user: UserDef): Promise<AuthDb> {
+async function updateCreateClient(
+  user: UserDef,
+  client: IndecisiveClient,
+): Promise<AuthDb> {
+  assert(client.token, "client.token must be defined");
   const authDb = authDbfromUser(user, "cs411-final");
   log(`  - creating client for ${user.id}`);
   // log("Creating Auth:", authDb);
   try {
-    const client = await createClient(authDb);
-    // log("Client Created:", client);
-    return client;
+    const dbClient = await client.createClient(authDb);
+    // log("Client Created:", dbClient);
+    return dbClient;
   } catch (err) {
     const message = (err as Error).message;
     if (message.match(/already exists/)) {
       // log("Client already exists, replacing instead.");
-      const client = await updateClient(authDb);
-      // log("Client Created:", client);
-      return client;
+      const dbClient = await client.updateClient(authDb);
+      // log("Client Created:", dbClient);
+      return dbClient;
     } else {
       throw err;
     }
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function users() {
   // need session id
   const rawUsers = await readFileAsJson("users.private.json");
   const userDef = rawUsers as unknown as UserDef[];
-  const token = await fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
-  log(`Setup token ${token}`);
+  const client = new IndecisiveClient(SERVER);
+  await client.fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
+  log(`Setup token ${client.token}`);
 
   let createdUsers = 0;
   const MAX_USERS = -1;
   for (const user of userDef) {
     log(`User: ${user.id} ${user.name}`);
-    await updateCreateClient(user);
-    await updateCreateUser(user, token);
+    await updateCreateClient(user, client);
+    await updateCreateUser(user, client);
     if (user.invite || user.invite === undefined) {
       log(`  - invite user ${user.id} to session`);
-      await invite("cs411-final", user.id, token);
+      await client.invite("cs411-final", user.id);
     } else {
       log(`  - DO NOT invite user ${user.id} to session`);
     }
@@ -121,10 +133,10 @@ async function printIds() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function fakeUsers() {
-  // need session id
-  const token = await fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
-  log(`Setup token ${token}`);
+  const client = new IndecisiveClient(SERVER);
+  await client.fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
 
   const MAX_USERS = 99;
   for (const i in range(MAX_USERS)) {
@@ -133,7 +145,7 @@ async function fakeUsers() {
       name: faker.person.firstName(),
     };
     log(`Will create user:`, user);
-    await updateCreateUser(user, token);
+    await updateCreateUser(user, client);
   }
 }
 

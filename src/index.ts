@@ -61,9 +61,7 @@ router
   })
   .post("/token", async (ctx: Context, next: Next) => {
     await token(ctx);
-    log(`/token finished, calling next()`);
     await next();
-    log(`/token finished, next() finished`);
   })
   .get("/cats", async (ctx: Context, next: Next) => {
     const cats = allCats();

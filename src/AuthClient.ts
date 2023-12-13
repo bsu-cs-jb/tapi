@@ -7,7 +7,7 @@ const AUTH_ROOT = "/auth";
 
 export async function createClient(
   auth: AuthDb,
-  token?: string,
+  token: string,
 ): Promise<AuthDb> {
   // log("createClient()");
   const result = await sendData<AuthDb>(
@@ -21,7 +21,7 @@ export async function createClient(
 
 export async function updateClient(
   auth: AuthDb,
-  token?: string,
+  token: string,
 ): Promise<AuthDb> {
   // log("updateClient()");
   const result = await sendData<AuthDb>(
