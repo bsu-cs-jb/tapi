@@ -34,6 +34,22 @@ const router = new Router();
 app.context.auth = oauth;
 app.context.authModel = authModel;
 
+// router.use(async (ctx: Context, next: Next) => {
+//   log(`Request origin: ${ctx.origin}.`);
+//   await next();
+// });
+//
+// router.options("/token", async (ctx: Context, _next: Next) => {
+//   log(`OPTIONS origin: ${ctx.origin}.`);
+//   if (ctx.origin.match(/bsu-cs-jb\.github\.io/)) {
+//     ctx.set("Access-Control-Allow-Origin",ctx.origin);
+//     ctx.set("Access-Control-Allow-Methods","POST, GET, OPTIONS, DELETE, PUT, PATCH");
+//     ctx.set("Access-Control-Max-Age","86400");
+//   }
+//   ctx.status = 204
+//   //await next();
+// });
+
 router.use("/admin", authenticate("admin"));
 router.use("/test", authenticate("read"));
 
