@@ -29,8 +29,9 @@ async function preUpdateClient(
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   body: any,
 ): Promise<AuthDb> {
-  log(`preUpdateClient(${ctx.request.method})`, dbAuth, body);
-  const clientId = body.client?.id || body.user?.userId || body.id;
+  // log(`preUpdateClient(${ctx.request.method})`, dbAuth, body);
+  const clientIdParam = "clientId" in ctx.params ? ctx.params["clientId"] : undefined;
+  const clientId = clientIdParam || body?.client?.id || body?.user?.userId || body?.id;
   dbAuth.id = clientId;
   dbAuth.client.id = clientId;
   dbAuth.user.userId = clientId;
