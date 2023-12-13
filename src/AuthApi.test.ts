@@ -12,9 +12,6 @@ const CLIENT_SECRET = "test";
 const ADMIN_ID = "admin";
 const ADMIN_SECRET = "admin";
 
-const USER_ID = "test";
-const USER_NAME = "Test User";
-
 const SESSION_ID = "F0do6JsHtw";
 
 function makeAuthDb(id: string, sessionId: string, scopes?: string[]): AuthDb {
@@ -106,7 +103,7 @@ describe("/auth/clients", () => {
   });
 
   test("updates secret", async () => {
-    const adminToken = await client.fetchToken(ADMIN_ID, ADMIN_SECRET, "admin");
+    await client.fetchToken(ADMIN_ID, ADMIN_SECRET, "admin");
     const clientId = "at-002";
     try {
       await client.deleteClient(clientId);

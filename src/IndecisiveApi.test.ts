@@ -3,13 +3,13 @@ import {
   test,
   describe,
   beforeAll,
+  afterAll,
   beforeEach,
   afterEach,
 } from "@jest/globals";
 
 import request from "supertest";
 
-import { fetchToken } from "./ApiClient.js";
 import { IndecisiveClient } from "./IndecisiveClient.js";
 
 import { base64 } from "./utils.js";
@@ -21,8 +21,6 @@ const CLIENT_SECRET = "test";
 
 const USER_ID = "test";
 const USER_NAME = "Test User";
-
-const SESSION_ID = "F0do6JsHtw";
 
 describe("auth", () => {
   test("generates token", async () => {
@@ -114,21 +112,30 @@ describe("/current-session", () => {
 
 describe("/session/invite", () => {
   let token = "EMPTY";
+  let sessionId = "";
+  let client: IndecisiveClient;
 
   beforeAll(async () => {
-    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, SERVER);
+    client = new IndecisiveClient(SERVER);
+    token = await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
+    const session = await client.createSession("UAT Testing");
+    sessionId = session.id;
+  });
+
+  afterAll(async () => {
+    await client.deleteSession(sessionId);
   });
 
   test("works", async () => {
     const req = request(SERVER);
     const result = await req
-      .post(`/indecisive/sessions/${SESSION_ID}/invite`)
+      .post(`/indecisive/sessions/${sessionId}/invite`)
       .auth(token, { type: "bearer" })
       .send({ userId: "brahbrah" })
       .expect(200)
       .expect("Content-Type", /json/);
     expect(result.body).toBeDefined();
-    expect(result.body).toHaveProperty("id", SESSION_ID);
+    expect(result.body).toHaveProperty("id", sessionId);
     expect(result.body.invitations).toContainEqual({
       user: {
         id: "brahbrah",
@@ -141,13 +148,12 @@ describe("/session/invite", () => {
 });
 
 describe("/session/invite", () => {
-  let token = "EMPTY";
   let sessionId = "";
   let client: IndecisiveClient;
 
   beforeAll(async () => {
-    token = await fetchToken(CLIENT_ID, CLIENT_SECRET, SERVER);
-    client = new IndecisiveClient(SERVER, token);
+    client = new IndecisiveClient(SERVER);
+    await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
   });
 
   beforeEach(async () => {

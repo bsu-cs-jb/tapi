@@ -155,7 +155,10 @@ async function filterSessionCollection(
   ctx: Context,
   session: SessionDb,
 ): Promise<Session | undefined> {
-  const { auth: { scope }, self } = ctx.state;
+  const {
+    auth: { scope },
+    self,
+  } = ctx.state;
   // log(`Filtering for ${self.id}`, session);
   if (!scope.includes("admin") && !canViewSession(session, self.id)) {
     return undefined;
@@ -631,7 +634,6 @@ export function indecisiveRoutes(router: Router) {
 
   router.use(sessionOwnerRoutes.routes());
   router.use(sessionOwnerRoutes.allowedMethods());
-
 }
 
 export const FOR_TESTING = {

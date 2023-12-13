@@ -392,7 +392,7 @@ export function deleteResource<T extends IdResource>(
   router.delete(
     `${resource_name}-delete`,
     `/${resource_url}`,
-    async (ctx: Context, next: Next) => {
+    async (ctx: Context) => {
       // get the existing resource
       const obj = ctx.state[resource.singular];
       assert(obj !== undefined && obj !== null, "delete obj must be defined");

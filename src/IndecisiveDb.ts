@@ -1,6 +1,5 @@
 import { readResource, refWithId, ResourceDef } from "./FileDb.js";
 import { SessionDb, UserDb, makeUserDb } from "./IndecisiveTypes.js";
-import { log } from "./logging.js";
 
 export const USER: ResourceDef<UserDb> = {
   database: "indecisive",
