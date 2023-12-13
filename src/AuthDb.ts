@@ -90,5 +90,5 @@ export async function writeToken(token: TokenDb): Promise<string | undefined> {
 }
 
 export async function deleteToken(id: string): Promise<string | undefined> {
-  return deleteResourceDb<TokenDb>(refWithId(TOKEN, id));
+  return await deleteResourceDb<TokenDb>(refWithId(TOKEN, id));
 }

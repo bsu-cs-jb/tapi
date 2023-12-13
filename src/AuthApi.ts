@@ -30,8 +30,10 @@ async function preUpdateClient(
   body: any,
 ): Promise<AuthDb> {
   // log(`preUpdateClient(${ctx.request.method})`, dbAuth, body);
-  const clientIdParam = "clientId" in ctx.params ? ctx.params["clientId"] : undefined;
-  const clientId = clientIdParam || body?.client?.id || body?.user?.userId || body?.id;
+  const clientIdParam =
+    "clientId" in ctx.params ? ctx.params["clientId"] : undefined;
+  const clientId =
+    clientIdParam || body?.client?.id || body?.user?.userId || body?.id;
   dbAuth.id = clientId;
   dbAuth.client.id = clientId;
   dbAuth.user.userId = clientId;
@@ -79,7 +81,7 @@ export function authRoutes(router: Router) {
     for (const token of tokens) {
       if (await isInvalid(token)) {
         deletedTokens.push(token);
-        deleteToken(token.id);
+        await deleteToken(token.id);
         body += `<li>${token.id} - ${token.name}</li>\n`;
       }
     }
@@ -89,7 +91,7 @@ export function authRoutes(router: Router) {
     await next();
   });
 
-  router.use(["/clients", "/tokens"], authenticate("admin"));
+  router.use(["/clients(.*)", "/tokens(.*)"], authenticate("admin"));
 
   // router.use(["/clients", "/tokens"], authPaths([
   // ], "admin"));

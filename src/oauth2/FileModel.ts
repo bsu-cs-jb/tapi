@@ -93,7 +93,7 @@ export function FileModel(): ClientCredentialsModel {
       if (dbToken) {
         // log(`Found token:`, dbToken);
         if (await isInvalid(dbToken)) {
-          deleteToken(dbToken.id);
+          await deleteToken(dbToken.id);
         }
         return dbToken.token;
       }

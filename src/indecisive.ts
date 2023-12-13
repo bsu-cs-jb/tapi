@@ -6,6 +6,7 @@ import {
   authenticate,
   authSessionOwner,
   authOwnerInvite,
+  authClientUser,
 } from "./oauth2/koa.js";
 import { refWithId, writeResource } from "./FileDb.js";
 import {
@@ -154,9 +155,9 @@ async function filterSessionCollection(
   ctx: Context,
   session: SessionDb,
 ): Promise<Session | undefined> {
-  const { self } = ctx.state;
+  const { auth: { scope }, self } = ctx.state;
   // log(`Filtering for ${self.id}`, session);
-  if (!canViewSession(session, self.id)) {
+  if (!scope.includes("admin") && !canViewSession(session, self.id)) {
     return undefined;
   }
   return await toSession(session, self.id);
@@ -321,6 +322,24 @@ export function indecisiveRoutes(router: Router) {
   routerParam(router, USER);
   routerParam(router, SESSION);
 
+  router.use(
+    ["/users/:userId"],
+    authClientUser([
+      {
+        method: "DELETE",
+        endsWith: "/users/:userId",
+      },
+      {
+        method: "PUT",
+        endsWith: "/users/:userId",
+      },
+      {
+        method: "PATCH",
+        endsWith: "/users/:userId",
+      },
+    ]),
+  );
+
   getCollection(router, USER, {
     postProcess: postGetUser,
   });
@@ -332,6 +351,7 @@ export function indecisiveRoutes(router: Router) {
   });
   putResource(router, USER);
   patchResource(router, USER);
+  deleteResource(router, USER);
 
   getCollection(router, SESSION, {
     postProcess: filterSessionCollection,
@@ -355,26 +375,32 @@ export function indecisiveRoutes(router: Router) {
         method: "PUT",
         endsWith: "/sessions/:sessionId",
       },
+      {
+        method: "PATCH",
+        endsWith: "/sessions/:sessionId",
+      },
     ]),
   );
   // Put to session updates session (if owned by me)
   putResource(sessionOwnerRoutes, SESSION, {
     preProcess: ppSessionToDb,
   });
-  deleteResource(sessionOwnerRoutes, SESSION, {
-    postProcess: postDeleteSession,
-  });
 
   const sessionOwnerInviteRoutes = new Router();
   routerParam(sessionOwnerInviteRoutes, SESSION);
   sessionOwnerInviteRoutes.use(
     [
+      "/sessions/:sessionId",
       "/sessions/:sessionId/invite",
       "/sessions/:sessionId/respond",
       "/sessions/:sessionId/suggest",
       "/sessions/:sessionId/vote/:voteId",
     ],
     authOwnerInvite([
+      {
+        method: "GET",
+        endsWith: "/sessions/:sessionId",
+      },
       {
         method: "POST",
         endsWith: "/sessions/:sessionId/invite",
@@ -596,11 +622,16 @@ export function indecisiveRoutes(router: Router) {
     },
   );
 
+  router.use(sessionOwnerInviteRoutes.routes());
+  router.use(sessionOwnerInviteRoutes.allowedMethods());
+
+  deleteResource(sessionOwnerRoutes, SESSION, {
+    postProcess: postDeleteSession,
+  });
+
   router.use(sessionOwnerRoutes.routes());
   router.use(sessionOwnerRoutes.allowedMethods());
 
-  router.use(sessionOwnerInviteRoutes.routes());
-  router.use(sessionOwnerInviteRoutes.allowedMethods());
 }
 
 export const FOR_TESTING = {

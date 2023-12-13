@@ -156,20 +156,19 @@ describe("/session/invite", () => {
   });
 
   afterEach(async () => {
-    await client.deleteSession(sessionId);
+    try {
+      await client.deleteSession(sessionId);
+    } catch {
+      // nothing
+    }
   });
 
   test("works", async () => {
-    const req = request(SERVER);
-    const result = await req
-      .post(`/indecisive/sessions/${sessionId}/invite`)
-      .auth(token, { type: "bearer" })
-      .send({ userId: "brahbrah" })
-      .expect(200)
-      .expect("Content-Type", /json/);
-    expect(result.body).toBeDefined();
-    expect(result.body).toHaveProperty("id", sessionId);
-    expect(result.body.invitations).toContainEqual({
+    const result = await client.invite(sessionId, "brahbrah");
+
+    expect(result).toBeDefined();
+    expect(result).toHaveProperty("id", sessionId);
+    expect(result.invitations).toContainEqual({
       user: {
         id: "brahbrah",
         name: "Brahbrah",
@@ -177,7 +176,7 @@ describe("/session/invite", () => {
       accepted: false,
       attending: "undecided",
     });
-    expect(result.body).toHaveProperty("accepted", true);
-    expect(result.body).toHaveProperty("attending", "yes");
+    expect(result).toHaveProperty("accepted", true);
+    expect(result).toHaveProperty("attending", "yes");
   });
 });

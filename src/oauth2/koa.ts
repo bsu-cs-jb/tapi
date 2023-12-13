@@ -164,6 +164,38 @@ export function authPaths(paths: PathDef[], scope?: string | string[]) {
   };
 }
 
+export function authClientUser(paths: PathDef[]) {
+  return async (ctx: Context, next: Next) => {
+    const {
+      user,
+      auth: { scope, user: authUser },
+    } = ctx.state;
+
+    // log("ctx.request.method:", ctx.request.method);
+    // log("ctx._matchedRoute:", ctx._matchedRoute);
+    if (pathDefsMatch(ctx, paths)) {
+      // log("authOwnerInvite() matches spec");
+
+      if (scope?.includes("admin")) {
+        log(`authClientUser() allowing admin auth ${scope}`);
+        await next();
+        return;
+      } else if (authUser.userId !== user.userId) {
+        const message = `User '${authUser.userId}' cannot perform this operation on user '${user.id}' because they are not authorized.`;
+        logger.error(message);
+        ctx.status = 403;
+        ctx.body = {
+          status: "Forbidden",
+          message,
+        };
+        return;
+      }
+    }
+
+    await next();
+  };
+}
+
 export function authSessionOwner(paths: PathDef[]) {
   return async (ctx: Context, next: Next) => {
     const {

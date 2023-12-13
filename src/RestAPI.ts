@@ -135,8 +135,13 @@ export function routerParam<T extends IdResource>(
       // ctx[resource.singular] = obj;
       ctx.state[resource.singular] = obj;
       if (!ctx.state[resource.singular]) {
+        const message = `${resource.singular} id '${id}' not found.`;
         ctx.status = 404;
-        logger.error(`${resource.singular} id '${id}' not found.`);
+        ctx.body = {
+          status: "error",
+          message,
+        };
+        logger.error(message);
         return;
       }
       await next();
@@ -405,10 +410,13 @@ export function deleteResource<T extends IdResource>(
 
       log(`DELETE file ${filename} for ${resource.singular} id ${id}`);
       ctx.body = {
-        status: "SUCCESS",
+        status: "success",
         message: `Session ${id} succesfully deleted.`,
       };
-      await next();
+
+      // If any routes after this try to use the route parameter for this item,
+      // they will fail and get a 404.
+      // await next();
     },
   );
 

@@ -29,12 +29,11 @@ export class IndecisiveClient {
     return token;
   }
 
-  async invite(sessionId: string, userId: string): Promise<UserDb> {
-    // log("invite(${sessionId}, ${userId})");
+  async invite(sessionId: string, userId: string): Promise<Session> {
     const body = {
       userId,
     };
-    const result = await sendData<UserDb>(
+    const result = await sendData<Session>(
       "POST",
       `${PATH_ROOT}/sessions/${sessionId}/invite`,
       body,
@@ -45,7 +44,6 @@ export class IndecisiveClient {
   }
 
   async createUser(user: UserDb): Promise<UserDb> {
-    // log("createUser()");
     const result = await sendData<UserDb>(
       "POST",
       `${PATH_ROOT}/users`,
@@ -57,7 +55,6 @@ export class IndecisiveClient {
   }
 
   async updateUser(user: UserDb): Promise<UserDb> {
-    // log("updateUser()");
     const result = await sendData<UserDb>(
       "PATCH",
       `${PATH_ROOT}/users/${user.id}`,
@@ -89,6 +86,24 @@ export class IndecisiveClient {
   async deleteClient(id: string): Promise<object> {
     const result = await fDelete<Session>(
       `${AUTH_ROOT}/clients/${id}`,
+      this.server,
+      this.token,
+    );
+    return result;
+  }
+
+  async deleteToken(token: string): Promise<object> {
+    const result = await fDelete<Session>(
+      `${AUTH_ROOT}/tokens/${token}`,
+      this.server,
+      this.token,
+    );
+    return result;
+  }
+
+  async deleteUser(id: string): Promise<object> {
+    const result = await fDelete<Session>(
+      `${PATH_ROOT}/users/${id}`,
       this.server,
       this.token,
     );
