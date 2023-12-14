@@ -37,7 +37,7 @@ export function pathDefsMatch(ctx: Context, paths: PathDef[]): boolean {
   return false;
 }
 
-function oauthResponse(ctx: Context, response: Response) {
+function oauthResponse(ctx: Context, response: Response, token?: Token) {
   ctx.response.status = response.status || 500;
   ctx.response.body = response.body;
   for (const header in response.headers) {
@@ -53,9 +53,26 @@ function oauthResponse(ctx: Context, response: Response) {
     }
     ctx.response.set(header, response.get(header));
   }
+  if (token) {
+    requestLogger.info({
+      message: `Token: ${token.accessToken}`,
+      type: "token",
+      kind: "created",
+      status: ctx.response.status.toString(),
+      userId: token.clientId,
+    });
+  } else {
+    requestLogger.info({
+      message: `Failure in token`,
+      type: "token",
+      kind: "failure",
+      status: ctx.response.status.toString(),
+      userId: "",
+    });
+  }
 }
 
-function oauthError(ctx: Context, error: OAuthError) {
+function handleOAuthError(ctx: Context, error: OAuthError) {
   logger.error(
     `OAuthError authenticating ${error.code} ${error.name} ${error.message}`,
     {
@@ -74,6 +91,13 @@ function oauthError(ctx: Context, error: OAuthError) {
     error: error.name,
     error_description: error.message,
   };
+  requestLogger.info({
+    message: `Auth failed for ${ctx.request.method} ${ctx.path}`,
+    type: "auth",
+    kind: "failed",
+    status: ctx.response.status.toString(),
+    userId: "",
+  });
 }
 
 export async function token(ctx: Context) {
@@ -81,14 +105,7 @@ export async function token(ctx: Context) {
   try {
     const request = new Request(ctx.request);
     const result = await ctx.auth.token(request, response);
-    oauthResponse(ctx, response);
-    requestLogger.info({
-      message: `Token: ${result.accessToken}`,
-      type: 'token',
-      kind: 'created',
-      status: '200',
-      userId: result.clientId,
-    });
+    oauthResponse(ctx, response, result);
     return result;
   } catch (error) {
     if (error instanceof OAuthError) {
@@ -103,21 +120,32 @@ export async function token(ctx: Context) {
       oauthResponse(ctx, response);
       return;
     } else {
-      const err = error as Error;
-      logger.error(`Non-OAuthError: ${err.message}`);
-      ctx.response.status = 500;
-      ctx.response.body = {
-        status: "error",
-        message: "Unexpected error during authentication",
-        error: err.message,
-      };
+      handleNonOAuthError(ctx, "token", error as Error);
     }
     return;
   }
 }
 
+function handleNonOAuthError(ctx: Context, name: string, error: Error) {
+  const message = `Unknown error ${error.message} during ${name} for ${ctx.request.method} ${ctx.path}`;
+  logger.error(message);
+  ctx.response.status = 500;
+  ctx.response.body = {
+    status: "error",
+    message,
+    error: error.message,
+  };
+  requestLogger.info({
+    message,
+    type: "auth",
+    kind: "failed",
+    status: ctx.response.status.toString(),
+    userId: "",
+  });
+}
+
 async function auth_impl(ctx: Context, next: Next, scope?: string[] | string) {
-  let token: Token|undefined;
+  let token: Token | undefined;
   try {
     const request = new Request(ctx.request);
     const response = new Response();
@@ -126,16 +154,9 @@ async function auth_impl(ctx: Context, next: Next, scope?: string[] | string) {
     });
   } catch (error) {
     if (error instanceof OAuthError) {
-      oauthError(ctx, error);
+      handleOAuthError(ctx, error);
     } else {
-      const err = error as Error;
-      logger.error(`Non-OAuthError: ${err.message}`);
-      ctx.response.status = 500;
-      ctx.response.body = {
-        status: "error",
-        message: "Unexpected error during authentication",
-        error: err.message,
-      };
+      handleNonOAuthError(ctx, "authenticate", error as Error);
     }
     return;
   }

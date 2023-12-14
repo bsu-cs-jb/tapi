@@ -43,7 +43,11 @@ export class IndecisiveClient {
     return result;
   }
 
-  async respond(sessionId: string, accepted: boolean, attending: Attending): Promise<Session> {
+  async respond(
+    sessionId: string,
+    accepted: boolean,
+    attending: Attending,
+  ): Promise<Session> {
     const body = {
       accepted,
       attending,

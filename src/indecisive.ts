@@ -303,14 +303,14 @@ const SKIP_AUTH = {
 function reqLogger() {
   return async (ctx: Context, next: Next) => {
     const { self, user, session } = ctx.state;
-    const logObj: Record<string,string> = {
+    const logObj: Record<string, string> = {
       type: ctx.method,
       kind: ctx.path,
     };
     if (self) {
       logObj.userId = self.id;
     }
-    logObj.message = '';
+    logObj.message = "";
     if (user) {
       logObj.message += `User '${user.name}'`;
     }
@@ -320,13 +320,12 @@ function reqLogger() {
     if (ctx.request.body) {
       logObj.message = toJson(ctx.request.body);
     } else {
-      logObj.message = '<no body>';
+      logObj.message = "<no body>";
     }
 
     try {
       await next();
     } catch (error) {
-
       logObj.status = ctx.status.toString();
       logObj.message += ` Error: ${(error as Error).message}`;
       requestLogger.error(logObj);
@@ -337,8 +336,12 @@ function reqLogger() {
     }
 
     logObj.status = ctx.status.toString();
-    if (ctx.response.body && typeof ctx.response.body === 'object' && 'id' in ctx.response.body) {
-      logObj.message += ` response id: ${ctx.response.body.id}`
+    if (
+      ctx.response.body &&
+      typeof ctx.response.body === "object" &&
+      "id" in ctx.response.body
+    ) {
+      logObj.message += ` response id: ${ctx.response.body.id}`;
     }
 
     requestLogger.info(logObj);

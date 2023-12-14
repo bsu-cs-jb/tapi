@@ -50,14 +50,15 @@ export const requestLogger = createLogger({
         `${info.timestamp}: ${info.type} ${info.kind} ${info.status} ${info.userId} ${info.message}`,
     ),
   ),
-  transports: [new transports.DailyRotateFile({
-    filename: "tapi-requests-%DATE%.log",
-    dirname: "logs",
-    datePattern: "YYYY-MM-DD",
-    // zippedArchive: true,
-    maxSize: "20m",
-    maxFiles: "14d",
-  })
+  transports: [
+    new transports.DailyRotateFile({
+      filename: "tapi-requests-%DATE%.log",
+      dirname: "logs",
+      datePattern: "YYYY-MM-DD",
+      // zippedArchive: true,
+      maxSize: "20m",
+      maxFiles: "14d",
+    }),
   ],
 });
 

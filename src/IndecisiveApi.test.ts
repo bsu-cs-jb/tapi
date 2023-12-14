@@ -140,15 +140,15 @@ describe("/session/invite", () => {
     const result = await req
       .post(`/indecisive/sessions/${sessionId}/invite`)
       .auth(token, { type: "bearer" })
-      .send({ userId: USER_2_ID})
+      .send({ userId: USER_2_ID })
       .expect(200)
       .expect("Content-Type", /json/);
     expect(result.body).toBeDefined();
     expect(result.body).toHaveProperty("id", sessionId);
     expect(result.body.invitations).toContainEqual({
       user: {
-        id:USER_2_ID,
-        name:USER_2_NAME,
+        id: USER_2_ID,
+        name: USER_2_NAME,
       },
       accepted: false,
       attending: "undecided",
@@ -205,7 +205,6 @@ describe("/session/respond", () => {
     expect(result).toHaveProperty("id", session.id);
     expect(result).toHaveProperty("accepted", true);
     expect(result).toHaveProperty("attending", "undecided");
-
 
     // User 2's view of the session is different
     result = await client2.session(session.id);
@@ -385,8 +384,8 @@ describe("/session/invite", () => {
     expect(result).toHaveProperty("id", sessionId);
     expect(result.invitations).toContainEqual({
       user: {
-        id:USER_2_ID,
-        name:USER_2_NAME,
+        id: USER_2_ID,
+        name: USER_2_NAME,
       },
       accepted: false,
       attending: "undecided",
