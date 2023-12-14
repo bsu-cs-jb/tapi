@@ -3,7 +3,7 @@ import { fetchToken, fGet, sendData, fDelete } from "./ApiClient.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
 import { UserDb } from "./IndecisiveTypes.js";
-import { Session } from "./indecisive_rn_types.js";
+import { Session, Vote } from "./indecisive_rn_types.js";
 
 const PATH_ROOT = "/indecisive";
 const AUTH_ROOT = "/auth";
@@ -113,6 +113,32 @@ export class IndecisiveClient {
   async deleteSession(sessionId: string): Promise<object> {
     const result = await fDelete<Session>(
       `${PATH_ROOT}/sessions/${sessionId}`,
+      this.server,
+      this.token,
+    );
+    return result;
+  }
+
+  async addSuggestion(sessionId: string, name: string): Promise<Session> {
+    const result = await sendData<Session>(
+      "POST",
+      `${PATH_ROOT}/sessions/${sessionId}/suggest`,
+      { name },
+      this.server,
+      this.token,
+    );
+    return result;
+  }
+
+  async vote(
+    sessionId: string,
+    suggestionId: string,
+    vote: Vote,
+  ): Promise<Session> {
+    const result = await sendData<Session>(
+      "POST",
+      `${PATH_ROOT}/sessions/${sessionId}/vote/${suggestionId}`,
+      { vote },
       this.server,
       this.token,
     );

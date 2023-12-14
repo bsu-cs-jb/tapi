@@ -587,10 +587,8 @@ export function indecisiveRoutes(router: Router) {
     },
   );
 
-  sessionOwnerInviteRoutes.post(
-    "suggestion-vote",
-    "/sessions/:sessionId/vote/:suggestionId",
-    async (ctx: Context, next: Next) => {
+  function handleVote() {
+    return async (ctx: Context, next: Next) => {
       const { self, session } = ctx.state;
 
       assert(self, "Self must be defined");
@@ -644,7 +642,19 @@ export function indecisiveRoutes(router: Router) {
 
       ctx.body = await toSession(session, self.id);
       await next();
-    },
+    };
+  }
+
+  sessionOwnerInviteRoutes.post(
+    "suggestion-vote",
+    "/sessions/:sessionId/vote/:suggestionId",
+    handleVote(),
+  );
+
+  sessionOwnerInviteRoutes.put(
+    "suggestion-vote",
+    "/sessions/:sessionId/vote/:suggestionId",
+    handleVote(),
   );
 
   router.get("test-html", "/test", async (ctx) => {

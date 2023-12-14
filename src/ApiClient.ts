@@ -1,8 +1,48 @@
 import { clone } from "lodash-es";
 
-import { toJson, base64 } from "./utils.js";
+import { fromJson, toJson, base64 } from "./utils.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
+
+class FetchError extends Error {
+  description: string;
+  cause?: Error;
+  status?: number;
+  body?: string;
+  json?: Record<string, string>;
+  bodyReason?: string;
+  bodyMessage?: string;
+  bodyStatus?: string;
+
+  constructor(description: string, cause?: Error) {
+    let message = `HTTP Error for ${description}.`;
+    if (cause) {
+      message = `HTTP Error for ${description} caused by ${cause.message}.`;
+    }
+    super(message);
+    this.description = description;
+    this.cause = cause;
+  }
+
+  update(response: Response): Promise<FetchError> {
+    this.status = response.status;
+    this.message = `HTTP Error ${response.status} for ${this.description}`;
+    return response.text().then((txt) => {
+      this.body = txt;
+      try {
+        // attempt to parse as JSON
+        this.json = fromJson(txt);
+        this.bodyStatus = this.json?.status;
+        this.bodyMessage = this.json?.message;
+        this.bodyReason = this.json?.reason;
+        this.message = `HTTP Error ${response.status} for ${this.description}: ${this.body}`;
+      } catch (error) {
+        // ignore
+      }
+      return this;
+    });
+  }
+}
 
 export interface TokenResponse {
   access_token: string;
@@ -48,14 +88,21 @@ export async function doFetch<T>(
       if (response.ok) {
         return response.json();
       } else {
-        return response.text().then((error_body) => {
-          const message = `HTTP Error ${response.status}: ${error_body}`;
-          throw new Error(message);
+        const err = new FetchError(`doFetch(${method}, ${url}): ${body}`);
+        return err.update(response).then((error) => {
+          throw error;
         });
       }
     })
     .then((json) => {
       return json as T;
+    })
+    .catch((error) => {
+      if (error instanceof FetchError) {
+        throw error;
+      } else {
+        throw new FetchError(`doFetch(${method}, ${url}): ${body}`, error);
+      }
     });
   return result;
 }
@@ -122,14 +169,21 @@ export async function fetchToken(
       if (response.ok) {
         return response.json();
       } else {
-        return response.text().then((error_body) => {
-          const message = `HTTP Error ${response.status}: ${error_body}`;
-          throw new Error(message);
+        const err = new FetchError(`fetchToken$(${id})`);
+        return err.update(response).then((error) => {
+          throw error;
         });
       }
     })
     .then((json) => {
       return (json as TokenResponse).access_token;
+    })
+    .catch((error) => {
+      if (error instanceof FetchError) {
+        throw error;
+      } else {
+        throw new FetchError(`fetchToken(${id}):`, error);
+      }
     });
   return result;
 }

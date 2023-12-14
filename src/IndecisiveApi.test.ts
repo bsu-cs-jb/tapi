@@ -10,7 +10,9 @@ import {
 
 import request from "supertest";
 
+import { Session, Suggestion } from "./indecisive_rn_types.js";
 import { IndecisiveClient } from "./IndecisiveClient.js";
+import { sendData } from "./ApiClient.js";
 
 import { base64 } from "./utils.js";
 
@@ -148,6 +150,118 @@ describe("/session/invite", () => {
   });
 });
 
+describe("/session/vote", () => {
+  let session: Session | undefined;
+  let client: IndecisiveClient;
+  let suggestion: Suggestion | undefined;
+
+  beforeAll(async () => {
+    client = new IndecisiveClient(SERVER);
+    await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
+  });
+
+  beforeEach(async () => {
+    session = await client.createSession("UAT Testing");
+    session = await client.addSuggestion(session.id, "Take a hike");
+    suggestion = session?.suggestions[0];
+  });
+
+  afterEach(async () => {
+    if (session) {
+      try {
+        await client.deleteSession(session.id);
+      } catch {
+        // nothing
+      }
+      session = undefined;
+    }
+  });
+
+  test("suggestion starts with no votes", async () => {
+    if (!session || !suggestion) {
+      expect(session).toBeDefined();
+      expect(suggestion).toBeDefined();
+      return;
+    }
+    expect(suggestion).toEqual({
+      id: suggestion.id,
+      name: "Take a hike",
+      upVoteUserIds: [],
+      downVoteUserIds: [],
+    });
+  });
+
+  test("accepts PUT", async () => {
+    if (!session || !suggestion) {
+      expect(session).toBeDefined();
+      expect(suggestion).toBeDefined();
+      return;
+    }
+    const result = await sendData<Session>(
+      "PUT",
+      `/indecisive/sessions/${session.id}/vote/${suggestion.id}`,
+      { vote: "down" },
+      client.server,
+      client.token,
+    );
+
+    expect(result).toHaveProperty("id", session.id);
+    expect(result.suggestions).toContainEqual({
+      id: suggestion.id,
+      name: "Take a hike",
+      downVoteUserIds: [USER_ID],
+      upVoteUserIds: [],
+    });
+  });
+
+  test("can change vote to none", async () => {
+    if (!session || !suggestion) {
+      expect(session).toBeDefined();
+      expect(suggestion).toBeDefined();
+      return;
+    }
+
+    let result = await client.vote(session.id, suggestion.id, "up");
+
+    expect(result).toHaveProperty("id", session.id);
+    expect(result.suggestions).toContainEqual({
+      id: suggestion.id,
+      name: "Take a hike",
+      upVoteUserIds: [USER_ID],
+      downVoteUserIds: [],
+    });
+
+    result = await client.vote(session.id, suggestion.id, "none");
+
+    expect(result).toHaveProperty("id", session.id);
+    expect(result.suggestions).toContainEqual({
+      id: suggestion.id,
+      name: "Take a hike",
+      upVoteUserIds: [],
+      downVoteUserIds: [],
+    });
+  });
+
+  test("votes up", async () => {
+    if (!session || !suggestion) {
+      expect(session).toBeDefined();
+      expect(suggestion).toBeDefined();
+      return;
+    }
+    expect(suggestion).toHaveProperty("name", "Take a hike");
+    const result = await client.vote(session?.id, suggestion.id, "up");
+
+    expect(result).toBeDefined();
+    expect(result).toHaveProperty("id", session.id);
+    expect(result.suggestions).toContainEqual({
+      id: suggestion.id,
+      name: "Take a hike",
+      upVoteUserIds: [USER_ID],
+      downVoteUserIds: [],
+    });
+  });
+});
+
 describe("/session/invite", () => {
   let sessionId = "";
   let client: IndecisiveClient;
@@ -170,10 +284,9 @@ describe("/session/invite", () => {
     }
   });
 
-  test("works", async () => {
+  test("adds an invitation to the session", async () => {
     const result = await client.invite(sessionId, "brahbrah");
 
-    expect(result).toBeDefined();
     expect(result).toHaveProperty("id", sessionId);
     expect(result.invitations).toContainEqual({
       user: {

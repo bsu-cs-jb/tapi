@@ -1,6 +1,7 @@
 import sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
 import assert from "node:assert";
+import * as _ from "lodash-es";
 
 import { AuthDb } from "./AuthDb.js";
 import { IndecisiveClient } from "./IndecisiveClient.js";
@@ -97,9 +98,9 @@ async function updateCreateClient(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function users() {
+async function clients() {
   // need session id
-  const rawUsers = await readFileAsJson("users.private.json");
+  const rawUsers = await readFileAsJson("clients.private.json");
   const userDef = rawUsers as unknown as UserDef[];
   const client = new IndecisiveClient(SERVER);
   await client.fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
@@ -128,7 +129,7 @@ async function users() {
 }
 
 async function printIds() {
-  const rawUsers = await readFileAsJson("users.private.json");
+  const rawUsers = await readFileAsJson("clients.private.json");
   const userDef = rawUsers as unknown as UserDef[];
   for (const user of userDef) {
     console.log(`clientId: ${user.id}\nclientSecret: ${user.secret}\n`);
@@ -151,12 +152,48 @@ async function fakeUsers() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function users() {
+  // need session id
+  const rawUsers = await readFileAsJson("users.json");
+  const userNames = rawUsers as unknown as string[];
+  const client = new IndecisiveClient(SERVER);
+  await client.fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
+  log(`Setup token ${client.token}`);
+
+  function makeId(name: string): string {
+    let id = _.toLower(name);
+    id = id.replace(/[^a-zA-Z0-9]/g, "-");
+    return id;
+  }
+
+  let createdUsers = 0;
+  const MAX_USERS = -1;
+  for (const name of userNames) {
+    const userId = makeId(name);
+    log(`User: ${userId} ${name}`);
+
+    await updateCreateUser(
+      {
+        id: userId,
+        name,
+      },
+      client,
+    );
+    createdUsers += 1;
+    if (MAX_USERS > 0 && createdUsers > MAX_USERS) {
+      break;
+    }
+  }
+}
+
 async function main() {
   console.log("Doing work");
   log(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
   log(`LOG_LEVEL: ${config.LOG_LEVEL}`);
 
   await users();
+  // await clients();
   // await fakeUsers();
   // await printIds();
 }
