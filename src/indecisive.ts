@@ -40,8 +40,8 @@ import {
   VOTES,
   isVote,
 } from "./indecisive_rn_types.js";
-import { assert, removeId } from "./utils.js";
-import { log, logger } from "./logging.js";
+import { assert, removeId, toJson } from "./utils.js";
+import { log, logger, requestLogger } from "./logging.js";
 
 function fetchCurrentSession(errorIfMissing: boolean = true) {
   return async (ctx: Context, next: Next) => {
@@ -300,6 +300,51 @@ const SKIP_AUTH = {
   scope: ["read", "write", "admin"],
 };
 
+function reqLogger() {
+  return async (ctx: Context, next: Next) => {
+    const { self, user, session } = ctx.state;
+    const logObj: Record<string,string> = {
+      type: ctx.method,
+      kind: ctx.path,
+    };
+    if (self) {
+      logObj.userId = self.id;
+    }
+    logObj.message = '';
+    if (user) {
+      logObj.message += `User '${user.name}'`;
+    }
+    if (session) {
+      logObj.message += `Session '${session.name}'`;
+    }
+    if (ctx.request.body) {
+      logObj.message = toJson(ctx.request.body);
+    } else {
+      logObj.message = '<no body>';
+    }
+
+    try {
+      await next();
+    } catch (error) {
+
+      logObj.status = ctx.status.toString();
+      logObj.message += ` Error: ${(error as Error).message}`;
+      requestLogger.error(logObj);
+
+      ctx.status = 500;
+
+      throw error;
+    }
+
+    logObj.status = ctx.status.toString();
+    if (ctx.response.body && typeof ctx.response.body === 'object' && 'id' in ctx.response.body) {
+      logObj.message += ` response id: ${ctx.response.body.id}`
+    }
+
+    requestLogger.info(logObj);
+  };
+}
+
 export function indecisiveRoutes(router: Router) {
   // INDECISIVE AUTH
   const authEnabled = true;
@@ -307,6 +352,11 @@ export function indecisiveRoutes(router: Router) {
     router.use(authenticate("read"));
   }
   router.use(indecisiveAuth(authEnabled, true, SKIP_AUTH));
+
+  routerParam(router, USER);
+  routerParam(router, SESSION);
+
+  router.use(reqLogger());
 
   router.use(["/current-session"], fetchCurrentSession());
 
@@ -327,9 +377,6 @@ export function indecisiveRoutes(router: Router) {
     ctx.body = body;
     await next();
   });
-
-  routerParam(router, USER);
-  routerParam(router, SESSION);
 
   router.use(
     ["/users/:userId"],

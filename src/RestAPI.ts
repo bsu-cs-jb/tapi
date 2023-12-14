@@ -462,8 +462,15 @@ export function putResource<T extends IdResource>(
 
       // Make sure the id of the resource matches
       const id = ctx.params[resource.paramName];
-      if (data.id) {
-        assert(data.id === id);
+      if (data.id && data.id !== id) {
+        // assert(data.id === id, "id in body and URL must match");
+        ctx.status = 400;
+        ctx.body = {
+          status: "error",
+          reason: "validation_error",
+          message: `body id (${data.id}) does not match id in URL (${id}).`,
+        };
+        return;
       } else {
         data.id = id;
       }

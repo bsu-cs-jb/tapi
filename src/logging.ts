@@ -9,8 +9,8 @@ const TRANSPORTS: TransportStream[] = [
   new transports.Console({
     format: format.combine(
       format.timestamp({ format: config.LOG_CONSOLE_TS }),
-      // format.errors({ stack: true }),
-      // format.colorize(),
+      format.errors({ stack: true }),
+      format.colorize(),
       // format.simple(),
       // format.cli(),
       // format.prettyPrint({colorize:true}),
@@ -27,7 +27,7 @@ if (config.LOG_TO_FILE) {
   const rotateTransport = new transports.DailyRotateFile({
     filename: "tapi-%DATE%.log",
     dirname: "logs",
-    datePattern: "YYYY-MM-DD-HH",
+    datePattern: "YYYY-MM-DD",
     zippedArchive: true,
     maxSize: "20m",
     maxFiles: "14d",
@@ -36,6 +36,30 @@ if (config.LOG_TO_FILE) {
   // TRANSPORTS.push(new transports.File({ filename: "logs/combined.log" }));
   TRANSPORTS.push(rotateTransport);
 }
+
+export const requestLogger = createLogger({
+  level: config.LOG_LEVEL.toLowerCase(),
+  silent: !config.LOGGING_ENABLED,
+  format: format.combine(
+    format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+    format.errors({ stack: true }),
+    format.splat(),
+    // format.json(),
+    format.printf(
+      (info) =>
+        `${info.timestamp}: ${info.type} ${info.kind} ${info.status} ${info.userId} ${info.message}`,
+    ),
+  ),
+  transports: [new transports.DailyRotateFile({
+    filename: "tapi-requests-%DATE%.log",
+    dirname: "logs",
+    datePattern: "YYYY-MM-DD",
+    // zippedArchive: true,
+    maxSize: "20m",
+    maxFiles: "14d",
+  })
+  ],
+});
 
 export const logger = createLogger({
   level: config.LOG_LEVEL.toLowerCase(),

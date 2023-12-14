@@ -1,6 +1,6 @@
 import { Context, Next } from "koa";
-import { Request, Response, OAuthError } from "oauth2-server";
-import { log, logger } from "../logging.js";
+import { Request, Response, OAuthError, Token } from "oauth2-server";
+import { log, logger, requestLogger } from "../logging.js";
 import { canViewSession } from "../IndecisiveTypes.js";
 
 export interface PathDefBase {
@@ -82,6 +82,13 @@ export async function token(ctx: Context) {
     const request = new Request(ctx.request);
     const result = await ctx.auth.token(request, response);
     oauthResponse(ctx, response);
+    requestLogger.info({
+      message: `Token: ${result.accessToken}`,
+      type: 'token',
+      kind: 'created',
+      status: '200',
+      userId: result.clientId,
+    });
     return result;
   } catch (error) {
     if (error instanceof OAuthError) {
@@ -110,23 +117,13 @@ export async function token(ctx: Context) {
 }
 
 async function auth_impl(ctx: Context, next: Next, scope?: string[] | string) {
+  let token: Token|undefined;
   try {
     const request = new Request(ctx.request);
     const response = new Response();
-    const result = await ctx.auth.authenticate(request, response, {
+    token = await ctx.auth.authenticate(request, response, {
       scope,
     });
-    // if result failed then don't forward
-    if (result) {
-      ctx.state.auth = {
-        scope: result.scope,
-        user: result.user,
-      };
-      await next();
-      return result;
-    } else {
-      return;
-    }
   } catch (error) {
     if (error instanceof OAuthError) {
       oauthError(ctx, error);
@@ -140,8 +137,19 @@ async function auth_impl(ctx: Context, next: Next, scope?: string[] | string) {
         error: err.message,
       };
     }
-    return null;
+    return;
   }
+
+  // if result failed then don't forward
+  if (token) {
+    ctx.state.auth = {
+      scope: token.scope,
+      user: token.user,
+    };
+    await next();
+    return;
+  }
+  return;
 }
 
 export function authenticate(scope?: string | string[]) {
