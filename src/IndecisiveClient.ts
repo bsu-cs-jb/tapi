@@ -3,7 +3,7 @@ import { fetchToken, fGet, sendData, fDelete } from "./ApiClient.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
 import { UserDb } from "./IndecisiveTypes.js";
-import { Session, Vote } from "./indecisive_rn_types.js";
+import { Session, Vote, Attending } from "./indecisive_rn_types.js";
 
 const PATH_ROOT = "/indecisive";
 const AUTH_ROOT = "/auth";
@@ -43,6 +43,21 @@ export class IndecisiveClient {
     return result;
   }
 
+  async respond(sessionId: string, accepted: boolean, attending: Attending): Promise<Session> {
+    const body = {
+      accepted,
+      attending,
+    };
+    const result = await sendData<Session>(
+      "POST",
+      `${PATH_ROOT}/sessions/${sessionId}/respond`,
+      body,
+      this.server,
+      this.token,
+    );
+    return result;
+  }
+
   async createUser(user: UserDb): Promise<UserDb> {
     const result = await sendData<UserDb>(
       "POST",
@@ -65,7 +80,16 @@ export class IndecisiveClient {
     return result;
   }
 
-  async currentSession(): Promise<object> {
+  async session(id: string): Promise<Session> {
+    const result = await fGet<Session>(
+      `${PATH_ROOT}/sessions/${id}`,
+      this.server,
+      this.token,
+    );
+    return result;
+  }
+
+  async currentSession(): Promise<Session> {
     const result = await fGet<Session>(
       `${PATH_ROOT}/current-session`,
       this.server,
