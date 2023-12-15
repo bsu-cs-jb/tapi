@@ -87,7 +87,7 @@ async function makeP3a(saveInDb: boolean = true) {
 
   const accepting = mkCategory("Accepting", [
     {
-      name: `On app launch the user has not yet accepted the invitation and the app displays the user as “not accepted”.`,
+      name: `On app launch the user has not yet accepted the invitation and the app displays the user as "not accepted".`,
     },
     {
       name: "The user can see the list of suggestions and invitations before they have accepted the invitation but they cannot vote, add suggestions, update their attendance, or invite other users until they accept the invitation",
@@ -155,14 +155,15 @@ async function makeP3a(saveInDb: boolean = true) {
     },
   ]);
 
-  const code = mkCategory("code", [
+  const code = mkCategory("Code", [
     {
       name: `Code Review`,
+      scoreType: "points",
       pointValue: 5,
     },
   ]);
 
-  const p3a = makeRubric({
+  const p3a_test = makeRubric({
     id: "test-project-03a",
     name: "Project 3a (test)",
     categories: [
@@ -175,10 +176,83 @@ async function makeP3a(saveInDb: boolean = true) {
     ],
   });
 
+  const p3a = makeRubric({
+    id: "project-03a",
+    name: "Project 3a",
+    categories: [
+      usability,
+      accepting,
+      suggestions,
+      invitations,
+      liveUpdates,
+      code,
+    ],
+  });
+
   if (saveInDb) {
+    await saveRubric(p3a_test);
     await saveRubric(p3a);
   } else {
     await writeJsonToFile("project-03a.json", p3a);
+  }
+}
+
+async function makeP3b(saveInDb: boolean = true) {
+  const auth = mkCategory("Authentication", [
+    {
+      name: "",
+    },
+  ]);
+
+  const session = mkCategory("Current Session", [
+    {
+      name: ``,
+    },
+  ]);
+
+  const acceptAttend = mkCategory("Accept & Attend", [
+    {
+      name: ``,
+    },
+  ]);
+
+  const suggestVote = mkCategory("Suggest & Vote", [
+    {
+      name: ``,
+    },
+  ]);
+
+  const invite = mkCategory("Invitations", [
+    {
+      name: ``,
+    },
+  ]);
+
+  const code = mkCategory("Code", [
+    {
+      name: `Code Review`,
+      scoreType: "points",
+      pointValue: 5,
+    },
+  ]);
+
+  const p3b_test = makeRubric({
+    id: "test-project-03b",
+    name: "Project 3b (test)",
+    categories: [auth, session, acceptAttend, suggestVote, invite, code],
+  });
+
+  const p3b = makeRubric({
+    id: "project-03b",
+    name: "Project 3b",
+    categories: [auth, session, acceptAttend, suggestVote, invite, code],
+  });
+
+  if (saveInDb) {
+    await saveRubric(p3b_test);
+    await saveRubric(p3b);
+  } else {
+    await writeJsonToFile("project-03b.json", p3b);
   }
 }
 
@@ -189,6 +263,9 @@ async function main(args: string[]) {
 
   if (args.includes("make-p3a")) {
     await makeP3a();
+  }
+  if (args.includes("make-p3b")) {
+    await makeP3b();
   }
   // await clients();
   // await fakeUsers();

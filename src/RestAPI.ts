@@ -110,9 +110,12 @@ export function resourceFromContext<T extends IdResource>(
     ref.id = id;
   }
   if (ctx && ref.parents) {
+    // log(`resourceFromContext(${resource.name},${id})`, {
+    //   parents: ref.parents,
+    // });
     for (const parent of ref.parents) {
-      if (parent.paramName in ctx) {
-        parent.id = ctx.state[parent.paramName];
+      if (parent.singular in ctx.state) {
+        parent.id = ctx.state[parent.singular];
       }
     }
   }
@@ -127,7 +130,7 @@ export function routerParam<T extends IdResource>(
   return router.param(
     resource.paramName,
     async (id: string, ctx: Context, next: Next) => {
-      const ref = resourceFromContext(resource, id, ctx.params);
+      const ref = resourceFromContext(resource, id, ctx);
       let obj = await readResource<T>(ref);
       if (processFn && obj) {
         obj = processFn(obj);
