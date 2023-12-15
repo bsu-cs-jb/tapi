@@ -115,6 +115,7 @@
     ],
     "excludeFiles": [
       "src/**/*.test.*",
+      "src/scripts/**/*",
       "src/setup.*"
     ]
   },

@@ -11,7 +11,7 @@ import {
 } from "node:fs/promises";
 import util from "node:util";
 import { execFile } from "node:child_process";
-import { cloneDeep, throttle } from "lodash-es";
+import { cloneDeep, throttle, merge } from "lodash-es";
 
 import { config } from "./config.js";
 import { log, logger } from "./logging.js";
@@ -51,7 +51,7 @@ export interface ResourceDef<T extends IdResource> {
   sortBy?: string;
 }
 
-export function jsonToBuffer(data: IdResource): Uint8Array {
+function jsonToBuffer(data: object): Uint8Array {
   return new Uint8Array(Buffer.from(toJson(data)));
 }
 
@@ -257,34 +257,48 @@ export async function deleteResourceDb<T extends IdResource>(
   return filename;
 }
 
+export async function writeJsonToFile<T extends object>(
+  filename: string,
+  data: T,
+): Promise<T> {
+  const buffer = jsonToBuffer(data);
+  await writeFile(filename, buffer);
+  return data;
+}
+
+export interface WriteResourceOptions {
+  updateTimestamps?: boolean;
+  skipCommit?: boolean;
+}
+
+const WRITE_RESOURCE_OPTIONS_DEFAULT = {
+  updateTimestamps: true,
+  skipCommit: false,
+};
+
 export async function writeResource<T extends IdResource>(
   resource: ResourceDef<T>,
   data: T,
-  updateTimestamps = true,
+  options?: WriteResourceOptions,
 ): Promise<string | undefined> {
+  options = merge(WRITE_RESOURCE_OPTIONS_DEFAULT, options);
+  log("Write options:", options);
   await ensureResourceDir(resource);
-  if (updateTimestamps) {
+  if (options.updateTimestamps) {
     const ts = new Date().toISOString();
     data.updatedAt = ts;
     if (!data.createdAt) {
       data.createdAt = ts;
     }
   }
-  const buffer = jsonToBuffer(data);
   const filename = resourceFilename(resource);
   log(`writeResource(${resource.singular} ${resource.id}) to ${filename}.`);
-  await writeFile(filename, buffer);
+  await writeJsonToFile(filename, data);
   // log(`DONE writing to ${filename}.`);
-  if (config.DB_GIT_COMMIT) {
+  if (!options.skipCommit && config.DB_GIT_COMMIT) {
     throttleGitCommit();
   }
   return filename;
-}
-
-export async function writeDb<T extends IdResource>(name: string, data: T) {
-  await ensureRoot();
-  const buffer = jsonToBuffer(data);
-  await writeFile(`${config.DB_GRADING_DIR}/${name}.json`, buffer);
 }
 
 export function refWithId<T extends IdResource>(

@@ -49,7 +49,7 @@ const COURSE: ResourceDef<CourseDbObj> = {
   sortBy: "name",
 };
 
-const RUBRIC: ResourceDef<Rubric> = {
+export const RUBRIC: ResourceDef<Rubric> = {
   database: "grading",
   name: "rubrics",
   singular: "rubric",

@@ -5,7 +5,7 @@ import TransportStream from "winston-transport";
 import { config } from "./config.js";
 import { toJson } from "./utils.js";
 
-const TRANSPORTS: TransportStream[] = [
+const loggingTransports: TransportStream[] = [
   new transports.Console({
     format: format.combine(
       format.timestamp({ format: config.LOG_CONSOLE_TS }),
@@ -33,8 +33,8 @@ if (config.LOG_TO_FILE) {
     maxFiles: "14d",
   });
 
-  // TRANSPORTS.push(new transports.File({ filename: "logs/combined.log" }));
-  TRANSPORTS.push(rotateTransport);
+  // loggingTransports.push(new transports.File({ filename: "logs/combined.log" }));
+  loggingTransports.push(rotateTransport);
 }
 
 export const requestLogger = createLogger({
@@ -77,7 +77,7 @@ export const logger = createLogger({
     format.splat(),
     format.json(),
   ),
-  transports: TRANSPORTS,
+  transports: loggingTransports,
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
