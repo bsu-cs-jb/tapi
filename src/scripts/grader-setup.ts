@@ -30,7 +30,7 @@ function mkCategory(
     return makeRubricItem({
       id: makeItemId(id, i),
       name: el.name,
-      scoreType: el.scoreType || "boolean",
+      scoreType: el.scoreType || "full_half",
       scoreValue: el.scoreValue || "points",
       pointValue: el.pointValue || 1,
     });
