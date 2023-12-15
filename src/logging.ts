@@ -45,12 +45,16 @@ export const requestLogger = createLogger({
     format.errors({ stack: true }),
     format.splat(),
     // format.json(),
-    format.printf(
-      (info) => {
-        const fields = [info.userId.padEnd(10," "), info.status, info.type.padEnd(5," "), info.kind, info.message].filter((s) => s);
-        return `${info.timestamp}: ${fields.join(" ")}`
-      }
-    ),
+    format.printf((info) => {
+      const fields = [
+        info.userId.padEnd(10, " "),
+        info.status,
+        info.type.padEnd(5, " "),
+        info.kind,
+        info.message,
+      ].filter((s) => s);
+      return `${info.timestamp}: ${fields.join(" ")}`;
+    }),
   ),
   transports: [
     new transports.DailyRotateFile({

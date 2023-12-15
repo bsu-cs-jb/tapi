@@ -1,5 +1,12 @@
 import { AuthDb } from "./AuthDb.js";
-import { TokenResponse, fetchToken, fetchFullToken, fGet, sendData, fDelete } from "./ApiClient.js";
+import {
+  TokenResponse,
+  fetchToken,
+  fetchFullToken,
+  fGet,
+  sendData,
+  fDelete,
+} from "./ApiClient.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
 import { UserDb } from "./IndecisiveTypes.js";

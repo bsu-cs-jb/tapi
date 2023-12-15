@@ -176,7 +176,7 @@ export async function fetchFullToken(
       }
     })
     .then((json) => {
-      return (json as TokenResponse)
+      return json as TokenResponse;
     })
     .catch((error) => {
       if (error instanceof FetchError) {

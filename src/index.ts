@@ -55,20 +55,23 @@ app.context.authModel = authModel;
 // apply rate limit
 const db = new Map();
 
-app.use(ratelimit({
-  driver: 'memory',
-  db: db,
-  duration: 60000,
-  errorMessage: 'Rate limit exceeded. Check for loops and slow down.',
-  id: (ctx) => ctx.ip,
-  headers: {
-    remaining: 'Rate-Limit-Remaining',
-    reset: 'Rate-Limit-Reset',
-    total: 'Rate-Limit-Total'
-  },
-  max: 100,
-  disableHeader: false,
-}));
+app.use(
+  ratelimit({
+    driver: "memory",
+    db: db,
+    duration: 60000,
+    errorMessage:
+      "Rate limit of 120 messages in 1 minute exceeded. Check for loops and wait for the limit to reset in 1 minute.",
+    id: (ctx) => ctx.ip,
+    headers: {
+      remaining: "Rate-Limit-Remaining",
+      reset: "Rate-Limit-Reset",
+      total: "Rate-Limit-Total",
+    },
+    max: 120,
+    disableHeader: false,
+  }),
+);
 
 router.use("/admin", authenticate("admin"));
 router.use("/test", authenticate("read"));

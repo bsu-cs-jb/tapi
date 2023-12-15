@@ -11,15 +11,7 @@ import {
   patchResource,
   routerParam,
 } from "./RestAPI.js";
-import {
-  AuthDb,
-  CLIENT,
-  deleteToken,
-  fetchTokens,
-  isInvalid,
-  TOKEN,
-  TokenDb,
-} from "./AuthDb.js";
+import { AuthDb, CLIENT, immediatePurgeTokens, TOKEN } from "./AuthDb.js";
 import { log } from "./logging.js";
 import { hash } from "./hash.js";
 
@@ -71,15 +63,7 @@ export function authRoutes(router: Router) {
   });
 
   router.get("/clean-tokens", async (ctx: Context, next: Next) => {
-    const tokens = await fetchTokens();
-    const deletedTokens: TokenDb[] = [];
-
-    for (const token of tokens) {
-      if (await isInvalid(token)) {
-        deletedTokens.push(token);
-        await deleteToken(token.id);
-      }
-    }
+    const deletedTokens = await immediatePurgeTokens();
 
     const contentType = ctx.accepts("json", "html");
 

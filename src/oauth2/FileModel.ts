@@ -1,3 +1,4 @@
+import { delay } from "lodash-es";
 import {
   Client,
   ClientCredentialsModel,
@@ -6,13 +7,14 @@ import {
   User,
 } from "oauth2-server";
 import {
-  FileModelToken,
-  FileModelUser,
+  deleteToken,
   fetchClient,
   fetchToken,
-  writeToken,
-  deleteToken,
+  FileModelToken,
+  FileModelUser,
   isInvalid,
+  purgeTokens,
+  writeToken,
 } from "../AuthDb.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "../logging.js";
@@ -31,6 +33,7 @@ function toScopeArray(scope: string | string[] | undefined): string[] {
 }
 
 const DEFAULT_SCOPES = ["read", "write"];
+const EXPIRE_MS = 10 * 60 * 1000;
 
 export function FileModel(): ClientCredentialsModel {
   // load auth from resource db
@@ -67,12 +70,18 @@ export function FileModel(): ClientCredentialsModel {
     ): Promise<FileModelToken | Falsey> => {
       // log(`saveToken(${token}, ${client.id}, ${user.userId})`, token);
       token.clientId = client.id;
-      const expires = new Date(Date.now() + 10*60*1000);
+
+      // limit the expiration to a maximum time from now
+      const expires = new Date(Date.now() + EXPIRE_MS);
       if (token.accessTokenExpiresAt instanceof Date) {
         if (token.accessTokenExpiresAt > expires) {
           token.accessTokenExpiresAt = expires;
         }
       }
+      // schedule a token purge after this token should have expired
+      // the purge is throttled to not run too often
+      delay(purgeTokens, EXPIRE_MS + 5000);
+
       const dbToken = {
         id: token.accessToken,
         name: `Token for ${client.id}`,

@@ -1,3 +1,4 @@
+import { throttle } from "lodash-es";
 import { Client, User, Token } from "oauth2-server";
 import {
   deleteResourceDb,
@@ -79,6 +80,27 @@ export async function isInvalid(dbToken: TokenDb): Promise<boolean> {
   }
   return invalid;
 }
+
+export async function immediatePurgeTokens(): Promise<TokenDb[]> {
+  const tokens = await fetchTokens();
+  const deletedTokens: TokenDb[] = [];
+
+  for (const token of tokens) {
+    if (await isInvalid(token)) {
+      deletedTokens.push(token);
+      await deleteToken(token.id);
+    }
+  }
+  log(`Purged ${deletedTokens.length} expired tokens.`);
+
+  return deletedTokens;
+}
+
+// purge tokens max of once every 60 seconds
+export const purgeTokens = throttle(immediatePurgeTokens, 60 * 1000, {
+  leading: false,
+  trailing: true,
+});
 
 export async function fetchToken(id: string): Promise<TokenDb | undefined> {
   // log(`fetchToken(${id})`);
