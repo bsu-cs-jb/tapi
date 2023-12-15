@@ -22,9 +22,13 @@ function mkCategory(
 ): RubricCategory {
   const id = makeId(name);
 
+  function makeItemId(rubricId: string, index: number): string {
+    return `${rubricId}-${(index + 1).toString().padStart(3, "0")}`;
+  }
+
   const items: RubricItem[] = itemDefs.map((el, i) => {
     return makeRubricItem({
-      id: `${id}-${(i + 1).toString().padStart(3, "0")}`,
+      id: makeItemId(id, i),
       name: el.name,
       scoreType: el.scoreType || "boolean",
       scoreValue: el.scoreValue || "points",
@@ -98,25 +102,63 @@ async function makeP3a(saveInDb: boolean = true) {
 
   const suggestions = mkCategory("Suggestions", [
     {
-      name: ``,
+      name: `Displays all suggestions in a scrolling view (ScrollView or FlatList)`,
+    },
+    {
+      name: `Allows a user to vote any number of suggestions`,
+    },
+    {
+      name: `Allows a user to remove their vote from a suggestion`,
+    },
+    {
+      name: `Clearly displays which suggestions the user has voted for`,
+    },
+    {
+      name: `Displays the total vote count for each suggestion`,
+    },
+    {
+      name: `Has a button to let a user add a new suggestion which prompts the user for their suggestion.`,
+    },
+    {
+      name: `Calls the addSuggestion method from AppState to add the new suggestion and displays the updated list of suggestions when it is updated from the backend.`,
     },
   ]);
 
   const invitations = mkCategory("Invitations", [
     {
-      name: ``,
+      name: `Displays all invited users in a scrolling view (ScrollView or FlatList)`,
+    },
+    {
+      name: `Displays invited users who have not yet accepted the invitation with a different (e.g. grayed out) appearance. These users have not indicated if they are attending or not and their attending status should either not be shown at all or shown distinct from other status.`,
+    },
+    {
+      name: `For users that have accepted the invitation, the app displays whether they are planning to attend the event or not or if they are undecided.`,
+    },
+    {
+      name: `Has a button to let a user invite a friend which prompts the user for their friends name.`,
+    },
+    {
+      name: `Calls the inviteUser method and the display updates after the new user is added.`,
     },
   ]);
 
   const liveUpdates = mkCategory("Live Updates", [
     {
-      name: ``,
+      name: `When users change their votes, the updates are reflected in the app.`,
+      pointValue: 2,
+    },
+    {
+      name: `When the application fetches new suggestions they are properly displayed`,
+    },
+    {
+      name: `When the application fetches new users they are properly displayed`,
     },
   ]);
 
   const code = mkCategory("code", [
     {
-      name: ``,
+      name: `Code Review`,
+      pointValue: 5,
     },
   ]);
 

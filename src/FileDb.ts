@@ -282,7 +282,6 @@ export async function writeResource<T extends IdResource>(
   options?: WriteResourceOptions,
 ): Promise<string | undefined> {
   options = merge(WRITE_RESOURCE_OPTIONS_DEFAULT, options);
-  log("Write options:", options);
   await ensureResourceDir(resource);
   if (options.updateTimestamps) {
     const ts = new Date().toISOString();
