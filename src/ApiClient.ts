@@ -140,6 +140,54 @@ export async function sendData<T>(
   });
 }
 
+export async function fetchFullToken(
+  id: string,
+  secret: string,
+  server: string,
+  scope?: string | string[],
+): Promise<TokenResponse> {
+  const params: Record<string, string> = {
+    grant_type: "client_credentials",
+  };
+  if (scope !== undefined) {
+    if (Array.isArray(scope)) {
+      params["scope"] = scope.join(" ");
+    } else {
+      params["scope"] = scope;
+    }
+  }
+  const body = new URLSearchParams(params);
+  const result = await fetch(`${server}/token`, {
+    method: "POST",
+    body,
+    headers: new Headers({
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${base64(`${id}:${secret}`)}`,
+    }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        const err = new FetchError(`fetchToken$(${id})`);
+        return err.update(response).then((error) => {
+          throw error;
+        });
+      }
+    })
+    .then((json) => {
+      return (json as TokenResponse)
+    })
+    .catch((error) => {
+      if (error instanceof FetchError) {
+        throw error;
+      } else {
+        throw new FetchError(`fetchToken(${id}):`, error);
+      }
+    });
+  return result;
+}
+
 export async function fetchToken(
   id: string,
   secret: string,

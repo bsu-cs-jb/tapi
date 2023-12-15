@@ -1,5 +1,5 @@
 import { AuthDb } from "./AuthDb.js";
-import { fetchToken, fGet, sendData, fDelete } from "./ApiClient.js";
+import { TokenResponse, fetchToken, fetchFullToken, fGet, sendData, fDelete } from "./ApiClient.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
 import { UserDb } from "./IndecisiveTypes.js";
@@ -17,6 +17,16 @@ export class IndecisiveClient {
     if (token) {
       this.token = token;
     }
+  }
+
+  async fetchFullToken(
+    id: string,
+    secret: string,
+    scope?: string | string[],
+  ): Promise<TokenResponse> {
+    const token = await fetchFullToken(id, secret, this.server, scope);
+    this.token = token.access_token;
+    return token;
   }
 
   async fetchToken(

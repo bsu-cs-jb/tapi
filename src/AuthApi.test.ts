@@ -59,12 +59,32 @@ async function deleteToken(token: string, adminToken?: string) {
   }
 }
 
+describe("/token", () => {
+  let client: IndecisiveClient;
+
+  beforeEach(async () => {
+    client = new IndecisiveClient(SERVER);
+  });
+
+  afterEach(async () => {
+    if (client && client.token && client.token !== "MISSING") {
+      await deleteToken(client.token);
+      client.token = "MISSING";
+    }
+  });
+
+  test("works", async () => {
+    const token = await client.fetchFullToken(CLIENT_ID, CLIENT_SECRET);
+    expect(token).toHaveProperty("expires_in");
+    expect(token.expires_in).toBeLessThan(601);
+  });
+});
+
 describe("/auth/clients", () => {
   let client: IndecisiveClient;
 
   beforeEach(async () => {
     client = new IndecisiveClient(SERVER);
-    // await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
   });
 
   afterEach(async () => {

@@ -46,8 +46,10 @@ export const requestLogger = createLogger({
     format.splat(),
     // format.json(),
     format.printf(
-      (info) =>
-        `${info.timestamp}: ${info.type} ${info.kind} ${info.status} ${info.userId} ${info.message}`,
+      (info) => {
+        const fields = [info.userId.padEnd(10," "), info.status, info.type.padEnd(5," "), info.kind, info.message].filter((s) => s);
+        return `${info.timestamp}: ${fields.join(" ")}`
+      }
     ),
   ),
   transports: [

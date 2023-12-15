@@ -5,6 +5,8 @@ import Router from "@koa/router";
 import cors from "@koa/cors";
 import { bodyParser } from "@koa/bodyparser";
 
+import ratelimit from "koa-ratelimit";
+
 import { SimpleModel } from "./oauth2/SimpleModel.js";
 import { FileModel } from "./oauth2/FileModel.js";
 import { authenticate, token } from "./oauth2/koa.js";
@@ -49,6 +51,24 @@ app.context.authModel = authModel;
 //   ctx.status = 204
 //   //await next();
 // });
+
+// apply rate limit
+const db = new Map();
+
+app.use(ratelimit({
+  driver: 'memory',
+  db: db,
+  duration: 60000,
+  errorMessage: 'Rate limit exceeded. Check for loops and slow down.',
+  id: (ctx) => ctx.ip,
+  headers: {
+    remaining: 'Rate-Limit-Remaining',
+    reset: 'Rate-Limit-Reset',
+    total: 'Rate-Limit-Total'
+  },
+  max: 100,
+  disableHeader: false,
+}));
 
 router.use("/admin", authenticate("admin"));
 router.use("/test", authenticate("read"));

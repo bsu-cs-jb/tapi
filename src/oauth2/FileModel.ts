@@ -67,6 +67,12 @@ export function FileModel(): ClientCredentialsModel {
     ): Promise<FileModelToken | Falsey> => {
       // log(`saveToken(${token}, ${client.id}, ${user.userId})`, token);
       token.clientId = client.id;
+      const expires = new Date(Date.now() + 10*60*1000);
+      if (token.accessTokenExpiresAt instanceof Date) {
+        if (token.accessTokenExpiresAt > expires) {
+          token.accessTokenExpiresAt = expires;
+        }
+      }
       const dbToken = {
         id: token.accessToken,
         name: `Token for ${client.id}`,
