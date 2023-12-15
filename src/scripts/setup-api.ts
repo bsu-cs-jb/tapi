@@ -1,7 +1,9 @@
 import sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
 import assert from "node:assert";
+
 import * as _ from "lodash-es";
+import { faker } from "@faker-js/faker";
 
 import { AuthDb } from "../AuthDb.js";
 import { IndecisiveClient, makeIndecisiveClient } from "../IndecisiveClient.js";
@@ -10,7 +12,12 @@ import { readFileAsJson } from "../FileDb.js";
 import { config } from "../config.js";
 import { info, error } from "./logging.js";
 import { range, makeId } from "../utils.js";
-import { faker } from "@faker-js/faker";
+import {
+  Session,
+  Suggestion,
+  makeInvitation,
+  makeSuggestion,
+} from "../indecisive_rn_types.js";
 
 const SERVER = config.TEST_SERVER;
 
@@ -21,6 +28,19 @@ interface UserDef {
   secret?: string;
   scopes?: string[];
   invite?: boolean;
+}
+
+function mkSuggest(
+  name: string,
+  upVoteUserIds: string[] = [],
+  downVoteUserIds: string[] = [],
+): Suggestion {
+  return {
+    id: makeId(name),
+    name,
+    upVoteUserIds,
+    downVoteUserIds,
+  };
 }
 
 function authDbfromUser(user: UserDef, sessionId: string): AuthDb {
@@ -74,9 +94,10 @@ async function updateCreateUser(
 async function updateCreateClient(
   user: UserDef,
   client: IndecisiveClient,
+  currentSessionId: string = "cs411-final",
 ): Promise<AuthDb> {
   assert(client.token, "client.token must be defined");
-  const authDb = authDbfromUser(user, "cs411-final");
+  const authDb = authDbfromUser(user, currentSessionId);
   info(`  - creating client for ${user.id}`);
   // info("Creating Auth:", authDb);
   try {
@@ -96,19 +117,19 @@ async function updateCreateClient(
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function clients() {
-  // need session id
   const rawUsers = await readFileAsJson("clients.private.json");
   const userDef = rawUsers as unknown as UserDef[];
-  const client = new IndecisiveClient(SERVER, undefined, {
-    "X-RateLimit-Bypass": config.RATELIMIT_SECRET,
-  });
-  await client.fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
+  const client = await makeIndecisiveClient(
+    SERVER,
+    config.ADMIN_ID,
+    config.ADMIN_SECRET,
+    "admin",
+  );
   info(`Setup token ${client.token}`);
 
   let createdUsers = 0;
-  const MAX_USERS = 3;
+  const MAX_USERS = 6;
   for (const user of userDef) {
     if (user.id === "jonathan") {
       break;
@@ -137,12 +158,13 @@ async function printIds() {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function testUsers() {
-  const client = new IndecisiveClient(SERVER, undefined, {
-    "X-RateLimit-Bypass": config.RATELIMIT_SECRET,
-  });
-  await client.fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
+  const client = await makeIndecisiveClient(
+    SERVER,
+    config.ADMIN_ID,
+    config.ADMIN_SECRET,
+    "admin",
+  );
 
   const MAX_USERS = 101;
   for (const i in range(MAX_USERS)) {
@@ -156,9 +178,7 @@ async function testUsers() {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function users() {
-  // need session id
   const rawUsers = await readFileAsJson("users.json");
   const userNames = rawUsers as unknown as string[];
   const client = await makeIndecisiveClient(
@@ -189,6 +209,89 @@ async function users() {
   }
 }
 
+async function grading(_args: string[]) {
+  const client = await makeIndecisiveClient(
+    SERVER,
+    config.ADMIN_ID,
+    config.ADMIN_SECRET,
+    "admin",
+  );
+  info(`Creating grading setup (token: ${client.token})`);
+
+  info(`Creating client grader`);
+
+  const graderDef: UserDef = {
+    id: config.GRADER_ID,
+    name: "Grader User",
+    secret: config.GRADER_SECRET,
+    invite: false,
+  };
+
+  const sessionId = "grading-session";
+
+  info(`Deleting grading session if it exists: ${sessionId}`);
+  try {
+    await client.deleteSession(sessionId);
+  } catch (error) {
+    // ignore
+  }
+
+  info(`Creating grading session: ${sessionId}`);
+  await client.doFetch<Session>("POST", `/indecisive/sessions/`, {
+    id: sessionId,
+    description: "Grading session",
+    invitations: [
+      makeInvitation({
+        user: {
+          id: "uat-001",
+          name: "",
+        },
+        accepted: false,
+        attending: "undecided",
+      }),
+      makeInvitation({
+        user: {
+          id: "uat-002",
+          name: "",
+        },
+        accepted: true,
+        attending: "yes",
+      }),
+      makeInvitation({
+        user: {
+          id: "uat-003",
+          name: "",
+        },
+        accepted: true,
+        attending: "no",
+      }),
+      makeInvitation({
+        user: {
+          id: "uat-004",
+          name: "",
+        },
+        accepted: true,
+        attending: "undecided",
+      }),
+    ],
+    suggestions: [
+      mkSuggest("pizza", ["grader", "uat-001"]),
+      mkSuggest("popcorn", ["uat-001"], ["uat-002"]),
+      mkSuggest("pop", [], ["uat-003"]),
+    ],
+  });
+
+  info(`Creating grader client: ${sessionId}`);
+  await updateCreateClient(graderDef, client, sessionId);
+  info(`Creating grader user: ${sessionId}`);
+  await updateCreateUser(graderDef, client);
+  // info(`Inviting grader to session: ${sessionId}`);
+  // await client.invite(sessionId, graderDef.id);
+  //
+  // await client.invite(sessionId, "uat-001");
+  // await client.invite(sessionId, "uat-002");
+}
+
 async function main(args: string[]) {
   info("Args:", { args });
   info(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
@@ -200,11 +303,17 @@ async function main(args: string[]) {
   for (let arg = argsCopy.pop(); arg !== undefined; arg = argsCopy.pop()) {
     info(`Handling ${arg}`);
     switch (arg) {
+      case "grading":
+        await grading(argsCopy);
+        break;
       case "users":
         await users();
         break;
       case "clients":
         await clients();
+        break;
+      case "print-ids":
+        await printIds();
         break;
       case "test-users":
         await testUsers();
@@ -214,11 +323,6 @@ async function main(args: string[]) {
         break;
     }
   }
-
-  // await users();
-  // await clients();
-  // await testUsers();
-  // await printIds();
 }
 
 main(process.argv.slice(2))

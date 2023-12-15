@@ -18,6 +18,8 @@ interface Config extends BaseConfig {
   LOG_TO_FILE: boolean;
   ADMIN_ID: string;
   ADMIN_SECRET: string;
+  GRADER_ID: string;
+  GRADER_SECRET: string;
   RATELIMIT_SECRET: string;
   TEST_SERVER: string;
   TEST_USER1_ID: string;
@@ -57,6 +59,14 @@ class ConfigImpl extends BaseConfigImpl {
 
   public get LOG_CONSOLE_TS(): string {
     return getConfig("LOG_CONSOLE_TS", "YYYY-MM-DD HH:mm:ss");
+  }
+
+  public get GRADER_ID(): string {
+    return getConfig("GRADER_ID", "");
+  }
+
+  public get GRADER_SECRET(): string {
+    return getConfig("GRADER_SECRET", "");
   }
 
   public get ADMIN_ID(): string {

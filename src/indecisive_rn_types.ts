@@ -81,6 +81,7 @@ export function makeInvitation(props?: AllOptional<Invitation>): Invitation {
     user: {
       id: genid(),
       name: "Unnamed",
+      ...props?.user,
     },
     accepted: false,
     attending: "undecided",

@@ -5,9 +5,7 @@ import {
   TokenResponse,
   fetchToken,
   fetchFullToken,
-  fGet,
   doFetch,
-  fDelete,
 } from "./ApiClient.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
@@ -141,64 +139,54 @@ export class IndecisiveClient {
   }
 
   async session(id: string): Promise<Session> {
-    const result = await fGet<Session>(
+    const result = await this.doFetch<Session>(
+      "GET",
       `${PATH_ROOT}/sessions/${id}`,
-      this.server,
-      this.token,
     );
     return result;
   }
 
   async currentSession(): Promise<Session> {
-    const result = await fGet<Session>(
+    const result = await this.doFetch<Session>(
+      "GET",
       `${PATH_ROOT}/current-session`,
-      this.server,
-      this.token,
     );
     return result;
   }
 
   async self(): Promise<object> {
-    const result = await fGet<Session>(
-      `${PATH_ROOT}/self`,
-      this.server,
-      this.token,
-    );
+    const result = await this.doFetch<Session>("GET", `${PATH_ROOT}/self`);
     return result;
   }
 
   async deleteClient(id: string): Promise<object> {
-    const result = await fDelete<Session>(
+    const result = await this.doFetch<Session>(
+      "DELETE",
       `${AUTH_ROOT}/clients/${id}`,
-      this.server,
-      this.token,
     );
     return result;
   }
 
   async deleteToken(token: string): Promise<object> {
-    const result = await fDelete<Session>(
+    const result = await this.doFetch<Session>(
+      "DELETE",
       `${AUTH_ROOT}/tokens/${token}`,
-      this.server,
-      this.token,
     );
     return result;
   }
 
   async deleteUser(id: string): Promise<object> {
-    const result = await fDelete<Session>(
+    const result = await this.doFetch<Session>(
+      "DELETE",
       `${PATH_ROOT}/users/${id}`,
-      this.server,
-      this.token,
     );
     return result;
   }
 
   async deleteSession(sessionId: string): Promise<object> {
-    const result = await fDelete<Session>(
+    const result = await this.doFetch<Session>(
+      "DELETE",
       `${PATH_ROOT}/sessions/${sessionId}`,
-      this.server,
-      this.token,
     );
     return result;
   }
