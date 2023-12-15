@@ -55,6 +55,13 @@ app.context.authModel = authModel;
 // apply rate limit
 const db = new Map();
 
+function ratelimitWhitelist(ctx: Context): boolean {
+  if (config.RATELIMIT_SECRET && config.RATELIMIT_SECRET.length > 5) {
+    return ctx.get("X-RateLimit-Bypass") === config.RATELIMIT_SECRET;
+  }
+  return false;
+}
+
 app.use(
   ratelimit({
     driver: "memory",
@@ -70,6 +77,7 @@ app.use(
     },
     max: 120,
     disableHeader: false,
+    whitelist: ratelimitWhitelist,
   }),
 );
 

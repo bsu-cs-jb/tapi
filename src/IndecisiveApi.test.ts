@@ -11,7 +11,7 @@ import {
 import request from "supertest";
 
 import { Session, Suggestion } from "./indecisive_rn_types.js";
-import { IndecisiveClient } from "./IndecisiveClient.js";
+import { IndecisiveClient, makeIndecisiveClient } from "./IndecisiveClient.js";
 import { sendData } from "./ApiClient.js";
 
 import { base64 } from "./utils.js";
@@ -63,8 +63,7 @@ describe("auth", () => {
   });
 
   test("uses token", async () => {
-    const client = new IndecisiveClient(SERVER);
-    await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
+    const client = await makeIndecisiveClient(SERVER, CLIENT_ID, CLIENT_SECRET);
     const result = await client.self();
     expect(result).toBeDefined();
     // more detailed expectations inthe tests below
@@ -75,8 +74,7 @@ describe("/self", () => {
   let client: IndecisiveClient;
 
   beforeAll(async () => {
-    client = new IndecisiveClient(SERVER);
-    await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
+    client = await makeIndecisiveClient(SERVER, CLIENT_ID, CLIENT_SECRET);
   });
 
   test("responds with self", async () => {
@@ -103,8 +101,7 @@ describe("/current-session", () => {
   let client: IndecisiveClient;
 
   beforeAll(async () => {
-    client = new IndecisiveClient(SERVER);
-    await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
+    client = await makeIndecisiveClient(SERVER, CLIENT_ID, CLIENT_SECRET);
   });
 
   test("works", async () => {
@@ -162,10 +159,8 @@ describe("/session/respond", () => {
   let client2: IndecisiveClient;
 
   beforeAll(async () => {
-    client = new IndecisiveClient(SERVER);
-    await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
-    client2 = new IndecisiveClient(SERVER);
-    await client2.fetchToken(CLIENT_2_ID, CLIENT_2_SECRET);
+    client = await makeIndecisiveClient(SERVER, CLIENT_ID, CLIENT_SECRET);
+    client2 = await makeIndecisiveClient(SERVER, CLIENT_2_ID, CLIENT_2_SECRET);
   });
 
   beforeEach(async () => {
@@ -250,8 +245,7 @@ describe("/session/vote", () => {
   let suggestion: Suggestion | undefined;
 
   beforeAll(async () => {
-    client = new IndecisiveClient(SERVER);
-    await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
+    client = await makeIndecisiveClient(SERVER, CLIENT_ID, CLIENT_SECRET);
   });
 
   beforeEach(async () => {
@@ -361,8 +355,7 @@ describe("/session/invite", () => {
   let client: IndecisiveClient;
 
   beforeAll(async () => {
-    client = new IndecisiveClient(SERVER);
-    await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
+    client = await makeIndecisiveClient(SERVER, CLIENT_ID, CLIENT_SECRET);
   });
 
   beforeEach(async () => {

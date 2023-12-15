@@ -370,7 +370,7 @@ export function postResource<T extends IdResource>(
       }
       const ref = refWithId(resource, newResource.id);
       if (await resourceExists(ref)) {
-        ctx.status = 400;
+        ctx.status = 409;
         const message = `${capitalize(resource.singular)} with id '${
           newResource.id
         }' already exists.`;

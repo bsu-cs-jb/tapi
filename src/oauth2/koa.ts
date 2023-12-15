@@ -67,7 +67,7 @@ function oauthResponse(ctx: Context, response: Response, token?: Token) {
       type: "token",
       kind: "failure",
       status: ctx.response.status.toString(),
-      userId: "",
+      userId: ctx.ip,
     });
   }
 }
@@ -96,7 +96,7 @@ function handleOAuthError(ctx: Context, error: OAuthError) {
     type: "auth",
     kind: "failed",
     status: ctx.response.status.toString(),
-    userId: "",
+    userId: ctx.ip,
   });
 }
 
@@ -140,7 +140,7 @@ function handleNonOAuthError(ctx: Context, name: string, error: Error) {
     type: "auth",
     kind: "failed",
     status: ctx.response.status.toString(),
-    userId: "",
+    userId: ctx.ip,
   });
 }
 

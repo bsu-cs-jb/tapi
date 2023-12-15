@@ -267,9 +267,6 @@ async function main(args: string[]) {
   if (args.includes("make-p3b")) {
     await makeP3b();
   }
-  // await clients();
-  // await fakeUsers();
-  // await printIds();
 }
 
 main(process.argv.slice(2))

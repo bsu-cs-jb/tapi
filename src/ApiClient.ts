@@ -133,10 +133,12 @@ export async function sendData<T>(
   body: string | object,
   server: string,
   bearerToken?: string,
+  headers?: Record<string, string>,
 ): Promise<T> {
   return doFetch<T>(method, `${server}${path}`, {
     body,
     bearerToken,
+    headers,
   });
 }
 

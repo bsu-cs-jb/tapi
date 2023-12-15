@@ -3,14 +3,13 @@ sourceMapSupport.install();
 import assert from "node:assert";
 import * as _ from "lodash-es";
 
-import { AuthDb } from "./AuthDb.js";
-import { IndecisiveClient } from "./IndecisiveClient.js";
-import { UserDb, makeUserDb } from "./IndecisiveTypes.js";
-import { readFileAsJson } from "./FileDb.js";
-import { config } from "./config.js";
-import { log, logger } from "./logging.js";
-// import { hash } from "./hash.js";
-import { range, makeId } from "./utils.js";
+import { AuthDb } from "../AuthDb.js";
+import { IndecisiveClient, makeIndecisiveClient } from "../IndecisiveClient.js";
+import { UserDb, makeUserDb } from "../IndecisiveTypes.js";
+import { readFileAsJson } from "../FileDb.js";
+import { config } from "../config.js";
+import { info, error } from "./logging.js";
+import { range, makeId } from "../utils.js";
 import { faker } from "@faker-js/faker";
 
 const SERVER = config.TEST_SERVER;
@@ -49,22 +48,22 @@ async function updateCreateUser(
   user: UserDef,
   client: IndecisiveClient,
 ): Promise<UserDb> {
-  log(`  - creating user for ${user.id}`);
+  info(`  - creating user for ${user.id}`);
   const userDb = makeUserDb({
     id: user.id,
     name: user.name,
   });
-  // log("Creating User:", userDb);
+  // info("Creating User:", userDb);
   try {
     const user_result = await client.createUser(userDb);
-    // log("User Created:", user_result);
+    // info("User Created:", user_result);
     return user_result;
   } catch (err) {
     const message = (err as Error).message;
     if (message.match(/already exists/)) {
-      // log("Client already exists, replacing instead.");
+      // info("Client already exists, replacing instead.");
       const user_result = await client.updateUser(userDb);
-      // log("User Created:", user_result);
+      // info("User Created:", user_result);
       return user_result;
     } else {
       throw err;
@@ -78,18 +77,18 @@ async function updateCreateClient(
 ): Promise<AuthDb> {
   assert(client.token, "client.token must be defined");
   const authDb = authDbfromUser(user, "cs411-final");
-  log(`  - creating client for ${user.id}`);
-  // log("Creating Auth:", authDb);
+  info(`  - creating client for ${user.id}`);
+  // info("Creating Auth:", authDb);
   try {
     const dbClient = await client.createClient(authDb);
-    // log("Client Created:", dbClient);
+    // info("Client Created:", dbClient);
     return dbClient;
   } catch (err) {
     const message = (err as Error).message;
     if (message.match(/already exists/)) {
-      // log("Client already exists, replacing instead.");
+      // info("Client already exists, replacing instead.");
       const dbClient = await client.updateClient(authDb);
-      // log("Client Created:", dbClient);
+      // info("Client Created:", dbClient);
       return dbClient;
     } else {
       throw err;
@@ -102,9 +101,11 @@ async function clients() {
   // need session id
   const rawUsers = await readFileAsJson("clients.private.json");
   const userDef = rawUsers as unknown as UserDef[];
-  const client = new IndecisiveClient(SERVER);
+  const client = new IndecisiveClient(SERVER, undefined, {
+    "X-RateLimit-Bypass": config.RATELIMIT_SECRET,
+  });
   await client.fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
-  log(`Setup token ${client.token}`);
+  info(`Setup token ${client.token}`);
 
   let createdUsers = 0;
   const MAX_USERS = 3;
@@ -112,14 +113,14 @@ async function clients() {
     if (user.id === "jonathan") {
       break;
     }
-    log(`User: ${user.id} ${user.name}`);
+    info(`User: ${user.id} ${user.name}`);
     await updateCreateClient(user, client);
     await updateCreateUser(user, client);
     if (user.invite || user.invite === undefined) {
-      log(`  - invite user ${user.id} to session`);
+      info(`  - invite user ${user.id} to session`);
       await client.invite("cs411-final", user.id);
     } else {
-      log(`  - DO NOT invite user ${user.id} to session`);
+      info(`  - DO NOT invite user ${user.id} to session`);
     }
     createdUsers += 1;
     if (MAX_USERS > 0 && createdUsers > MAX_USERS) {
@@ -132,22 +133,25 @@ async function printIds() {
   const rawUsers = await readFileAsJson("clients.private.json");
   const userDef = rawUsers as unknown as UserDef[];
   for (const user of userDef) {
-    console.log(`clientId: ${user.id}\nclientSecret: ${user.secret}\n`);
+    console.info(`clientId: ${user.id}\nclientSecret: ${user.secret}\n`);
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function fakeUsers() {
-  const client = new IndecisiveClient(SERVER);
+async function testUsers() {
+  const client = new IndecisiveClient(SERVER, undefined, {
+    "X-RateLimit-Bypass": config.RATELIMIT_SECRET,
+  });
   await client.fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
 
-  const MAX_USERS = 99;
+  const MAX_USERS = 101;
   for (const i in range(MAX_USERS)) {
+    const id = `test-${i.padStart(3, "0")}`;
     const user: UserDef = {
-      id: `test-${i.padStart(3, "0")}`,
-      name: faker.person.firstName(),
+      id,
+      name: faker.person.firstName() + ` (${id})`,
     };
-    log(`Will create user:`, user);
+    info(`Will create user:`, user);
     await updateCreateUser(user, client);
   }
 }
@@ -157,15 +161,19 @@ async function users() {
   // need session id
   const rawUsers = await readFileAsJson("users.json");
   const userNames = rawUsers as unknown as string[];
-  const client = new IndecisiveClient(SERVER);
-  await client.fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
-  log(`Setup token ${client.token}`);
+  const client = await makeIndecisiveClient(
+    SERVER,
+    config.ADMIN_ID,
+    config.ADMIN_SECRET,
+    "admin",
+  );
+  info(`Setup token ${client.token}`);
 
   let createdUsers = 0;
   const MAX_USERS = -1;
   for (const name of userNames) {
     const userId = makeId(name);
-    log(`User: ${userId} ${name}`);
+    info(`User: ${userId} ${name}`);
 
     await updateCreateUser(
       {
@@ -181,21 +189,42 @@ async function users() {
   }
 }
 
-async function main() {
-  console.log("Doing work");
-  log(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
-  log(`LOG_LEVEL: ${config.LOG_LEVEL}`);
+async function main(args: string[]) {
+  info("Args:", { args });
+  info(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
+  info(`LOG_LEVEL: ${config.LOG_LEVEL}`);
 
-  await users();
+  const argsCopy = _.clone(args);
+
+  // let arg: string|undefined;
+  for (let arg = argsCopy.pop(); arg !== undefined; arg = argsCopy.pop()) {
+    info(`Handling ${arg}`);
+    switch (arg) {
+      case "users":
+        await users();
+        break;
+      case "clients":
+        await clients();
+        break;
+      case "test-users":
+        await testUsers();
+        break;
+      default:
+        error(`Argument '${arg}' not understood`);
+        break;
+    }
+  }
+
+  // await users();
   // await clients();
-  // await fakeUsers();
+  // await testUsers();
   // await printIds();
 }
 
-main()
+main(process.argv.slice(2))
   .then(() => {
-    console.log("main finished");
+    console.info("main finished");
   })
   .catch((err) => {
-    logger.error("Error running setup:main()", err);
+    error("Error running setup:main()", err);
   });

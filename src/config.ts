@@ -18,6 +18,7 @@ interface Config extends BaseConfig {
   LOG_TO_FILE: boolean;
   ADMIN_ID: string;
   ADMIN_SECRET: string;
+  RATELIMIT_SECRET: string;
   TEST_SERVER: string;
   TEST_USER1_ID: string;
   TEST_USER1_SECRET: string;
@@ -64,6 +65,10 @@ class ConfigImpl extends BaseConfigImpl {
 
   public get ADMIN_SECRET(): string {
     return getConfig("ADMIN_SECRET", "");
+  }
+
+  public get RATELIMIT_SECRET(): string {
+    return getConfig("RATELIMIT_SECRET", "");
   }
 
   public get TEST_USER1_ID(): string {
