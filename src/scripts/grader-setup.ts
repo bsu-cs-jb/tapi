@@ -1,6 +1,6 @@
 import { info, error } from "./logging.js";
 import { config } from "../config.js";
-import { AllOptional } from "../utils.js";
+import { AllOptional, makeId } from "../utils.js";
 import { refWithId, writeJsonToFile, writeResource } from "../FileDb.js";
 
 import { RUBRIC } from "../grader.js";
@@ -18,13 +18,13 @@ function mkCategory(
   name: string,
   itemDefs: AllOptional<RubricItem>[],
   bonus: number = 5,
-  penalty: number = 5,
+  penalty: number = -5,
 ): RubricCategory {
-  const id = name.toLowerCase();
+  const id = makeId(name);
 
   const items: RubricItem[] = itemDefs.map((el, i) => {
     return makeRubricItem({
-      id: `${id}-${i.toString().padStart(3, "0")}`,
+      id: `${id}-${(i + 1).toString().padStart(3, "0")}`,
       name: el.name,
       scoreType: el.scoreType || "boolean",
       scoreValue: el.scoreValue || "points",
@@ -59,7 +59,6 @@ function mkCategory(
 
 async function saveRubric(rubric: Rubric) {
   const ref = refWithId(RUBRIC, rubric.id);
-  // await writeResource(ref, rubric, { updateTimestamps: false });
   await writeResource(ref, rubric, { skipCommit: true });
 }
 
@@ -68,17 +67,70 @@ async function makeP3a(saveInDb: boolean = true) {
     {
       name: "Text is rendered in a font large enough to read on a moderately sized mobile phone.",
     },
+    {
+      name: "All interactive elements have a reaction when the user taps on them (use Button, Touchable, or properly implemented Pressable)",
+    },
+    {
+      name: "Interactive elements that are disabled have a different appearance and do not react when the user taps on them.",
+    },
+    {
+      name: "Popups or dialogs are rendered properly.",
+    },
+    {
+      name: "UI elements remain visible even if the suggestion or friends name is long.",
+    },
   ]);
 
-  const accepting = makeRubricCategory({
-    id: "accepting",
-    name: "Accepting",
-  });
+  const accepting = mkCategory("Accepting", [
+    {
+      name: `On app launch the user has not yet accepted the invitation and the app displays the user as “not accepted”.`,
+    },
+    {
+      name: "The user can see the list of suggestions and invitations before they have accepted the invitation but they cannot vote, add suggestions, update their attendance, or invite other users until they accept the invitation",
+    },
+    {
+      name: "User can accept the invitation. After accepting, the user can vote on suggestions, add new suggestions, update their attendance, and invite other users.",
+    },
+    {
+      name: "Once the user has accepted the invitation, they can update whether they are planning to attend the event or not. Options are: Yes, No, Undecided.",
+    },
+  ]);
+
+  const suggestions = mkCategory("Suggestions", [
+    {
+      name: ``,
+    },
+  ]);
+
+  const invitations = mkCategory("Invitations", [
+    {
+      name: ``,
+    },
+  ]);
+
+  const liveUpdates = mkCategory("Live Updates", [
+    {
+      name: ``,
+    },
+  ]);
+
+  const code = mkCategory("code", [
+    {
+      name: ``,
+    },
+  ]);
 
   const p3a = makeRubric({
-    id: "project-03a",
-    name: "Project 3a",
-    categories: [usability, accepting],
+    id: "test-project-03a",
+    name: "Project 3a (test)",
+    categories: [
+      usability,
+      accepting,
+      suggestions,
+      invitations,
+      liveUpdates,
+      code,
+    ],
   });
 
   if (saveInDb) {

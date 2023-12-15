@@ -1,6 +1,12 @@
 import { Buffer } from "buffer";
 import nodeAssert from "node:assert/strict";
 
+export function makeId(name: string): string {
+  let id = name.toLowerCase();
+  id = id.replace(/[^a-zA-Z0-9]/g, "-");
+  return id;
+}
+
 export function base64(input: string): string {
   return Buffer.from(input, "utf8").toString("base64");
 }

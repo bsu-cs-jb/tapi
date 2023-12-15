@@ -10,7 +10,7 @@ import { readFileAsJson } from "./FileDb.js";
 import { config } from "./config.js";
 import { log, logger } from "./logging.js";
 // import { hash } from "./hash.js";
-import { range } from "./utils.js";
+import { range, makeId } from "./utils.js";
 import { faker } from "@faker-js/faker";
 
 const SERVER = config.TEST_SERVER;
@@ -160,12 +160,6 @@ async function users() {
   const client = new IndecisiveClient(SERVER);
   await client.fetchToken(config.ADMIN_ID, config.ADMIN_SECRET, "admin");
   log(`Setup token ${client.token}`);
-
-  function makeId(name: string): string {
-    let id = _.toLower(name);
-    id = id.replace(/[^a-zA-Z0-9]/g, "-");
-    return id;
-  }
 
   let createdUsers = 0;
   const MAX_USERS = -1;
