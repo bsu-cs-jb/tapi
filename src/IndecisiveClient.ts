@@ -12,6 +12,7 @@ import { log } from "./logging.js";
 import { UserDb } from "./IndecisiveTypes.js";
 import { Session, Vote, Attending } from "./indecisive_rn_types.js";
 import { config } from "./config.js";
+import { AllOptional } from "./utils.js";
 
 const PATH_ROOT = "/indecisive";
 const AUTH_ROOT = "/auth";
@@ -83,15 +84,34 @@ export class IndecisiveClient {
     method: "POST" | "PATCH" | "PUT" | "GET" | "DELETE",
     path: string,
     body?: string | object,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
   ): Promise<T> {
+    let bearerToken = this.token;
+    let headers = this.headers;
+    if (options?.bearerToken) {
+      bearerToken = options?.bearerToken;
+    }
+    if (options?.headers) {
+      headers = merge(headers, options?.headers);
+    }
     return doFetch<T>(method, `${this.server}${path}`, {
       body,
-      bearerToken: this.token,
-      headers: this.headers,
+      bearerToken,
+      headers,
     });
   }
 
-  async invite(sessionId: string, userId: string): Promise<Session> {
+  async invite(
+    sessionId: string,
+    userId: string,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<Session> {
     const body = {
       userId,
     };
@@ -99,6 +119,7 @@ export class IndecisiveClient {
       "POST",
       `${PATH_ROOT}/sessions/${sessionId}/invite`,
       body,
+      options,
     );
     return result;
   }
@@ -107,6 +128,10 @@ export class IndecisiveClient {
     sessionId: string,
     accepted: boolean,
     attending: Attending,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
   ): Promise<Session> {
     const body = {
       accepted,
@@ -116,86 +141,160 @@ export class IndecisiveClient {
       "POST",
       `${PATH_ROOT}/sessions/${sessionId}/respond`,
       body,
+      options,
     );
     return result;
   }
 
-  async createUser(user: UserDb): Promise<UserDb> {
+  async createUser(
+    user: UserDb,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<UserDb> {
     const result = await this.doFetch<UserDb>(
       "POST",
       `${PATH_ROOT}/users`,
       user,
+      options,
     );
     return result;
   }
 
-  async updateUser(user: UserDb): Promise<UserDb> {
+  async updateUser(
+    user: UserDb,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<UserDb> {
     const result = await this.doFetch<UserDb>(
       "PATCH",
       `${PATH_ROOT}/users/${user.id}`,
       user,
+      options,
     );
     return result;
   }
 
-  async session(id: string): Promise<Session> {
+  async session(
+    id: string,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<Session> {
     const result = await this.doFetch<Session>(
       "GET",
       `${PATH_ROOT}/sessions/${id}`,
+      options,
     );
     return result;
   }
 
-  async currentSession(): Promise<Session> {
+  async currentSession(options?: {
+    bearerToken?: string;
+    headers?: Record<string, string>;
+  }): Promise<Session> {
     const result = await this.doFetch<Session>(
       "GET",
       `${PATH_ROOT}/current-session`,
+      options,
     );
     return result;
   }
 
-  async self(): Promise<object> {
-    const result = await this.doFetch<Session>("GET", `${PATH_ROOT}/self`);
+  async self(options?: {
+    bearerToken?: string;
+    headers?: Record<string, string>;
+  }): Promise<object> {
+    const result = await this.doFetch<Session>(
+      "GET",
+      `${PATH_ROOT}/self`,
+      undefined,
+      options,
+    );
     return result;
   }
 
-  async deleteClient(id: string): Promise<object> {
+  async deleteClient(
+    id: string,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<object> {
     const result = await this.doFetch<Session>(
       "DELETE",
       `${AUTH_ROOT}/clients/${id}`,
+      undefined,
+      options,
     );
     return result;
   }
 
-  async deleteToken(token: string): Promise<object> {
+  async deleteToken(
+    token: string,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<object> {
     const result = await this.doFetch<Session>(
       "DELETE",
       `${AUTH_ROOT}/tokens/${token}`,
+      undefined,
+      options,
     );
     return result;
   }
 
-  async deleteUser(id: string): Promise<object> {
+  async deleteUser(
+    id: string,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<object> {
     const result = await this.doFetch<Session>(
       "DELETE",
       `${PATH_ROOT}/users/${id}`,
+      undefined,
+      options,
     );
     return result;
   }
 
-  async deleteSession(sessionId: string): Promise<object> {
+  async deleteSession(
+    sessionId: string,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<object> {
     const result = await this.doFetch<Session>(
       "DELETE",
       `${PATH_ROOT}/sessions/${sessionId}`,
+      undefined,
+      options,
     );
     return result;
   }
 
-  async addSuggestion(sessionId: string, name: string): Promise<Session> {
+  async addSuggestion(
+    sessionId: string,
+    name: string,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<Session> {
     const result = await this.doFetch<Session>(
       "POST",
       `${PATH_ROOT}/sessions/${sessionId}/suggest`,
       { name },
+      options,
     );
     return result;
   }
@@ -204,38 +303,64 @@ export class IndecisiveClient {
     sessionId: string,
     suggestionId: string,
     vote: Vote,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
   ): Promise<Session> {
     const result = await this.doFetch<Session>(
       "POST",
       `${PATH_ROOT}/sessions/${sessionId}/vote/${suggestionId}`,
       { vote },
+      options,
     );
     return result;
   }
 
-  async createSession(description: string): Promise<Session> {
+  async createSession(
+    session: AllOptional<Session>,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<Session> {
     const result = await this.doFetch<Session>(
       "POST",
       `${PATH_ROOT}/sessions/`,
-      { description },
+      session,
+      options,
     );
     return result;
   }
 
-  async createClient(auth: AuthDb): Promise<AuthDb> {
+  async createClient(
+    auth: AuthDb,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<AuthDb> {
     const result = await this.doFetch<AuthDb>(
       "POST",
       `${AUTH_ROOT}/clients`,
       auth,
+      options,
     );
     return result;
   }
 
-  async updateClient(auth: AuthDb): Promise<AuthDb> {
+  async updateClient(
+    auth: AuthDb,
+    options?: {
+      bearerToken?: string;
+      headers?: Record<string, string>;
+    },
+  ): Promise<AuthDb> {
     const result = await this.doFetch<AuthDb>(
       "PATCH",
       `${AUTH_ROOT}/clients/${auth.id}`,
       auth,
+      options,
     );
     return result;
   }

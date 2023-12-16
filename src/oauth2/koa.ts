@@ -1,5 +1,6 @@
 import { Context, Next } from "koa";
 import { Request, Response, OAuthError, Token } from "oauth2-server";
+import { cloneDeep } from "lodash-es";
 import { log, logger, requestLogger } from "../logging.js";
 import { canViewSession } from "../IndecisiveTypes.js";
 
@@ -163,12 +164,28 @@ async function auth_impl(ctx: Context, next: Next, scope?: string[] | string) {
 
   // if result failed then don't forward
   if (token) {
+    // Copy properties to allow overrides
+    const user = cloneDeep(token.user);
+    const scope = cloneDeep(token.scope);
+
+    // Allow admin to override user id and current session
+    if (token.scope?.includes("admin")) {
+      // check for override headers
+      const overrideUserId = ctx.get("X-Tapi-UserId");
+      if (overrideUserId) {
+        user.userId = overrideUserId;
+      }
+      const overrideCurrentSessionId = ctx.get("X-Tapi-CurrentSessionId");
+      if (overrideCurrentSessionId) {
+        user.currentSessionId = overrideCurrentSessionId;
+      }
+    }
+
     ctx.state.auth = {
-      scope: token.scope,
-      user: token.user,
+      scope,
+      user,
     };
-    await next();
-    return;
+    return await next();
   }
   return;
 }

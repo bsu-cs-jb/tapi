@@ -124,7 +124,7 @@ describe("/session/invite", () => {
   beforeAll(async () => {
     client = new IndecisiveClient(SERVER);
     token = await client.fetchToken(CLIENT_ID, CLIENT_SECRET);
-    const session = await client.createSession("UAT Testing");
+    const session = await client.createSession({ description: "UAT Testing" });
     sessionId = session.id;
   });
 
@@ -164,7 +164,7 @@ describe("/session/respond", () => {
   });
 
   beforeEach(async () => {
-    session = await client.createSession("UAT Testing");
+    session = await client.createSession({ description: "UAT Testing" });
     session = await client.invite(session.id, USER_2_ID);
   });
 
@@ -249,7 +249,7 @@ describe("/session/vote", () => {
   });
 
   beforeEach(async () => {
-    session = await client.createSession("UAT Testing");
+    session = await client.createSession({ description: "UAT Testing" });
     session = await client.addSuggestion(session.id, "Take a hike");
     suggestion = session?.suggestions[0];
   });
@@ -350,6 +350,64 @@ describe("/session/vote", () => {
   });
 });
 
+describe("override userId", () => {
+  let session: Session | undefined;
+  let client: IndecisiveClient;
+  let suggestion: Suggestion | undefined;
+
+  beforeAll(async () => {
+    client = await makeIndecisiveClient(
+      SERVER,
+      config.ADMIN_ID,
+      config.ADMIN_SECRET,
+      "admin",
+    );
+  });
+
+  beforeEach(async () => {
+    session = await client.createSession({ description: "UAT Testing" });
+    session = await client.invite(session.id, USER_1_ID);
+    session = await client.invite(session.id, USER_2_ID);
+    session = await client.addSuggestion(session.id, "Take a hike");
+    suggestion = session?.suggestions[0];
+  });
+
+  afterEach(async () => {
+    if (session) {
+      try {
+        await client.deleteSession(session.id);
+      } catch {
+        // nothing
+      }
+      session = undefined;
+    }
+  });
+
+  test("works", async () => {
+    if (!session || !suggestion) {
+      expect(session).toBeDefined();
+      expect(suggestion).toBeDefined();
+      return;
+    }
+    await client.vote(session?.id, suggestion.id, "down", {
+      headers: { "X-Tapi-UserId": USER_1_ID },
+    });
+
+    const result = await client.vote(session?.id, suggestion.id, "up", {
+      headers: { "X-Tapi-UserId": USER_2_ID },
+    });
+
+    expect(result).toBeDefined();
+    expect(result).toHaveProperty("id", session.id);
+    expect(result.suggestions).toContainEqual({
+      id: suggestion.id,
+      name: "Take a hike",
+      upVoteUserIds: [USER_2_ID],
+      downVoteUserIds: [USER_1_ID],
+    });
+  });
+});
+
 describe("/session/invite", () => {
   let sessionId = "";
   let client: IndecisiveClient;
@@ -359,7 +417,7 @@ describe("/session/invite", () => {
   });
 
   beforeEach(async () => {
-    const session = await client.createSession("UAT Testing");
+    const session = await client.createSession({ description: "UAT Testing" });
     sessionId = session.id;
   });
 

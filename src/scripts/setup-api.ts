@@ -209,6 +209,8 @@ async function users() {
   }
 }
 
+const GRADING_SESSION = "grading-session";
+
 async function grading(_args: string[]) {
   const client = await makeIndecisiveClient(
     SERVER,
@@ -227,18 +229,16 @@ async function grading(_args: string[]) {
     invite: false,
   };
 
-  const sessionId = "grading-session";
-
-  info(`Deleting grading session if it exists: ${sessionId}`);
+  info(`Deleting grading session if it exists: ${GRADING_SESSION}`);
   try {
-    await client.deleteSession(sessionId);
+    await client.deleteSession(GRADING_SESSION);
   } catch (error) {
     // ignore
   }
 
-  info(`Creating grading session: ${sessionId}`);
+  info(`Creating grading session: ${GRADING_SESSION}`);
   await client.doFetch<Session>("POST", `/indecisive/sessions/`, {
-    id: sessionId,
+    id: GRADING_SESSION,
     description: "Grading session",
     invitations: [
       makeInvitation({
@@ -282,15 +282,28 @@ async function grading(_args: string[]) {
     ],
   });
 
-  info(`Creating grader client: ${sessionId}`);
-  await updateCreateClient(graderDef, client, sessionId);
-  info(`Creating grader user: ${sessionId}`);
+  info(`Creating grader client: ${GRADING_SESSION}`);
+  await updateCreateClient(graderDef, client, GRADING_SESSION);
+  info(`Creating grader user: ${GRADING_SESSION}`);
   await updateCreateUser(graderDef, client);
-  info(`Inviting grader to session: ${sessionId}`);
-  await client.invite(sessionId, graderDef.id);
+  info(`Inviting grader to session: ${GRADING_SESSION}`);
+  await client.invite(GRADING_SESSION, graderDef.id);
 
-  // await client.invite(sessionId, "uat-001");
-  // await client.invite(sessionId, "uat-002");
+  await client.invite(GRADING_SESSION, "uat-001");
+  await client.invite(GRADING_SESSION, "uat-002");
+  await client.invite(GRADING_SESSION, "uat-003");
+  await client.invite(GRADING_SESSION, "uat-004");
+}
+
+async function gradingVotes() {
+  const client = await makeIndecisiveClient(
+    SERVER,
+    config.ADMIN_ID,
+    config.ADMIN_SECRET,
+    "admin",
+  );
+
+  await client.vote(GRADING_SESSION, "pizza", "down");
 }
 
 async function main(args: string[]) {
@@ -306,6 +319,9 @@ async function main(args: string[]) {
     switch (arg) {
       case "grading":
         await grading(argsCopy);
+        break;
+      case "grading-votes":
+        await gradingVotes();
         break;
       case "users":
         await users();
