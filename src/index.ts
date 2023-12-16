@@ -184,6 +184,8 @@ log(`DB_GIT_COMMIT_SCRIPT: ${config.DB_GIT_COMMIT_SCRIPT}`);
 log(`INDECISIVE_AUTH: ${config.INDECISIVE_AUTH}`);
 log(`GRADER_AUTH: ${config.GRADER_AUTH}`);
 
+log(`TOKEN_EXPIRE_MS: ${config.TOKEN_EXPIRE_MS} (${(config.TOKEN_EXPIRE_MS/1000/60).toFixed(0)} min)`);
+
 log(`Listening on port ${config.APP_PORT}`);
 
 app.listen(config.APP_PORT);
