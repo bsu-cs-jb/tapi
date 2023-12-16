@@ -366,6 +366,7 @@ async function gradingInvites() {
     ["test-025", true, "no"],
     ["test-011", true, "yes"],
     ["test-083", true, "undecided"],
+    ["test-027", false, "yes"],
   ];
 
   for (const [userId, accept, attend] of responses) {
@@ -378,6 +379,10 @@ async function gradingInvites() {
       headers: { "X-Tapi-UserId": userId },
     });
   }
+
+  session = await client.respond(GRADING_SESSION, false, "no", {
+    headers: { "X-Tapi-UserId": "grader" },
+  });
 }
 
 async function main(args: string[]) {
