@@ -21,11 +21,15 @@ interface Config extends BaseConfig {
   GRADER_ID: string;
   GRADER_SECRET: string;
   RATELIMIT_SECRET: string;
+  RATELIMIT_DURATION: number;
+  RATELIMIT_MAX: number;
   TEST_SERVER: string;
   TEST_USER1_ID: string;
   TEST_USER1_SECRET: string;
   TEST_USER2_ID: string;
   TEST_USER2_SECRET: string;
+  PURGE_TOKEN_THROTTLE_MS: number;
+  TOKEN_EXPIRE_MS: number;
 }
 
 class ConfigImpl extends BaseConfigImpl {
@@ -81,6 +85,14 @@ class ConfigImpl extends BaseConfigImpl {
     return getConfig("RATELIMIT_SECRET", "");
   }
 
+  public get RATELIMIT_DURATION(): number {
+    return getConfig("RATELIMIT_DURATION", 60 * 1000, parseInt);
+  }
+
+  public get RATELIMIT_MAX(): number {
+    return getConfig("RATELIMIT_MAX", 240, parseInt);
+  }
+
   public get TEST_USER1_ID(): string {
     return getConfig("TEST_USER1_ID", "");
   }
@@ -99,6 +111,14 @@ class ConfigImpl extends BaseConfigImpl {
 
   public get TEST_SERVER(): string {
     return getConfig("TEST_SERVER", "http://localhost:3000");
+  }
+
+  public get TOKEN_EXPIRE_MS(): number {
+    return getConfig("TOKEN_EXPIRE_MS", 60 * 60 * 1000, parseInt);
+  }
+
+  public get PURGE_TOKEN_THROTTLE_MS(): number {
+    return getConfig("PURGE_TOKEN_THROTTLE_MS", 120 * 1000, parseInt);
   }
 }
 

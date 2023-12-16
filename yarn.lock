@@ -3051,7 +3051,7 @@ graceful-fs@^4.2.9:
 
 grading@bsu-cs-jb/grading:
   version "0.9.0"
-  resolved "https://codeload.github.com/bsu-cs-jb/grading/tar.gz/afc553eb101b5201e6be050444677738f96b8c54"
+  resolved "https://codeload.github.com/bsu-cs-jb/grading/tar.gz/1956d8a6eaef2519fd7d6aa95e32d36a730e0481"
   dependencies:
     dotenv "^16.3.1"
     lodash "^4.17.21"

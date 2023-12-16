@@ -19,6 +19,7 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "../logging.js";
 import { hash } from "../hash.js";
+import { config } from "../config.js";
 
 function toScopeArray(scope: string | string[] | undefined): string[] {
   if (scope === undefined) {
@@ -33,7 +34,6 @@ function toScopeArray(scope: string | string[] | undefined): string[] {
 }
 
 const DEFAULT_SCOPES = ["read", "write"];
-const EXPIRE_MS = 10 * 60 * 1000;
 
 export function FileModel(): ClientCredentialsModel {
   // load auth from resource db
@@ -72,7 +72,7 @@ export function FileModel(): ClientCredentialsModel {
       token.clientId = client.id;
 
       // limit the expiration to a maximum time from now
-      const expires = new Date(Date.now() + EXPIRE_MS);
+      const expires = new Date(Date.now() + config.TOKEN_EXPIRE_MS);
       if (token.accessTokenExpiresAt instanceof Date) {
         if (token.accessTokenExpiresAt > expires) {
           token.accessTokenExpiresAt = expires;
@@ -80,7 +80,7 @@ export function FileModel(): ClientCredentialsModel {
       }
       // schedule a token purge after this token should have expired
       // the purge is throttled to not run too often
-      delay(purgeTokens, EXPIRE_MS + 5000);
+      delay(purgeTokens, config.TOKEN_EXPIRE_MS + 5000);
 
       const dbToken = {
         id: token.accessToken,

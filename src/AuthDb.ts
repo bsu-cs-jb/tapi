@@ -10,6 +10,7 @@ import {
 } from "./FileDb.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
+import { config } from "./config.js";
 
 export interface FileModelToken extends Token {
   clientId?: string;
@@ -96,11 +97,15 @@ export async function immediatePurgeTokens(): Promise<TokenDb[]> {
   return deletedTokens;
 }
 
-// purge tokens max of once every 60 seconds
-export const purgeTokens = throttle(immediatePurgeTokens, 60 * 1000, {
-  leading: false,
-  trailing: true,
-});
+// purge tokens max of once every 120 seconds
+export const purgeTokens = throttle(
+  immediatePurgeTokens,
+  config.PURGE_TOKEN_THROTTLE_MS,
+  {
+    leading: true,
+    trailing: true,
+  },
+);
 
 export async function fetchToken(id: string): Promise<TokenDb | undefined> {
   // log(`fetchToken(${id})`);

@@ -76,7 +76,7 @@ describe("/token", () => {
   test("works", async () => {
     const token = await client.fetchFullToken(CLIENT_ID, CLIENT_SECRET);
     expect(token).toHaveProperty("expires_in");
-    expect(token.expires_in).toBeLessThan(601);
+    expect(token.expires_in).toBeLessThan(config.RATELIMIT_DURATION + 5);
   });
 });
 

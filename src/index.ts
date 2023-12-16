@@ -66,16 +66,17 @@ app.use(
   ratelimit({
     driver: "memory",
     db: db,
-    duration: 60000,
-    errorMessage:
-      "Rate limit of 120 messages in 1 minute exceeded. Check for loops and wait for the limit to reset in 1 minute.",
+    duration: config.RATELIMIT_DURATION,
+    errorMessage: `Rate limit of ${config.RATELIMIT_MAX} messages in ${
+      config.RATELIMIT_DURATION / 1000
+    } seconds exceeded. Check for loops and wait for the limit to reset in 1 minute.`,
     id: (ctx) => ctx.ip,
     headers: {
       remaining: "Rate-Limit-Remaining",
       reset: "Rate-Limit-Reset",
       total: "Rate-Limit-Total",
     },
-    max: 120,
+    max: config.RATELIMIT_MAX,
     disableHeader: false,
     whitelist: ratelimitWhitelist,
   }),
