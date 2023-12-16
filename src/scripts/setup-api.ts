@@ -13,10 +13,9 @@ import { config } from "../config.js";
 import { info, error } from "./logging.js";
 import { range, makeId } from "../utils.js";
 import {
-  Session,
   Suggestion,
   makeInvitation,
-  makeSuggestion,
+  Attending,
 } from "../indecisive_rn_types.js";
 
 const SERVER = config.TEST_SERVER;
@@ -34,9 +33,10 @@ function mkSuggest(
   name: string,
   upVoteUserIds: string[] = [],
   downVoteUserIds: string[] = [],
+  id?: string,
 ): Suggestion {
   return {
-    id: makeId(name),
+    id: id || makeId(name),
     name,
     upVoteUserIds,
     downVoteUserIds,
@@ -237,50 +237,55 @@ async function grading(_args: string[]) {
   }
 
   info(`Creating grading session: ${GRADING_SESSION}`);
-  await client.doFetch<Session>("POST", `/indecisive/sessions/`, {
-    id: GRADING_SESSION,
-    description: "Grading session",
-    invitations: [
-      makeInvitation({
-        user: {
-          id: "uat-001",
-          name: "",
-        },
-        accepted: false,
-        attending: "undecided",
-      }),
-      makeInvitation({
-        user: {
-          id: "uat-002",
-          name: "",
-        },
-        accepted: true,
-        attending: "yes",
-      }),
-      makeInvitation({
-        user: {
-          id: "uat-003",
-          name: "",
-        },
-        accepted: true,
-        attending: "no",
-      }),
-      makeInvitation({
-        user: {
-          id: "uat-004",
-          name: "",
-        },
-        accepted: true,
-        attending: "undecided",
-      }),
-    ],
-    suggestions: [
-      mkSuggest("pizza", ["uat-001"]),
-      mkSuggest("popcorn", ["uat-001"], ["uat-002"]),
-      mkSuggest("pop", [], ["uat-003"]),
-      mkSuggest("fortnite", [], []),
-    ],
-  });
+  await client.createSession(
+    {
+      id: GRADING_SESSION,
+      description: "Grading session",
+      accepted: true,
+      attending: "yes",
+      invitations: [
+        makeInvitation({
+          user: {
+            id: "uat-002",
+            name: "",
+          },
+          accepted: false,
+          attending: "undecided",
+        }),
+        makeInvitation({
+          user: {
+            id: "uat-003",
+            name: "",
+          },
+          accepted: true,
+          attending: "no",
+        }),
+        makeInvitation({
+          user: {
+            id: "uat-004",
+            name: "",
+          },
+          accepted: true,
+          attending: "undecided",
+        }),
+      ],
+      suggestions: [
+        mkSuggest("Pizza", ["uat-001"]),
+        mkSuggest("Popcorn", ["uat-001"], ["uat-004"]),
+        mkSuggest("Pop", [], ["uat-003"]),
+        mkSuggest("Fortnite", [], []),
+        mkSuggest(
+          "We should really get together and just laugh until we puke",
+          [],
+          [],
+          "long",
+        ),
+      ],
+    },
+    {
+      headers: { "X-Tapi-UserId": "uat-001" },
+    },
+  );
 
   info(`Creating grader client: ${GRADING_SESSION}`);
   await updateCreateClient(graderDef, client, GRADING_SESSION);
@@ -303,19 +308,37 @@ async function gradingVotes() {
     "admin",
   );
 
-  const session = await client.session(GRADING_SESSION);
-  const fortnite = _.find(session.suggestions, { name: "fortnite" });
-  if (!fortnite) {
-    return;
-  }
+  info(`Updating grading votes (token: ${client.token})`);
 
-  await Promise.all(
-    ["uat-001", "uat-002", "uat-003", "uat-004"].map(async (userId) => {
-      return await client.vote(GRADING_SESSION, fortnite.id, "down", {
-        headers: { "X-Tapi-UserId": userId },
-      });
-    }),
+  for (const userId of ["uat-001", "uat-002", "uat-003", "uat-004"]) {
+    await client.vote(GRADING_SESSION, "fortnite", "down", {
+      headers: { "X-Tapi-UserId": userId },
+    });
+  }
+}
+
+async function gradingInvites() {
+  const client = await makeIndecisiveClient(
+    SERVER,
+    config.ADMIN_ID,
+    config.ADMIN_SECRET,
+    "admin",
   );
+  info(`Updating grading invites (token: ${client.token})`);
+
+  const responses: [string, boolean, Attending][] = [
+    ["test-025", true, "no"],
+    ["test-011", true, "yes"],
+    ["test-083", true, "undecided"],
+  ];
+
+  for (const [userId, accept, attend] of responses) {
+    info(`${userId} responding: ${accept} ${attend}`);
+    await client.invite(GRADING_SESSION, userId);
+    await client.respond(GRADING_SESSION, accept, attend, {
+      headers: { "X-Tapi-UserId": userId },
+    });
+  }
 }
 
 async function main(args: string[]) {
@@ -326,11 +349,14 @@ async function main(args: string[]) {
   const argsCopy = _.clone(args);
 
   // let arg: string|undefined;
-  for (let arg = argsCopy.pop(); arg !== undefined; arg = argsCopy.pop()) {
+  for (let arg = argsCopy.shift(); arg !== undefined; arg = argsCopy.shift()) {
     info(`Handling ${arg}`);
     switch (arg) {
       case "grading":
         await grading(argsCopy);
+        break;
+      case "grading-invites":
+        await gradingInvites();
         break;
       case "grading-votes":
         await gradingVotes();

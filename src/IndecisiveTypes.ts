@@ -57,16 +57,10 @@ export function toSuggestionDb(suggest: Suggestion): SuggestionDb {
 }
 
 export function toSessionDb(session: Session, selfUserId: string): SessionDb {
-  const selfInvite = {
-    userId: selfUserId,
-    accepted: session.accepted || false,
-    attending: session.attending || "undecided",
-  };
   const invitations = session.invitations
     ? session.invitations.map(toInvitationDb)
     : [];
-  invitations.push(selfInvite);
-  return {
+  let sessionDb = {
     id: session.id,
     name: session.description,
     ownerId: session.owner?.id || "",
@@ -75,6 +69,14 @@ export function toSessionDb(session: Session, selfUserId: string): SessionDb {
       ? session.suggestions.map(toSuggestionDb)
       : [],
   };
+  sessionDb = addInvitation(
+    sessionDb,
+    selfUserId,
+    session.accepted || false,
+    session.attending || "undecided",
+    true,
+  );
+  return sessionDb;
 }
 
 export function toIdName(item: IdResource): IdName {
