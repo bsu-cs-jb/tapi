@@ -202,39 +202,81 @@ async function makeP3a(saveInDb: boolean = true) {
 async function makeP3b(saveInDb: boolean = true) {
   const auth = mkCategory("Authentication", [
     {
-      name: "",
+      name: "Properly requests token using client credentials.",
+    },
+    {
+      name: "Uses Bearer Token to make subsequent requests",
     },
   ]);
 
-  const session = mkCategory("Current Session", [
+  const session = mkCategory("Self & Current Session", [
     {
-      name: ``,
+      name: `Fetches self after fetching token`,
+    },
+    {
+      name: `Fetches current session after fetching token`,
+    },
+    {
+      name: `Fetches current session on the update interval`,
+    },
+    {
+      name: `Properly displays the fetched values for self and current session`,
+    },
+    {
+      name: `Updates the UI to reflect changes in the current session`,
     },
   ]);
 
-  const acceptAttend = mkCategory("Accept & Attend", [
+  const acceptAttend = mkCategory("Responding: Accept & Attend", [
     {
-      name: ``,
+      name: `User can accept an invitation`,
+    },
+    {
+      name: `User can update their attendance`,
     },
   ]);
 
   const suggestVote = mkCategory("Suggest & Vote", [
     {
-      name: ``,
+      name: `User can add new suggestions`,
+    },
+    {
+      name: `User can vote suggestions up or down or remove votes`,
+      pointValue: 2,
+    },
+    {
+      name: `Votes by other users are properly displayed and updated`,
     },
   ]);
 
   const invite = mkCategory("Invitations", [
     {
-      name: ``,
+      name: `User can invite other users by user id`,
+    },
+    {
+      name: `Invitations by other users are properly displayed and updated`,
+    },
+    {
+      name: `Missing userIds are displayed to the user`,
+      scoreValue: "bonus",
     },
   ]);
 
   const code = mkCategory("Code", [
     {
+      name: `Hooks and dependencies are properly specified for API methods`,
+      scoreType: "points",
+      pointValue: 1,
+    },
+    {
       name: `Code Review`,
       scoreType: "points",
-      pointValue: 5,
+      pointValue: 4,
+    },
+    {
+      name: `Request errors are shown to the user`,
+      scoreValue: "bonus",
+      pointValue: 1,
     },
   ]);
 

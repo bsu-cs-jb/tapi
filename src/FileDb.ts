@@ -82,10 +82,6 @@ async function ensureDir(dirpath: string) {
   }
 }
 
-async function ensureRoot() {
-  await ensureDir(config.DB_GRADING_DIR);
-}
-
 async function ensureResourceDir<T extends IdResource>(
   resource: ResourceDef<T>,
 ) {
