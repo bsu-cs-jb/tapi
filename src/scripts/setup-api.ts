@@ -336,7 +336,7 @@ async function gradingVotes() {
     ...session.suggestions.map((s): [string, string, Vote] => [
       "grader",
       s.id,
-      "down" as Vote,
+      (s.id === "fortnite" ? "none" : "down") as Vote,
     ]),
   ];
 
@@ -395,13 +395,13 @@ async function main(args: string[]) {
   for (let arg = argsCopy.shift(); arg !== undefined; arg = argsCopy.shift()) {
     info(`Handling ${arg}`);
     switch (arg) {
-      case "grading":
+      case "grading-1-init":
         await grading(argsCopy);
         break;
-      case "grading-invites":
+      case "grading-2-invites":
         await gradingInvites();
         break;
-      case "grading-votes":
+      case "grading-3-votes":
         await gradingVotes();
         break;
       case "users":
