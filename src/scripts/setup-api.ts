@@ -387,7 +387,6 @@ async function main(args: string[]) {
 
   const argsCopy = _.clone(args);
 
-  // let arg: string|undefined;
   for (let arg = argsCopy.shift(); arg !== undefined; arg = argsCopy.shift()) {
     info(`Handling ${arg}`);
     switch (arg) {
