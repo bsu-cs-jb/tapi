@@ -181,6 +181,9 @@ log(`DB_INDECISIVE_DIR: ${config.DB_INDECISIVE_DIR}`);
 log(`DB_GIT_COMMIT: ${config.DB_GIT_COMMIT}`);
 log(`DB_GIT_COMMIT_SCRIPT: ${config.DB_GIT_COMMIT_SCRIPT}`);
 
+log(`INDECISIVE_AUTH: ${config.INDECISIVE_AUTH}`);
+log(`GRADER_AUTH: ${config.GRADER_AUTH}`);
+
 log(`Listening on port ${config.APP_PORT}`);
 
 app.listen(config.APP_PORT);

@@ -42,6 +42,7 @@ import {
 } from "./indecisive_rn_types.js";
 import { assert, removeId, toJson } from "./utils.js";
 import { log, logger, requestLogger } from "./logging.js";
+import { config } from "./config.js";
 
 function fetchCurrentSession(errorIfMissing: boolean = true) {
   return async (ctx: Context, next: Next) => {
@@ -349,8 +350,7 @@ function reqLogger() {
 }
 
 export function indecisiveRoutes(router: Router) {
-  // INDECISIVE AUTH
-  const authEnabled = true;
+  const authEnabled = config.INDECISIVE_AUTH;
   if (authEnabled) {
     router.use(authenticate("read"));
   }
