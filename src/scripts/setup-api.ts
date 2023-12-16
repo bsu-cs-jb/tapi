@@ -312,9 +312,13 @@ async function gradingVotes() {
   info(`Updating grading suggestions and votes (token: ${client.token})`);
 
   const suggestName = "Grading a bunch of assignments";
+  info(`Adding suggestion: ${suggestName}`);
   const session = await client.suggest(
     GRADING_SESSION,
     "Grading a bunch of assignments",
+    {
+      headers: { "X-Tapi-UserId": "grader" },
+    },
   );
   const newSuggestion = _.find(session.suggestions, { name: suggestName });
   assert(newSuggestion, "Must find new suggestion.");
@@ -331,6 +335,10 @@ async function gradingVotes() {
   ];
 
   for (const [userId, suggestionId, vote] of votes) {
+    const name = ((sugg) => (sugg ? sugg.name : "MISSING"))(
+      _.find(session.suggestions, { id: suggestionId }),
+    );
+    info(`User ${userId} voting ${vote} on ${suggestionId}: ${name}`);
     await client.vote(GRADING_SESSION, suggestionId, vote, {
       headers: { "X-Tapi-UserId": userId },
     });
