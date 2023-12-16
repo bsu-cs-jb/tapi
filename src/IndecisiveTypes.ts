@@ -200,11 +200,6 @@ export function addSuggestion(
   userId: string,
   name: string,
 ): SessionDb {
-  const existingInvite = getInvitation(session, userId);
-  assert(
-    existingInvite !== undefined,
-    `User ${userId} not invited to session ${session.id}`,
-  );
   const existingSuggestion = findSuggestionByName(session, name);
   if (existingSuggestion) {
     return session;
@@ -219,11 +214,6 @@ export function updateSuggestion(
   userId: string,
   vote: Vote,
 ): SessionDb {
-  const existingInvite = getInvitation(session, userId);
-  assert(
-    existingInvite !== undefined,
-    `User ${userId} not invited to session ${session.id}`,
-  );
   let suggestObj: SuggestionDb | undefined;
   if (typeof suggestion === "string") {
     suggestObj = getSuggestion(session, suggestion);
