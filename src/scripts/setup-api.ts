@@ -332,6 +332,12 @@ async function gradingVotes() {
     ["uat-002", newSuggestion.id, "down"],
     ["uat-003", newSuggestion.id, "up"],
     ["uat-004", newSuggestion.id, "down"],
+    // grader votes every suggestion down
+    ...session.suggestions.map((s): [string, string, Vote] => [
+      "grader",
+      s.id,
+      "down" as Vote,
+    ]),
   ];
 
   for (const [userId, suggestionId, vote] of votes) {
@@ -354,6 +360,8 @@ async function gradingInvites() {
   );
   info(`Updating grading invites (token: ${client.token})`);
 
+  let session = await client.session(GRADING_SESSION);
+
   const responses: [string, boolean, Attending][] = [
     ["test-025", true, "no"],
     ["test-011", true, "yes"],
@@ -361,9 +369,12 @@ async function gradingInvites() {
   ];
 
   for (const [userId, accept, attend] of responses) {
+    if (!_.find(session.invitations, { user: { id: userId } })) {
+      info(`Inviting ${userId} to grading session.`);
+      await client.invite(GRADING_SESSION, userId);
+    }
     info(`${userId} responding: ${accept} ${attend}`);
-    await client.invite(GRADING_SESSION, userId);
-    await client.respond(GRADING_SESSION, accept, attend, {
+    session = await client.respond(GRADING_SESSION, accept, attend, {
       headers: { "X-Tapi-UserId": userId },
     });
   }
