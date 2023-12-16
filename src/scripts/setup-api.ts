@@ -303,7 +303,19 @@ async function gradingVotes() {
     "admin",
   );
 
-  await client.vote(GRADING_SESSION, "pizza", "down");
+  const session = await client.session(GRADING_SESSION);
+  const fortnite = _.find(session.suggestions, { name: "fortnite" });
+  if (!fortnite) {
+    return;
+  }
+
+  await Promise.all(
+    ["uat-001", "uat-002", "uat-003", "uat-004"].map(async (userId) => {
+      return await client.vote(GRADING_SESSION, fortnite.id, "down", {
+        headers: { "X-Tapi-UserId": userId },
+      });
+    }),
+  );
 }
 
 async function main(args: string[]) {
