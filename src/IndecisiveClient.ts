@@ -282,7 +282,7 @@ export class IndecisiveClient {
     return result;
   }
 
-  async addSuggestion(
+  async suggest(
     sessionId: string,
     name: string,
     options?: {

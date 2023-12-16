@@ -250,7 +250,7 @@ describe("/session/vote", () => {
 
   beforeEach(async () => {
     session = await client.createSession({ description: "UAT Testing" });
-    session = await client.addSuggestion(session.id, "Take a hike");
+    session = await client.suggest(session.id, "Take a hike");
     suggestion = session?.suggestions[0];
   });
 
@@ -368,7 +368,7 @@ describe("override userId", () => {
     session = await client.createSession({ description: "UAT Testing" });
     session = await client.invite(session.id, USER_1_ID);
     session = await client.invite(session.id, USER_2_ID);
-    session = await client.addSuggestion(session.id, "Take a hike");
+    session = await client.suggest(session.id, "Take a hike");
     suggestion = session?.suggestions[0];
   });
 

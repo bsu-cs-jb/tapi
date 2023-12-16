@@ -16,6 +16,7 @@ import {
   Suggestion,
   makeInvitation,
   Attending,
+  Vote,
 } from "../indecisive_rn_types.js";
 
 const SERVER = config.TEST_SERVER;
@@ -308,10 +309,29 @@ async function gradingVotes() {
     "admin",
   );
 
-  info(`Updating grading votes (token: ${client.token})`);
+  info(`Updating grading suggestions and votes (token: ${client.token})`);
 
-  for (const userId of ["uat-001", "uat-002", "uat-003", "uat-004"]) {
-    await client.vote(GRADING_SESSION, "fortnite", "down", {
+  const suggestName = "Grading a bunch of assignments";
+  const session = await client.suggest(
+    GRADING_SESSION,
+    "Grading a bunch of assignments",
+  );
+  const newSuggestion = _.find(session.suggestions, { name: suggestName });
+  assert(newSuggestion, "Must find new suggestion.");
+
+  const votes: [string, string, Vote][] = [
+    ["uat-001", "fortnite", "down"],
+    ["uat-002", "fortnite", "down"],
+    ["uat-003", "fortnite", "down"],
+    ["uat-004", "fortnite", "down"],
+    ["uat-001", newSuggestion.id, "up"],
+    ["uat-002", newSuggestion.id, "down"],
+    ["uat-003", newSuggestion.id, "up"],
+    ["uat-004", newSuggestion.id, "down"],
+  ];
+
+  for (const [userId, suggestionId, vote] of votes) {
+    await client.vote(GRADING_SESSION, suggestionId, vote, {
       headers: { "X-Tapi-UserId": userId },
     });
   }
