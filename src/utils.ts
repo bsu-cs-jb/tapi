@@ -4,6 +4,7 @@ import nodeAssert from "node:assert/strict";
 export function makeId(name: string): string {
   let id = name.toLowerCase();
   id = id.replace(/[^a-zA-Z0-9]/g, "-");
+  id = id.replace(/-+/g, "-");
   return id;
 }
 
