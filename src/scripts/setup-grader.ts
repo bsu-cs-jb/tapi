@@ -42,6 +42,7 @@ function mkCategory(
       name: `${name} bonus`,
       scoreType: "points",
       scoreValue: "bonus",
+      pointIncrement: 0.5,
       pointValue: bonus,
     }),
   );
@@ -51,6 +52,7 @@ function mkCategory(
       name: `${name} penalty`,
       scoreType: "points",
       scoreValue: "penalty",
+      pointIncrement: 0.5,
       pointValue: penalty,
     }),
   );

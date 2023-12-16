@@ -117,8 +117,8 @@ async function updateCreateClient(
   }
 }
 
-async function clients() {
-  const rawUsers = await readFileAsJson("clients.private.json");
+async function clients(filename = "clients.private.json") {
+  const rawUsers = await readFileAsJson(filename);
   const userDef = rawUsers as unknown as UserDef[];
   const client = await makeIndecisiveClient(
     SERVER,
@@ -129,7 +129,7 @@ async function clients() {
   info(`Setup token ${client.token}`);
 
   let createdUsers = 0;
-  const MAX_USERS = 6;
+  const MAX_USERS = 10;
   for (const user of userDef) {
     if (user.id === "jonathan") {
       break;
@@ -150,8 +150,8 @@ async function clients() {
   }
 }
 
-async function printIds() {
-  const rawUsers = await readFileAsJson("clients.private.json");
+async function printIds(filename = "clients.private.json") {
+  const rawUsers = await readFileAsJson(filename);
   const userDef = rawUsers as unknown as UserDef[];
   for (const user of userDef) {
     console.info(`clientId: ${user.id}\nclientSecret: ${user.secret}\n`);
@@ -275,9 +275,10 @@ async function grading(_args: string[]) {
       }),
     ],
     suggestions: [
-      mkSuggest("pizza", ["grader", "uat-001"]),
+      mkSuggest("pizza", ["uat-001"]),
       mkSuggest("popcorn", ["uat-001"], ["uat-002"]),
       mkSuggest("pop", [], ["uat-003"]),
+      mkSuggest("fortnite", [], []),
     ],
   });
 
@@ -285,9 +286,9 @@ async function grading(_args: string[]) {
   await updateCreateClient(graderDef, client, sessionId);
   info(`Creating grader user: ${sessionId}`);
   await updateCreateUser(graderDef, client);
-  // info(`Inviting grader to session: ${sessionId}`);
-  // await client.invite(sessionId, graderDef.id);
-  //
+  info(`Inviting grader to session: ${sessionId}`);
+  await client.invite(sessionId, graderDef.id);
+
   // await client.invite(sessionId, "uat-001");
   // await client.invite(sessionId, "uat-002");
 }
@@ -312,8 +313,11 @@ async function main(args: string[]) {
       case "clients":
         await clients();
         break;
-      case "print-ids":
-        await printIds();
+      case "student-clients":
+        await clients("student-clients.private.json");
+        break;
+      case "print-student-ids":
+        await printIds("student-clients.private.json");
         break;
       case "test-users":
         await testUsers();
