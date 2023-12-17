@@ -386,9 +386,8 @@ async function gradingInvites() {
 }
 
 async function main(args: string[]) {
-  info("Args:", { args });
-  info(`LOGGING_ENABLED: ${config.LOGGING_ENABLED}`);
-  info(`LOG_LEVEL: ${config.LOG_LEVEL}`);
+  info(`Args: ${args.join(", ")}`);
+  info(`SERVER: ${config.TEST_SERVER}`);
 
   const argsCopy = _.clone(args);
 
@@ -424,6 +423,8 @@ async function main(args: string[]) {
         break;
     }
   }
+
+  info(`Finished running ${config.TEST_SERVER} ${args.join(", ")}`);
 }
 
 main(process.argv.slice(2))
