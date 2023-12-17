@@ -398,11 +398,11 @@ async function main(args: string[]) {
       case "grading-1-init":
         await grading(argsCopy);
         break;
-      case "grading-2-invites":
-        await gradingInvites();
-        break;
-      case "grading-3-votes":
+      case "grading-2-votes":
         await gradingVotes();
+        break;
+      case "grading-3-invites":
+        await gradingInvites();
         break;
       case "users":
         await users();

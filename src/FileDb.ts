@@ -11,7 +11,7 @@ import {
 } from "node:fs/promises";
 import util from "node:util";
 import { execFile } from "node:child_process";
-import { cloneDeep, throttle, merge } from "lodash-es";
+import * as _ from "lodash-es";
 
 import { config } from "./config.js";
 import { log, logger } from "./logging.js";
@@ -69,7 +69,7 @@ async function fileExists(filename: string): Promise<boolean> {
     await access(filename, constants.R_OK);
     return true;
   } catch {
-    log(`File ${filename} does not exist.`);
+    // log(`File ${filename} does not exist.`);
     // cannot read file or it doesn't exist
     return false;
   }
@@ -221,15 +221,13 @@ async function gitCommit() {
     const { stdout, stderr } = await execFileP(config.DB_GIT_COMMIT_SCRIPT);
     log(`execFile stdout:\n${stdout}`);
     log(`execFile stderr:\n${stderr}`);
-    // await execFileP('git', ['add', '-A', 'db/']);
-    // await execFileP('git', ['commit', '-m', 'Update db']);
     // log('DONE committing to git.');
   } catch (err) {
     logger.error("Error using git", err);
   }
 }
 
-const throttleGitCommit = throttle(gitCommit, 30 * 1000, {
+const throttleGitCommit = _.throttle(gitCommit, 30 * 1000, {
   leading: false,
   trailing: true,
 });
@@ -265,20 +263,48 @@ export async function writeJsonToFile<T extends object>(
 export interface WriteResourceOptions {
   updateTimestamps?: boolean;
   skipCommit?: boolean;
+  forceUpdate?: boolean;
 }
 
 const WRITE_RESOURCE_OPTIONS_DEFAULT = {
   updateTimestamps: true,
   skipCommit: false,
+  forceUpdate: false,
 };
+
+const SKIP_COMPARE_FIELDS = ["createdAt", "updatedAt"];
 
 export async function writeResource<T extends IdResource>(
   resource: ResourceDef<T>,
   data: T,
   options?: WriteResourceOptions,
-): Promise<string | undefined> {
-  options = merge(WRITE_RESOURCE_OPTIONS_DEFAULT, options);
+): Promise<[T, string] | undefined> {
+  options = _.merge(WRITE_RESOURCE_OPTIONS_DEFAULT, options);
   await ensureResourceDir(resource);
+
+  const filename = resourceFilename(resource);
+  if (await resourceExists(resource)) {
+    const existing = await readResource<T>(resource);
+    if (existing) {
+      const existingComparable = _.omit(existing, SKIP_COMPARE_FIELDS);
+      const comparableData = _.omit(data, SKIP_COMPARE_FIELDS);
+      if (_.isEqual(existingComparable, comparableData)) {
+        log(
+          `writeResource(${resource.singular} ${resource.id}) identical, skipping update to ${filename}.`,
+        );
+        return [existing, filename];
+      } else if (JSON.stringify(existing) === JSON.stringify(comparableData)) {
+        log(
+          `**************** _.isEqual() returned false but they are equal ******************`,
+        );
+        log(
+          `writeResource(${resource.singular} ${resource.id}) identical, skipping update to ${filename}.`,
+        );
+        return [existing, filename];
+      }
+    }
+  }
+
   if (options.updateTimestamps) {
     const ts = new Date().toISOString();
     data.updatedAt = ts;
@@ -286,21 +312,20 @@ export async function writeResource<T extends IdResource>(
       data.createdAt = ts;
     }
   }
-  const filename = resourceFilename(resource);
   log(`writeResource(${resource.singular} ${resource.id}) to ${filename}.`);
   await writeJsonToFile(filename, data);
   // log(`DONE writing to ${filename}.`);
   if (!options.skipCommit && config.DB_GIT_COMMIT) {
     throttleGitCommit();
   }
-  return filename;
+  return [data, filename];
 }
 
 export function refWithId<T extends IdResource>(
   resource: ResourceDef<T>,
   id: string,
 ): ResourceDef<T> {
-  const ref = cloneDeep(resource);
+  const ref = _.cloneDeep(resource);
   ref.id = id;
   return ref;
 }

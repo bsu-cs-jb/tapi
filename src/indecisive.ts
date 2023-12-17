@@ -519,13 +519,22 @@ export function indecisiveRoutes(router: Router) {
 
       // add invitation to session
       const ref = refWithId(SESSION, session.id);
-      const _filename = await writeResource(ref, session);
+      const result = await writeResource(ref, session);
+      if (typeof result === "undefined") {
+        ctx.status = 500;
+        ctx.body = {
+          status: "error",
+          message: `Failed writeResource for Session ${session.id}`,
+        };
+        return;
+      }
+      const [savedSession] = result;
       // log(`POST written to ${filename} session:`, session);
 
       // add invitation to user
-      await addUserSessionRef("invitation", session.id, userId);
+      await addUserSessionRef("invitation", savedSession.id, userId);
 
-      ctx.body = await toSession(session, self.id);
+      ctx.body = await toSession(savedSession, self.id);
       await next();
     },
   );
@@ -592,10 +601,19 @@ export function indecisiveRoutes(router: Router) {
 
       // persist session
       const ref = refWithId(SESSION, session.id);
-      const _filename = await writeResource(ref, session);
+      const result = await writeResource(ref, session);
+      if (typeof result === "undefined") {
+        ctx.status = 500;
+        ctx.body = {
+          status: "error",
+          message: `Failed writeResource for Session ${session.id}`,
+        };
+        return;
+      }
+      const [savedSession] = result;
       // log(`POST written to ${filename} session:`, session);
 
-      ctx.body = await toSession(session, self.id);
+      ctx.body = await toSession(savedSession, self.id);
       await next();
     },
   );
@@ -629,10 +647,19 @@ export function indecisiveRoutes(router: Router) {
 
       // persist session
       const ref = refWithId(SESSION, session.id);
-      const _filename = await writeResource(ref, session);
+      const result = await writeResource(ref, session);
+      if (typeof result === "undefined") {
+        ctx.status = 500;
+        ctx.body = {
+          status: "error",
+          message: `Failed writeResource for Session ${session.id}`,
+        };
+        return;
+      }
+      const [savedSession] = result;
       // log(`POST written to ${filename} session:`, session);
 
-      ctx.body = await toSession(session, self.id);
+      ctx.body = await toSession(savedSession, self.id);
       await next();
     },
   );
@@ -687,10 +714,19 @@ export function indecisiveRoutes(router: Router) {
 
       // persist session
       const ref = refWithId(SESSION, session.id);
-      const _filename = await writeResource(ref, session);
+      const result = await writeResource(ref, session);
+      if (typeof result === "undefined") {
+        ctx.status = 500;
+        ctx.body = {
+          status: "error",
+          message: `Failed writeResource for Session ${session.id}`,
+        };
+        return;
+      }
+      const [savedSession] = result;
       // log(`POST written to ${filename} session:`, session);
 
-      ctx.body = await toSession(session, self.id);
+      ctx.body = await toSession(savedSession, self.id);
       await next();
     };
   }

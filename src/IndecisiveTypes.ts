@@ -137,6 +137,8 @@ export async function toSession(
     attending: selfInvite?.attending || "undecided",
     invitations,
     suggestions,
+    updatedAt: sessionDb.updatedAt,
+    createdAt: sessionDb.createdAt,
   };
 }
 

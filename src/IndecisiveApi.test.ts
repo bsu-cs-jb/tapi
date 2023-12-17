@@ -408,6 +408,52 @@ describe("override userId", () => {
   });
 });
 
+describe("RestAPI", () => {
+  let sessionId = "";
+  let client: IndecisiveClient;
+
+  beforeAll(async () => {
+    client = await makeIndecisiveClient(SERVER, CLIENT_ID, CLIENT_SECRET);
+  });
+
+  beforeEach(async () => {
+    const session = await client.createSession({ description: "UAT Testing" });
+    sessionId = session.id;
+  });
+
+  afterEach(async () => {
+    try {
+      await client.deleteSession(sessionId);
+    } catch {
+      // nothing
+    }
+  });
+
+  test("Resource not changed when identical", async () => {
+    const result = await client.invite(sessionId, USER_2_ID);
+
+    expect(result).toHaveProperty("id", sessionId);
+    expect(result.invitations).toContainEqual({
+      user: {
+        id: USER_2_ID,
+        name: USER_2_NAME,
+      },
+      accepted: false,
+      attending: "undecided",
+    });
+    expect(result).toHaveProperty("accepted", true);
+    expect(result).toHaveProperty("attending", "yes");
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    // do the same operation and the resource should not be updated
+    const result_2 = await client.invite(sessionId, USER_2_ID);
+
+    expect(result_2).toHaveProperty("createdAt", result.createdAt);
+    expect(result_2).toHaveProperty("updatedAt", result.updatedAt);
+  });
+});
+
 describe("/session/invite", () => {
   let sessionId = "";
   let client: IndecisiveClient;

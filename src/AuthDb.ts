@@ -58,7 +58,9 @@ export async function fetchClient(id: string): Promise<AuthDb | undefined> {
   return readResource<AuthDb>(refWithId(CLIENT, id));
 }
 
-export async function writeClient(auth: AuthDb): Promise<string | undefined> {
+export async function writeClient(
+  auth: AuthDb,
+): Promise<[AuthDb, string] | undefined> {
   return writeResource<AuthDb>(refWithId(CLIENT, auth.id), auth);
 }
 
@@ -112,7 +114,9 @@ export async function fetchToken(id: string): Promise<TokenDb | undefined> {
   return readResource<TokenDb>(refWithId(TOKEN, id));
 }
 
-export async function writeToken(token: TokenDb): Promise<string | undefined> {
+export async function writeToken(
+  token: TokenDb,
+): Promise<[TokenDb, string] | undefined> {
   return writeResource<TokenDb>(refWithId(TOKEN, token.id), token);
 }
 

@@ -1,11 +1,12 @@
 import { genid } from "./genid.js";
 import { AllOptional, cycle } from "./utils.js";
+import { IdResource } from "./FileDb.js";
 
 /**
  * DO NOT change this file.
  */
 
-export interface User {
+export interface User extends IdResource {
   id: string;
   name: string;
 }
@@ -48,7 +49,7 @@ export interface Invitation {
   attending: Attending;
 }
 
-export interface Session {
+export interface Session extends IdResource {
   id: string;
   owner: User;
   description: string;
@@ -81,7 +82,6 @@ export function makeInvitation(props?: AllOptional<Invitation>): Invitation {
     user: {
       id: genid(),
       name: "Unnamed",
-      ...props?.user,
     },
     accepted: false,
     attending: "undecided",

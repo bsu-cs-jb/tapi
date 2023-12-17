@@ -381,12 +381,29 @@ export function postResource<T extends IdResource>(
         };
         return await next();
       }
-      const filename = await writeResource(ref, newResource);
+
+      const result = await writeResource(ref, newResource);
+      if (typeof result === "undefined") {
+        logger.error(
+          `POST failed write for ${resource.singular}:`,
+          newResource,
+        );
+        ctx.status = 500;
+        ctx.body = {
+          status: "error",
+          message: `Failed writeResource for ${resource.singular}`,
+        };
+        return;
+      }
+      [newResource] = result;
+      const [_, filename] = result;
       log(`POST written to ${filename} ${resource.singular}:`, newResource);
       if (options?.postProcess) {
         newResource = await options.postProcess(ctx, newResource, ref);
       }
       ctx.body = newResource;
+
+      return await next();
     },
   );
   return router;
@@ -457,7 +474,7 @@ export function putResource<T extends IdResource>(
     `/${resource_url}`,
     async (ctx: Context, next: Next) => {
       const origBody = cloneDeep(ctx.request.body);
-      let data = ctx.request.body;
+      let newResource = ctx.request.body;
 
       // get the existing resource
       const obj = ctx.state[resource.singular];
@@ -465,41 +482,52 @@ export function putResource<T extends IdResource>(
 
       // Make sure the id of the resource matches
       const id = ctx.params[resource.paramName];
-      if (data.id && data.id !== id) {
+      if (newResource.id && newResource.id !== id) {
         // assert(data.id === id, "id in body and URL must match");
         ctx.status = 400;
         ctx.body = {
           status: "error",
           reason: "validation_error",
-          message: `body id (${data.id}) does not match id in URL (${id}).`,
+          message: `body id (${newResource.id}) does not match id in URL (${id}).`,
         };
         return;
       } else {
-        data.id = id;
+        newResource.id = id;
       }
-      const ref = refWithId(resource, data.id);
+      const ref = refWithId(resource, newResource.id);
 
       if (options?.preProcess) {
-        data = await options.preProcess(ctx, data, origBody, ref);
+        newResource = await options.preProcess(ctx, newResource, origBody, ref);
       }
 
       // don't let the API override createdAt
       if (obj.createdAt) {
-        data.createdAt = obj.createdAt;
+        newResource.createdAt = obj.createdAt;
       }
 
-      const filename = await writeResource(ref, data);
-      if (filename !== undefined && options?.postProcess) {
-        data = await options.postProcess(ctx, data, ref);
+      const result = await writeResource(ref, newResource);
+      if (typeof result === "undefined") {
+        logger.error(`PUT failed write for ${resource.singular}:`, newResource);
+        ctx.status = 500;
+        ctx.body = {
+          status: "error",
+          message: `Failed writeResource for ${resource.singular}`,
+        };
+        return;
       }
 
+      [newResource] = result;
+      const [_, filename] = result;
       log(
         `PUT written to ${filename} ${resource.singular}:`,
-        shallowJson(data),
+        shallowJson(newResource),
       );
-      ctx.body = data;
+      if (options?.postProcess) {
+        newResource = await options.postProcess(ctx, newResource, ref);
+      }
+      ctx.body = newResource;
 
-      await next();
+      return await next();
     },
   );
 }
@@ -517,7 +545,7 @@ export function patchResource<T extends IdResource>(
     `/${resource_url}`,
     async (ctx: Context, next: Next) => {
       const origBody = cloneDeep(ctx.request.body);
-      let data = ctx.request.body;
+      let newResource = ctx.request.body;
 
       // get the existing resource
       const obj = ctx.state[resource.singular];
@@ -525,37 +553,51 @@ export function patchResource<T extends IdResource>(
 
       // Make sure the id of the resource matches
       const id = ctx.params[resource.paramName];
-      if (data.id !== undefined) {
-        assert(data.id === id);
+      if (newResource.id !== undefined) {
+        assert(newResource.id === id);
       } else {
-        data.id = id;
+        newResource.id = id;
       }
 
       // Update the existing object with new fields
-      data = merge(obj, data);
+      newResource = merge(obj, newResource);
 
-      const ref = refWithId(resource, data.id);
+      const ref = refWithId(resource, newResource.id);
       if (options?.preProcess) {
-        data = await options.preProcess(ctx, data, origBody, ref);
+        newResource = await options.preProcess(ctx, newResource, origBody, ref);
       }
 
       // don't let the API override createdAt
       if (obj.createdAt) {
-        data.createdAt = obj.createdAt;
+        newResource.createdAt = obj.createdAt;
       }
 
-      const filename = await writeResource(ref, data);
-      if (filename !== undefined && options?.postProcess) {
-        data = await options.postProcess(ctx, data, ref);
+      const result = await writeResource(ref, newResource);
+      if (typeof result === "undefined") {
+        logger.error(
+          `PATCH failed write for ${resource.singular}:`,
+          newResource,
+        );
+        ctx.status = 500;
+        ctx.body = {
+          status: "error",
+          message: `Failed writeResource for ${resource.singular}`,
+        };
+        return;
       }
 
+      [newResource] = result;
+      const [_, filename] = result;
       log(
         `PATCH written to ${filename} ${resource.singular}:`,
-        shallowJson(data),
+        shallowJson(newResource),
       );
-      ctx.body = data;
+      if (options?.postProcess) {
+        newResource = await options.postProcess(ctx, newResource, ref);
+      }
+      ctx.body = newResource;
 
-      await next();
+      return await next();
     },
   );
 }

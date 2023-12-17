@@ -151,7 +151,7 @@ export async function getOrAddRubricScore(
       rubricScore.courseId = course.id;
       rubricScore.courseName = course.name;
       rubricScore.name = `${rubric.name} for ${student.name} in ${course.name}`;
-      log("Updating rubric score");
+      log(`Updating ${student.name}'s rubric score for ${rubric.name}.`);
       return updateRubricScore(rubricScore, rubric);
     }
     return rubricScore;
