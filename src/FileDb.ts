@@ -223,6 +223,9 @@ async function gitCommit() {
     log(`execFile stderr:\n${stderr}`);
     // log('DONE committing to git.');
   } catch (err) {
+    const error = err as Error & { stdout: string; stderr: string };
+    log(`execFile stdout:\n${error.stdout}`);
+    log(`execFile stderr:\n${error.stderr}`);
     logger.error("Error using git", err);
   }
 }
