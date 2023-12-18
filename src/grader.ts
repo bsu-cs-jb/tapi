@@ -116,8 +116,8 @@ async function fetchGrades(
         const updated = updateRubricScore(s, rubric);
         // TODO: this isEqual does not work
         if (!_.isEqual(s, updated)) {
-        // Old-school solution works fine
-        // if (toJson(s, 0) !== toJson(updated, 0)) {
+          // Old-school solution works fine
+          // if (toJson(s, 0) !== toJson(updated, 0)) {
           if (toJson(s, 0) === toJson(updated, 0)) {
             log(
               `**************** grader.ts: _.isEqual() returned false but they are equal ******************`,

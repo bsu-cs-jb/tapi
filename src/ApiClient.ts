@@ -4,7 +4,7 @@ import { fromJson, toJson, base64 } from "./utils.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
 
-class FetchError extends Error {
+export class FetchError extends Error {
   description: string;
   cause?: Error;
   status?: number;
@@ -65,7 +65,7 @@ export async function doFetch<T>(
     headersObj = clone(options.headers);
   }
   let body: string | undefined;
-  if (options && "body" in options) {
+  if (options && "body" in options && options.body !== undefined) {
     if (typeof options.body === "string") {
       body = options.body;
     } else {

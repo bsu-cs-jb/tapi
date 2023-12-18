@@ -67,8 +67,8 @@ export function fromJson<T>(buffer: string): T {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function toJson(data: any, indent: number = 2): string {
-  return stringify(data, jsonResolver, indent) ?? "";
+export function toJson(data: any, indent: number = 2): string | undefined {
+  return stringify(data, jsonResolver, indent);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,8 +76,11 @@ export function jsonhtml(data: any): string {
   return `<pre>${toJson(data)}</pre>`;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function shallowJson(data: Record<string, any>, indent = 2): string {
+export function shallowJson(
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  data: Record<string, any>,
+  indent = 2,
+): string | undefined {
   const flatObj = Object.fromEntries(
     Object.entries(data).map(([k, v]) => {
       const rep = Array.isArray(v) ? `[Array length=${v.length}]` : v;

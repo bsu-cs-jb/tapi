@@ -52,7 +52,7 @@ export interface ResourceDef<T extends IdResource> {
 }
 
 function jsonToBuffer(data: object): Uint8Array {
-  return new Uint8Array(Buffer.from(toJson(data)));
+  return new Uint8Array(Buffer.from(toJson(data) || ""));
 }
 
 async function dirExists(dirpath: string): Promise<boolean> {

@@ -319,7 +319,7 @@ function reqLogger() {
       logObj.message += `Session '${session.name}'`;
     }
     if (ctx.request.body) {
-      logObj.message = toJson(ctx.request.body);
+      logObj.message = toJson(ctx.request.body) || "undefined";
     } else {
       logObj.message = "<no body>";
     }

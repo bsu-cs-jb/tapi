@@ -6,6 +6,7 @@ import * as _ from "lodash-es";
 import { faker } from "@faker-js/faker";
 
 import { AuthDb } from "../AuthDb.js";
+import { FetchError } from "../ApiClient.js";
 import { IndecisiveClient, makeIndecisiveClient } from "../IndecisiveClient.js";
 import { UserDb, makeUserDb } from "../IndecisiveTypes.js";
 import { readFileAsJson } from "../FileDb.js";
@@ -232,9 +233,14 @@ async function grading(_args: string[]) {
 
   info(`Deleting grading session if it exists: ${GRADING_SESSION}`);
   try {
-    await client.deleteSession(GRADING_SESSION);
-  } catch (error) {
-    // ignore
+    const result = await client.deleteSession(GRADING_SESSION);
+    info(`Deleted existing grading session.`, { result });
+  } catch (e) {
+    // ignore 404s
+    const err = e as FetchError;
+    if (err.status !== 404) {
+      error(`Failed deleting grading session ${error}`, err);
+    }
   }
 
   info(`Creating grading session: ${GRADING_SESSION}`);

@@ -273,7 +273,7 @@ export class IndecisiveClient {
       headers?: Record<string, string>;
     },
   ): Promise<object> {
-    const result = await this.doFetch<Session>(
+    const result = await this.doFetch<object>(
       "DELETE",
       `${PATH_ROOT}/sessions/${sessionId}`,
       undefined,
