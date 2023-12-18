@@ -100,7 +100,7 @@ async function makeP3a(saveInDb: boolean = true) {
     "All interactive elements have a reaction when the user taps on them (use Button, Touchable, or properly implemented Pressable)",
     "Interactive elements that are disabled have a different appearance and do not react when the user taps on them.",
     "Popups or dialogs are rendered properly.",
-    "UI elements remain visible even if the suggestion or friends name is long.",
+    "UI elements remain visible even if the suggestion or user's name is long.",
   ]);
 
   const accepting = mkCategory("Accepting", [
@@ -124,7 +124,7 @@ async function makeP3a(saveInDb: boolean = true) {
     `Displays all invited users in a scrolling view (ScrollView or FlatList)`,
     `Displays invited users who have not yet accepted the invitation with a different (e.g. grayed out) appearance. These users have not indicated if they are attending or not and their attending status should either not be shown at all or shown distinct from other status.`,
     `For users that have accepted the invitation, the app displays whether they are planning to attend the event or not or if they are undecided.`,
-    `Has a button to let a user invite a friend which prompts the user for their friends name.`,
+    `Has a button to let a user invite a friend which prompts the user for another user's name (or id).`,
     `Calls the inviteUser method and the display updates after the new user is added.`,
   ]);
 

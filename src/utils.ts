@@ -1,6 +1,12 @@
 import { Buffer } from "buffer";
 import nodeAssert from "node:assert/strict";
 
+import { configure } from "safe-stable-stringify";
+
+const stringify = configure({
+  deterministic: true,
+});
+
 export function makeId(name: string): string {
   let id = name.toLowerCase();
   id = id.replace(/[^a-zA-Z0-9]/g, "-");
@@ -62,7 +68,7 @@ export function fromJson<T>(buffer: string): T {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function toJson(data: any, indent: number = 2): string {
-  return JSON.stringify(data, jsonResolver, indent);
+  return stringify(data, jsonResolver, indent) ?? "";
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

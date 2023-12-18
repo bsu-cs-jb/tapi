@@ -3,7 +3,7 @@ import { Context, Next } from "koa";
 import * as _ from "lodash-es";
 import { standardDeviation, quantile, median } from "simple-statistics";
 
-import { jsonhtml } from "./utils.js";
+import { jsonhtml, toJson } from "./utils.js";
 import { log } from "./logging.js";
 import {
   readResource,
@@ -115,9 +115,14 @@ async function fetchGrades(
       .map(async (s) => {
         const updated = updateRubricScore(s, rubric);
         // TODO: this isEqual does not work
-        // if (!isEqual(s, updated)) {
+        if (!_.isEqual(s, updated)) {
         // Old-school solution works fine
-        if (JSON.stringify(s) !== JSON.stringify(updated)) {
+        // if (toJson(s, 0) !== toJson(updated, 0)) {
+          if (toJson(s, 0) === toJson(updated, 0)) {
+            log(
+              `**************** grader.ts: _.isEqual() returned false but they are equal ******************`,
+            );
+          }
           log(`Needs updated: ${s.name}`);
           await writeResource(refWithId(GRADE, updated.id), updated);
         }

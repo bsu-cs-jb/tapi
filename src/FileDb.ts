@@ -289,6 +289,8 @@ export async function writeResource<T extends IdResource>(
   if (await resourceExists(resource)) {
     const existing = await readResource<T>(resource);
     if (existing) {
+      // if already exists, pull createdAt from existing
+      data.createdAt = existing.createdAt;
       const existingComparable = _.omit(existing, SKIP_COMPARE_FIELDS);
       const comparableData = _.omit(data, SKIP_COMPARE_FIELDS);
       if (_.isEqual(existingComparable, comparableData)) {
@@ -296,9 +298,9 @@ export async function writeResource<T extends IdResource>(
           `writeResource(${resource.singular} ${resource.id}) identical, skipping update to ${filename}.`,
         );
         return [existing, filename];
-      } else if (JSON.stringify(existing) === JSON.stringify(comparableData)) {
+      } else if (toJson(existing, 0) === toJson(comparableData, 0)) {
         log(
-          `**************** _.isEqual() returned false but they are equal ******************`,
+          `**************** FileDb.ts _.isEqual() returned false but they are equal ******************`,
         );
         log(
           `writeResource(${resource.singular} ${resource.id}) identical, skipping update to ${filename}.`,
