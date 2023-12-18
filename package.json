@@ -1,6 +1,6 @@
 {
   "name": "cs-411-server",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -11,8 +11,9 @@
     "pull:grader": "cd ./grader; git pull",
     "update:grader": "yarn pull:grader; yarn install:grader; yarn build:grader;",
     "build": "tsc",
-    "upgrade-grading": "yarn upgrade grading; cd node_modules/grading; yarn; yarn build",
-    "link-grading": "rm -rf ./node_modules/grading; ln -s $HOME/work/cs411/grading ./node_modules/grading",
+    "upgrade:grading": "yarn upgrade grading; yarn build:grading",
+    "build:grading": "cd node_modules/grading; yarn; yarn build",
+    "link:grading": "rm -rf ./node_modules/grading; ln -s $HOME/work/cs411/grading ./node_modules/grading",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src",
     "setup:api": "yarn build; yarn node ./dist/scripts/setup-api.js",
@@ -23,6 +24,7 @@
     "preserve": "yarn build",
     "serve:watch": "tsc-watch --onSuccess 'node ./dist/index.js'",
     "serve": "node dist/index.js",
+    "push:db": "cd ./cs411-db; git push; cd ../; git add cs411-db; git ci -m 'Update db submodule.'; git push",
     "start": "yarn serve:watch"
   },
   "prettier": {
