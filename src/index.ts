@@ -1,17 +1,20 @@
 import sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
+
 import Koa, { Context, Next } from "koa";
 import Router from "@koa/router";
 import cors from "@koa/cors";
 import { bodyParser } from "@koa/bodyparser";
 
 import ratelimit from "koa-ratelimit";
+import serve from "koa-static";
+import mount from "koa-mount";
+
+import OAuth2Server from "oauth2-server";
 
 import { SimpleModel } from "./oauth2/SimpleModel.js";
 import { FileModel } from "./oauth2/FileModel.js";
 import { authenticate, token } from "./oauth2/koa.js";
-
-import OAuth2Server from "oauth2-server";
 
 const fileAuth = true;
 
@@ -81,6 +84,9 @@ app.use(
     whitelist: ratelimitWhitelist,
   }),
 );
+
+// Another option during development would be koa-proxy
+app.use(mount("/app", serve("./grader/build")));
 
 router.use("/admin", authenticate("admin"));
 router.use("/test", authenticate("read"));

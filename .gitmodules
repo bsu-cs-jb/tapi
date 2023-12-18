@@ -1,3 +1,6 @@
 [submodule "cs411-db"]
 	path = cs411-db
 	url = git@github.com:bsu-cs-jb/cs411-db.git
+[submodule "grader"]
+	path = grader
+	url = git@github.com:bsu-cs-jb/grader.git
