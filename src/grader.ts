@@ -6,11 +6,11 @@ import { standardDeviation, quantile, median } from "simple-statistics";
 import { jsonhtml, toJson } from "./utils.js";
 import { log } from "./logging.js";
 import {
+  IdResource,
   readResource,
   refWithId,
   ResourceDef,
   writeResource,
-  IdResource,
 } from "./FileDb.js";
 import {
   getCollection,
@@ -117,14 +117,17 @@ async function fetchGrades(
         // TODO: this isEqual does not work
         if (!_.isEqual(s, updated)) {
           // Old-school solution works fine
-          // if (toJson(s, 0) !== toJson(updated, 0)) {
           if (toJson(s, 0) === toJson(updated, 0)) {
+            // TODO: This causes multiple writes to bash each other
+            // await writeJsonToFile("./origScore.json", s);
+            // await writeJsonToFile("./updatedScore.json", updated);
             log(
               `**************** grader.ts: _.isEqual() returned false but they are equal ******************`,
             );
+          } else {
+            log(`Needs updated: ${s.name}`);
+            await writeResource(refWithId(GRADE, updated.id), updated);
           }
-          log(`Needs updated: ${s.name}`);
-          await writeResource(refWithId(GRADE, updated.id), updated);
         }
         return updated;
       }),
