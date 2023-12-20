@@ -15,7 +15,7 @@ import * as _ from "lodash-es";
 
 import { config } from "./config.js";
 import { log, logger } from "./logging.js";
-import { toJson, fromJson } from "./utils.js";
+import { toJson, fromJson } from "./utils/json.js";
 
 const execFileP = util.promisify(execFile);
 

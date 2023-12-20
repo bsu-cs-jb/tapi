@@ -1,5 +1,5 @@
 import { createHmac } from "crypto";
-import { toJson } from "./utils.js";
+import { toJson } from "./utils/json.js";
 
 const { HASH_SECRET } = process.env;
 

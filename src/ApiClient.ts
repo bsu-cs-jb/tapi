@@ -1,6 +1,7 @@
 import { clone } from "lodash-es";
 
-import { fromJson, toJson, base64 } from "./utils.js";
+import { base64 } from "./utils.js";
+import { fromJson, toJson } from "./utils/json.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { log } from "./logging.js";
 

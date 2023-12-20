@@ -3,7 +3,8 @@ import { Context, Next } from "koa";
 import { merge, cloneDeep, sortBy, capitalize } from "lodash-es";
 
 import { urlid } from "./genid.js";
-import { jsonhtml, shallowJson, assert } from "./utils.js";
+import { assert } from "./utils.js";
+import { jsonhtml, shallowJson } from "./utils/json.js";
 import { log, logger } from "./logging.js";
 import {
   deleteResourceDb,

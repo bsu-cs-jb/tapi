@@ -4,7 +4,7 @@ import TransportStream from "winston-transport";
 import * as _ from "lodash-es";
 
 import { config } from "../config.js";
-import { toJson } from "../utils.js";
+import { toJson } from "../utils/json.js";
 
 function consolePrintf(info: Record<string, string>): string {
   const SKIP = ["level", "message", "timestamp"];
