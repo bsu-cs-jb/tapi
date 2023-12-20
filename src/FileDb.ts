@@ -220,13 +220,21 @@ async function gitCommit() {
   }
   try {
     const { stdout, stderr } = await execFileP(config.DB_GIT_COMMIT_SCRIPT);
-    log(`execFile stdout:\n${stdout}`);
-    log(`execFile stderr:\n${stderr}`);
+    if (stdout) {
+      log(`execFile stdout:\n${stdout}`);
+    }
+    if (stderr) {
+      log(`execFile stderr:\n${stderr}`);
+    }
     // log('DONE committing to git.');
   } catch (err) {
     const error = err as Error & { stdout: string; stderr: string };
-    log(`execFile stdout:\n${error.stdout}`);
-    log(`execFile stderr:\n${error.stderr}`);
+    if (error.stdout) {
+      log(`execFile stdout:\n${error.stdout}`);
+    }
+    if (error.stderr) {
+      log(`execFile stderr:\n${error.stderr}`);
+    }
     logger.error("Error using git", err);
   }
 }

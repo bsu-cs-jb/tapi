@@ -41,7 +41,7 @@ import {
   updateRubricScore,
   validateRubric,
 } from "grading";
-import { closeTo } from "./utils/numbers.js";
+// import { closeTo } from "./utils/numbers.js";
 
 const COURSE: ResourceDef<CourseDbObj> = {
   database: "grading",

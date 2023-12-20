@@ -34,6 +34,7 @@ function routeLog<T extends IdResource>(
   name: string,
   url: string,
 ) {
+  // Disable logging since IDK how to do it easier
   if (url === "DISABLED") {
     log(
       `${method.padEnd(4)} route for ${type.padEnd(

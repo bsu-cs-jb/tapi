@@ -260,6 +260,9 @@ export function authSessionOwner(paths: PathDef[]) {
         await next();
         return;
       } else if (self.id !== session.ownerId) {
+        log(
+          `authSessionOwner(${ctx.method}, ${ctx._matchedRoute}, ${ctx.path})`,
+        );
         const message = `User '${self.id}' cannot perform this operation on session '${session.id}' because they are not the owner (name: ${session.name}).`;
         logger.error(message);
         ctx.status = 403;

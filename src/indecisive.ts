@@ -422,30 +422,6 @@ export function indecisiveRoutes(router: Router) {
     postProcess: postCreateSession,
   });
 
-  const sessionOwnerRoutes = new Router();
-  routerParam(sessionOwnerRoutes, SESSION);
-  sessionOwnerRoutes.use(
-    ["/sessions/:sessionId"],
-    authSessionOwner([
-      {
-        method: "DELETE",
-        endsWith: "/sessions/:sessionId",
-      },
-      {
-        method: "PUT",
-        endsWith: "/sessions/:sessionId",
-      },
-      {
-        method: "PATCH",
-        endsWith: "/sessions/:sessionId",
-      },
-    ]),
-  );
-  // Put to session updates session (if owned by me)
-  putResource(sessionOwnerRoutes, SESSION, {
-    preProcess: ppSessionToDb,
-  });
-
   const sessionOwnerInviteRoutes = new Router();
   routerParam(sessionOwnerInviteRoutes, SESSION);
   sessionOwnerInviteRoutes.use(
@@ -454,7 +430,7 @@ export function indecisiveRoutes(router: Router) {
       "/sessions/:sessionId/invite",
       "/sessions/:sessionId/respond",
       "/sessions/:sessionId/suggest",
-      "/sessions/:sessionId/vote/:voteId",
+      "/sessions/:sessionId/vote/:suggestionId",
     ],
     authOwnerInvite([
       {
@@ -475,7 +451,7 @@ export function indecisiveRoutes(router: Router) {
       },
       {
         method: "POST",
-        endsWith: "/sessions/:sessionId/vote/:voteId",
+        endsWith: "/sessions/:sessionId/vote/:suggestionId",
       },
     ]),
   );
@@ -733,13 +709,14 @@ export function indecisiveRoutes(router: Router) {
   }
 
   sessionOwnerInviteRoutes.post(
-    "suggestion-vote",
+    "suggestion-vote-post",
     "/sessions/:sessionId/vote/:suggestionId",
     handleVote(),
   );
 
+  // TODO: This is blocked by owner authorization on the sessions route
   sessionOwnerInviteRoutes.put(
-    "suggestion-vote",
+    "suggestion-vote-put",
     "/sessions/:sessionId/vote/:suggestionId",
     handleVote(),
   );
@@ -776,6 +753,31 @@ export function indecisiveRoutes(router: Router) {
 
   router.use(sessionOwnerInviteRoutes.routes());
   router.use(sessionOwnerInviteRoutes.allowedMethods());
+
+  const sessionOwnerRoutes = new Router();
+  routerParam(sessionOwnerRoutes, SESSION);
+  sessionOwnerRoutes.use(
+    ["/sessions/:sessionId"],
+    authSessionOwner([
+      {
+        method: "DELETE",
+        endsWith: "/sessions/:sessionId",
+      },
+      {
+        method: "PUT",
+        endsWith: "/sessions/:sessionId",
+      },
+      {
+        method: "PATCH",
+        endsWith: "/sessions/:sessionId",
+      },
+    ]),
+  );
+
+  // Put to session updates session (if owned by me)
+  putResource(sessionOwnerRoutes, SESSION, {
+    preProcess: ppSessionToDb,
+  });
 
   deleteResource(sessionOwnerRoutes, SESSION, {
     postProcess: postDeleteSession,
