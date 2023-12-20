@@ -16,68 +16,9 @@ import * as _ from "lodash-es";
 import { config } from "./config.js";
 import { log, logger } from "./utils/logging.js";
 import { toJson, fromJson } from "./utils/json.js";
+import { mutex } from "./utils/asynch.js";
 
 const execFileP = util.promisify(execFile);
-
-const namedMutex: Record<string, number> = {
-  global: 0,
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type MutexResult<T> = [T, boolean];
-type AttemptResult<T> = [T, true] | [undefined, false];
-
-/**
- * Usage:
- *
- * const session:Session = { ... };
- * const result = await mutex<Session>(`file:${filename}`,
- *   async (): Promise<Session> => {
- *     return await writeFile<Session>(filename, data);
- * });
- * const session:Session = { };
- * const result = await mutex<Session>(`file:${filename}`,
- *   async (): Promise<Session> => {
- *     const buffer = jsonToBuffer(session);
- *     await writeFile(filename, buffer);
- *     return session;
- * });
- * console.log(`Wrote to ${filename}:`, result);
- */
-export async function mutex<T>(
-  name: string,
-  method: () => Promise<T>,
-  timeout: number = 5000,
-): Promise<MutexResult<T>> {
-  const attempt = async (): Promise<AttemptResult<T>> => {
-    // try to get a lock (>=)
-    if (namedMutex[name] >= 0) {
-      // if locks are available
-      namedMutex[name] -= 1;
-      // then do the action
-      const result = await method();
-      // release the lock
-      namedMutex[name] += 1;
-      // and return success
-      return [result, true];
-    } else {
-      return [undefined, false];
-    }
-  };
-  const startTime = Date.now();
-  let curTime = startTime;
-
-  do {
-    const result = await attempt();
-    if (result[1]) {
-      return result;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    curTime = Date.now();
-  } while (curTime < startTime + timeout);
-
-  throw new Error(`Failed to get mutex for '${name} after ${timeout} ms.`);
-}
 
 export interface IdResource {
   id: string;
@@ -318,9 +259,11 @@ export async function writeJsonToFile<T extends object>(
   filename: string,
   data: T,
 ): Promise<T> {
-  // TODO: Use mutex here to avoid simultaneous writes.
   const buffer = jsonToBuffer(data);
-  await writeFile(filename, buffer);
+  // Use mutex here to avoid simultaneous writes.
+  await mutex(filename, async () => {
+    await writeFile(filename, buffer);
+  });
   return data;
 }
 
