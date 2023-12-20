@@ -10,6 +10,7 @@ import {
   readResource,
   refWithId,
   ResourceDef,
+  writeJsonToFile,
   writeResource,
 } from "./FileDb.js";
 import {
@@ -40,6 +41,7 @@ import {
   updateRubricScore,
   validateRubric,
 } from "grading";
+import { closeTo } from "./utils/numbers.js";
 
 const COURSE: ResourceDef<CourseDbObj> = {
   database: "grading",
@@ -93,6 +95,13 @@ async function fetchGrades(
 ): Promise<RubricScore[]> {
   const cachedFetchStudent = _.memoize(fetchStudent);
 
+  const SKIP_COMPARE_FIELDS = [
+    "createdAt",
+    "updatedAt",
+    // "computedScore",
+    // "categories",
+  ];
+
   const gradeRefs = course.grades.filter(
     (grade) => grade.rubricId === rubric.id,
   );
@@ -111,21 +120,49 @@ async function fetchGrades(
         }),
       )
     )
-      .filter((s): s is RubricScore => s !== undefined)
-      .map(async (s) => {
-        const updated = updateRubricScore(s, rubric);
+      .filter((score): score is RubricScore => score !== undefined)
+      .map(async (score) => {
+        const updated = updateRubricScore(score, rubric);
+        scoreRubric(rubric, score);
+        // const customizer = (
+        //   value: any,
+        //   other: any,
+        //   key: unknown,
+        // ): true | false | undefined => {
+        //   log(`Comparing ${key}`);
+        //   if (key === "computedScore") {
+        //     log("computedScore is equal");
+        //     return true;
+        //     if (typeof value === "object") {
+        //       console.log("computedScore is equal");
+        //       return true;
+        //     } else {
+        //       return undefined;
+        //     }
+        //   } else if (typeof value == "number" && typeof other == "number") {
+        //     log("float");
+        //     return closeTo(value, other);
+        //   } else {
+        //     return undefined;
+        //   }
+        // };
         // TODO: this isEqual does not work
-        if (!_.isEqual(s, updated)) {
+        if (
+          !_.isEqual(
+            _.cloneDeep(_.omit(score, SKIP_COMPARE_FIELDS)),
+            _.cloneDeep(_.omit(updated, SKIP_COMPARE_FIELDS)),
+          )
+        ) {
           // Old-school solution works fine
-          if (toJson(s, 0) === toJson(updated, 0)) {
+          if (toJson(score, 0) === toJson(updated, 0)) {
             // TODO: This causes multiple writes to bash each other
-            // await writeJsonToFile("./origScore.json", s);
-            // await writeJsonToFile("./updatedScore.json", updated);
+            await writeJsonToFile("./origScore.json", score);
+            await writeJsonToFile("./updatedScore.json", updated);
             log(
               `**************** grader.ts: _.isEqual() returned false but they are equal ******************`,
             );
           } else {
-            log(`Needs updated: ${s.name}`);
+            log(`Needs updated: ${score.name}`);
             await writeResource(refWithId(GRADE, updated.id), updated);
           }
         }
