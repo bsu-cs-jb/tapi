@@ -1,4 +1,4 @@
-import { genid } from "./genid.js";
+import { urlid } from "./utils/genid.js";
 import { AllOptional, cycle } from "./utils.js";
 import { IdResource } from "./FileDb.js";
 
@@ -61,7 +61,7 @@ export interface Session extends IdResource {
 
 export function makeUser(props?: AllOptional<User>): User {
   return {
-    id: genid(),
+    id: urlid(),
     name: "Unnamed",
     ...props,
   };
@@ -69,7 +69,7 @@ export function makeUser(props?: AllOptional<User>): User {
 
 export function makeSuggestion(props?: AllOptional<Suggestion>): Suggestion {
   return {
-    id: genid(),
+    id: urlid(),
     name: "Unnamed",
     upVoteUserIds: [],
     downVoteUserIds: [],
@@ -80,7 +80,7 @@ export function makeSuggestion(props?: AllOptional<Suggestion>): Suggestion {
 export function makeInvitation(props?: AllOptional<Invitation>): Invitation {
   return {
     user: {
-      id: genid(),
+      id: urlid(),
       name: "Unnamed",
     },
     accepted: false,
@@ -91,9 +91,9 @@ export function makeInvitation(props?: AllOptional<Invitation>): Invitation {
 
 export function makeSession(props?: AllOptional<Session>): Session {
   return {
-    id: genid(),
+    id: urlid(),
     owner: {
-      id: genid(),
+      id: urlid(),
       name: "Unnamed",
     },
     description: "empty",

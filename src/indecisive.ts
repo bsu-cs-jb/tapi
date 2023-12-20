@@ -42,7 +42,7 @@ import {
 } from "./indecisive_rn_types.js";
 import { assert, removeId } from "./utils.js";
 import { toJson } from "./utils/json.js";
-import { log, logger, requestLogger } from "./logging.js";
+import { log, logger, requestLogger } from "./utils/logging.js";
 import { config } from "./config.js";
 
 function fetchCurrentSession(errorIfMissing: boolean = true) {

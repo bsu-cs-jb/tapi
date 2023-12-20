@@ -2,10 +2,10 @@ import Router from "@koa/router";
 import { Context, Next } from "koa";
 import { merge, cloneDeep, sortBy, capitalize } from "lodash-es";
 
-import { urlid } from "./genid.js";
+import { urlid } from "./utils/genid.js";
 import { assert } from "./utils.js";
 import { jsonhtml, shallowJson } from "./utils/json.js";
-import { log, logger } from "./logging.js";
+import { log, logger } from "./utils/logging.js";
 import {
   deleteResourceDb,
   getAll,

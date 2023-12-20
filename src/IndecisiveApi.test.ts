@@ -15,8 +15,8 @@ import { IndecisiveClient, makeIndecisiveClient } from "./IndecisiveClient.js";
 import { sendData } from "./ApiClient.js";
 
 import { base64 } from "./utils.js";
-
 import { config } from "./config.js";
+
 const SERVER = config.TEST_SERVER;
 
 const CLIENT_ID = config.TEST_USER1_ID;

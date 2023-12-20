@@ -1,7 +1,7 @@
 import { AuthDb } from "./AuthDb.js";
 import { sendData } from "./ApiClient.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { log } from "./logging.js";
+import { log } from "./utils/logging.js";
 
 const AUTH_ROOT = "/auth";
 

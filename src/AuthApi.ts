@@ -12,8 +12,8 @@ import {
   routerParam,
 } from "./RestAPI.js";
 import { AuthDb, CLIENT, immediatePurgeTokens, TOKEN } from "./AuthDb.js";
-import { log } from "./logging.js";
-import { hash } from "./hash.js";
+import { log } from "./utils/logging.js";
+import { hash } from "./utils/hash.js";
 
 async function preUpdateClient(
   ctx: Context,

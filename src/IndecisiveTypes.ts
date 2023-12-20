@@ -10,7 +10,7 @@ import {
   Suggestion,
 } from "./indecisive_rn_types.js";
 import { assert, AllOptional, removeId } from "./utils.js";
-import { urlid } from "./genid.js";
+import { urlid } from "./utils/genid.js";
 
 export interface UserInvitationDb {
   sessionId: string;

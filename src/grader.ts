@@ -4,7 +4,7 @@ import * as _ from "lodash-es";
 import { standardDeviation, quantile, median } from "simple-statistics";
 
 import { jsonhtml, toJson } from "./utils/json.js";
-import { log } from "./logging.js";
+import { log } from "./utils/logging.js";
 import {
   IdResource,
   readResource,

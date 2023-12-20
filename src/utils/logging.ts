@@ -2,8 +2,8 @@ import { createLogger, format, transports } from "winston";
 import "winston-daily-rotate-file";
 import TransportStream from "winston-transport";
 
-import { config } from "./config.js";
-import { toJson } from "./utils/json.js";
+import { config } from "../config.js";
+import { toJson } from "./json.js";
 
 const loggingTransports: TransportStream[] = [
   new transports.Console({

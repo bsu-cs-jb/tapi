@@ -1,4 +1,3 @@
-
 import { configure } from "safe-stable-stringify";
 
 const stringify = configure({
@@ -54,4 +53,3 @@ export function shallowJson(
   );
   return toJson(flatObj, indent);
 }
-

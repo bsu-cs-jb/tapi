@@ -20,7 +20,7 @@ import {
   Vote,
 } from "../indecisive_rn_types.js";
 
-const SERVER = config.TEST_SERVER;
+const SERVER = config.SETUP_SERVER;
 
 interface UserDef {
   id: string;
@@ -393,7 +393,7 @@ async function gradingInvites() {
 
 async function main(args: string[]) {
   info(`Args: ${args.join(", ")}`);
-  info(`SERVER: ${config.TEST_SERVER}`);
+  info(`SERVER: ${config.SETUP_SERVER}`);
 
   const argsCopy = _.clone(args);
 
@@ -430,7 +430,7 @@ async function main(args: string[]) {
     }
   }
 
-  info(`Finished running ${config.TEST_SERVER} ${args.join(", ")}`);
+  info(`Finished running ${config.SETUP_SERVER} ${args.join(", ")}`);
 }
 
 main(process.argv.slice(2))

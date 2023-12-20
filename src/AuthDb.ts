@@ -9,7 +9,7 @@ import {
   writeResource,
 } from "./FileDb.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { log } from "./logging.js";
+import { log } from "./utils/logging.js";
 import { config } from "./config.js";
 
 export interface FileModelToken extends Token {

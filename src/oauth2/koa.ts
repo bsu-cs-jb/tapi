@@ -1,7 +1,7 @@
 import { Context, Next } from "koa";
 import { Request, Response, OAuthError, Token } from "oauth2-server";
 import { cloneDeep } from "lodash-es";
-import { log, logger, requestLogger } from "../logging.js";
+import { log, logger, requestLogger } from "../utils/logging.js";
 import { canViewSession } from "../IndecisiveTypes.js";
 
 export interface PathDefBase {

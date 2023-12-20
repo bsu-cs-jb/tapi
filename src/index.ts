@@ -30,7 +30,7 @@ import { authRoutes } from "./AuthApi.js";
 
 import { config } from "./config.js";
 import { jsonhtml } from "./utils/json.js";
-import { log } from "./logging.js";
+import { log } from "./utils/logging.js";
 import { getCat, allCats } from "./db.js";
 
 const app = new Koa();

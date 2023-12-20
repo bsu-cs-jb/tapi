@@ -22,11 +22,13 @@ interface Config extends BaseConfig {
   LOG_TO_FILE: boolean;
   ADMIN_ID: string;
   ADMIN_SECRET: string;
+  SETUP_SERVER: string;
   GRADER_ID: string;
   GRADER_SECRET: string;
   RATELIMIT_SECRET: string;
   RATELIMIT_DURATION: number;
   RATELIMIT_MAX: number;
+
   TEST_SERVER: string;
   TEST_USER1_ID: string;
   TEST_USER1_SECRET: string;
@@ -119,6 +121,10 @@ class ConfigImpl extends BaseConfigImpl {
 
   public get TEST_USER2_SECRET(): string {
     return getConfig("TEST_USER2_SECRET", "");
+  }
+
+  public get SETUP_SERVER(): string {
+    return getConfig("SETUP_SERVER", "http://localhost:3000");
   }
 
   public get TEST_SERVER(): string {

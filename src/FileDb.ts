@@ -14,7 +14,7 @@ import { execFile } from "node:child_process";
 import * as _ from "lodash-es";
 
 import { config } from "./config.js";
-import { log, logger } from "./logging.js";
+import { log, logger } from "./utils/logging.js";
 import { toJson, fromJson } from "./utils/json.js";
 
 const execFileP = util.promisify(execFile);

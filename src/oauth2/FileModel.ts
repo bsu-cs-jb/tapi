@@ -17,8 +17,8 @@ import {
   writeToken,
 } from "../AuthDb.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { log } from "../logging.js";
-import { hash } from "../hash.js";
+import { log } from "../utils/logging.js";
+import { hash } from "../utils/hash.js";
 import { config } from "../config.js";
 
 function toScopeArray(scope: string | string[] | undefined): string[] {

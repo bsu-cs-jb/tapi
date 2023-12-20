@@ -3,7 +3,7 @@ import { clone } from "lodash-es";
 import { base64 } from "./utils.js";
 import { fromJson, toJson } from "./utils/json.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { log } from "./logging.js";
+import { log } from "./utils/logging.js";
 
 export class FetchError extends Error {
   description: string;
