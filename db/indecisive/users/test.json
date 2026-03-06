@@ -1,10 +1,17 @@
 {
   "id": "test",
   "name": "Test User",
-  "ownsSessions": [],
-  "invitedSessions": [
-    "F0do6JsHtw"
+  "ownsSessions": [
+    "BqtDKDoUEY",
+    "Ets2NcFP_A",
+    "CKzo3lP-cY",
+    "EPumLxlrVA",
+    "Em1Ssp8vMQ",
+    "DUR84cTcL4"
   ],
-  "updatedAt": "2023-12-11T15:05:13.287Z",
+  "invitedSessions": [
+    "CKzo3lP-cY"
+  ],
+  "updatedAt": "2023-12-13T19:34:20.679Z",
   "createdAt": "2023-12-11T15:02:39.358Z"
 }
