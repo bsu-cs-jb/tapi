@@ -7,7 +7,7 @@
     ]
   },
   "user": {
-    "currentSessionId": "F0do6JsHtw",
+    "currentSessionId": "FhmzKh_kDQ",
     "scopes": [
       "read",
       "write"
@@ -16,6 +16,6 @@
   },
   "id": "test",
   "name": "Auth for test",
-  "updatedAt": "2023-12-11T15:05:28.841Z",
+  "updatedAt": "2023-12-12T04:00:21.376Z",
   "createdAt": "2023-12-11T15:01:41.827Z"
 }

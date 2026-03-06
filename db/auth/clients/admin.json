@@ -1,14 +1,14 @@
 {
-  "name": "Auth for admin",
-  "secret": "2P5StpyHhsMcWIgCUkIQTi-uzf6gilrAe2QOMY9-AJE",
+  "name": "Admin",
+  "secret": "L2Q_2S6-VpwsZ3gnf0k7cNn1Qm5uZ9PXoXs4CmH-NLA",
   "client": {
-    "id": "admin",
     "grants": [
       "client_credentials"
-    ]
+    ],
+    "id": "admin"
   },
   "user": {
-    "currentSessionId": "FhmzKh_kDQ",
+    "currentSessionId": "cs411-final",
     "scopes": [
       "read",
       "write",
@@ -16,7 +16,7 @@
     ],
     "userId": "admin"
   },
-  "id": "admin",
-  "updatedAt": "2023-12-10T21:18:06.158Z",
-  "createdAt": "2023-12-10T21:07:54.069Z"
+  "updatedAt": "2023-12-15T21:38:38.327Z",
+  "createdAt": "2023-12-10T21:07:54.069Z",
+  "id": "admin"
 }
